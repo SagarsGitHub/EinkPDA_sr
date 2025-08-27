@@ -155,3 +155,5 @@ void PocketmageEink::forceSlowFullUpdate(bool force)            { forceSlowFullU
 const GFXfont* PocketmageEink::getCurrentFont() { return currentFont_; }
 uint8_t PocketmageEink::maxCharsPerLine() const { return maxCharsPerLine_; }
 uint8_t PocketmageEink::maxLines()        const { return maxLines_; }
+uint8_t PocketmageEink::getFontHeight()   const { return fontHeight_; }
+uint8_t PocketmageEink::getLineSpacing()  const { return lineSpacing_; }

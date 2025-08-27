@@ -23,8 +23,6 @@
 //u8g2_font_courR08_tf.h
 #pragma endregion
 
-
-
 // ===================== OLED CLASS =====================
 class PocketmageOled {
 public:

@@ -64,13 +64,13 @@ public:
   uint8_t maxCharsPerLine() const;
   uint8_t maxLines() const;
   const GFXfont* getCurrentFont();
+  uint8_t getFontHeight() const;
+  uint8_t getLineSpacing() const;
   
   void forceSlowFullUpdate(bool force);
 
-
-
 private:
-  DisplayT&             display_; // class reference to hardware display object
+  DisplayT&             display_;            // class reference to hardware display object
   bool                  forceSlowFullUpdate_ = false;
   uint8_t               partialCounter_      = 0;
   const GFXfont*        currentFont_         = nullptr;

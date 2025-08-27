@@ -105,6 +105,10 @@ void commandSelect(String command) {
     // OPEN BLUETOOTH
   }
   /////////////////////////////
+  else if (command == "calc" || command == "calculator" || command == "math" || command == "10") {
+    CALC_INIT();
+  }
+  /////////////////////////////
   else if (command == "preferences" || command == "setting" || command == "settings" || command == "5") {
     SETTINGS_INIT();
   }
