@@ -511,34 +511,15 @@ void processKB_TXT_NEW();
 void einkHandler_TXT_NEW();
 
 // <CALC.cpp>
-  // main functions
+
 void einkHandler_CALC();
 void processKB_CALC();
-//void drawCalc();
 void CALC_INIT();
-//void closeCalc(AppState newAppState); // calc eink function
-  // strings
-//void calcCRInput();
-//String formatNumber(double value);
-//String formatScientific(double value);
-//String trimValue(double value);
-//void printAnswer(String inputString,const Unit *convA,const Unit *convB); 
-//int calculate(const String& cleanedInput,String &resultOutput,const Unit *convA,const Unit *convB);
-  // algorithms
+  // algorithms NOTE: exposed for other apps if needed
 std::deque<String> convertToRPN(String expression);
 String evaluateRPN(std::deque<String> rpnQueue,const Unit *convA,const Unit *convB);
 std::vector<String> tokenize(const String& expression);
-  // helpers
-//void calcAppend(const String& s, bool right=false, bool center=false);
-//bool isNumberToken(const String& token);
-//bool isVariableToken(const String& token);
-//bool isFunctionToken(const String& token);
-//bool isConstantToken(const String& token);
-//double convertTrig(double input, int trigType,bool reverse = false);
-//double convert(double value,const Unit *from,const Unit *to);
 
-//const Unit* getUnit(const String& sym);
-//void selectUnitType(int idx);
 
 // <HOME.cpp>
 void HOME_INIT();

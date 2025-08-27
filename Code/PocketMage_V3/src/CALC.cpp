@@ -185,6 +185,11 @@ String trimValue(double value){
 }
 #pragma endregion
 
+
+
+
+
+#pragma region calc eink functions
 ///////////////////////////// CALC EINK FUNCTIONS
 // CLOSE CALC AND UPDATE
 void closeCalc(AppState newAppState){
@@ -273,7 +278,13 @@ void drawCalc(){
   } while (display.nextPage());
   
 }
+#pragma endregion
 
+
+
+
+
+#pragma region calc algorithms
 ///////////////////////////// ALGORITHMS
 // FORMAT INTO RPN,EVALUATE,SAVE
 int calculate(const String& cleanedInput,String &result,const Unit *convA,const Unit *convB){
@@ -310,7 +321,6 @@ String formatScientific(double value) {
     result += "e" + String(exponent);
     return result;
 }
-
 // CONVERT NUMBER TO FLOAT STRING OR INT STRING !!
 String formatNumber(double value) {
     //Serial.println("formating number " + String(value));
@@ -972,7 +982,14 @@ String evaluateRPN(std::deque<String> rpnQueue, const Unit *convA, const Unit *c
     }
     return formatNumber(evalStack.top());
 }
+#pragma endregion
 
+
+
+
+
+
+#pragma region I/O
 ///////////////////////////// INPUT/OUTPUT FUNCTIONS
 // CALC DISPLAY ANSWER !!
 void printAnswer(String cleanExpression,const Unit *convA,const Unit *convB) {
@@ -1095,6 +1112,7 @@ void calcCRInput(){
   currentLine = "";
   newLineAdded = true;
 }
+#pragma endregion
 
 ///////////////////////////// MAIN FUNCTIONS
 // CALC INITIALIZETION
