@@ -3,6 +3,7 @@
 
 
 // LIBRARIES
+#include <Preferences.h>
 #include <Arduino.h>
 #include <GxEPD2_BW.h>
 #include <U8g2lib.h>
@@ -11,15 +12,16 @@
 #include <Buzzer.h>
 #include <USB.h>
 #include <USBMSC.h>
-#include <SD_MMC.h>
-#include <Preferences.h>
 #include <Adafruit_MPR121.h>
 #include <esp_cpu.h>
-#include <RTClib.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <assets.h>
 #include <config.h>
+#include "FS.h"
+#include "SPIFFS.h"
+#include <sys/stat.h>
+#include <iostream>
 // calc and frames
 #include <pgmspace.h>
 #include <queue>
@@ -43,6 +45,42 @@
 #include <Fonts/FreeMono12pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
 #include <Fonts/FreeSerif12pt7b.h>
+// Font includes
+// Mono
+#include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <Fonts/FreeMonoOblique9pt7b.h>
+#include <Fonts/FreeMonoBoldOblique9pt7b.h>
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeMonoBoldOblique12pt7b.h>
+#include <Fonts/FreeMonoBoldOblique18pt7b.h>
+#include <Fonts/FreeMonoBoldOblique24pt7b.h>
+
+// Serif
+#include <Fonts/FreeSerif9pt7b.h>
+#include <Fonts/FreeSerifBold9pt7b.h>
+#include <Fonts/FreeSerifItalic9pt7b.h>
+#include <Fonts/FreeSerifBoldItalic9pt7b.h>
+#include <Fonts/FreeSerifBold12pt7b.h>
+#include <Fonts/FreeSerifBold18pt7b.h>
+#include <Fonts/FreeSerifBold24pt7b.h>
+#include <Fonts/FreeSerifBoldItalic12pt7b.h>
+#include <Fonts/FreeSerifBoldItalic18pt7b.h>
+#include <Fonts/FreeSerifBoldItalic24pt7b.h>
+
+// Sans
+#include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
+#include <Fonts/FreeSansOblique9pt7b.h>
+#include <Fonts/FreeSansBoldOblique9pt7b.h>
+#include <Fonts/FreeSansBold12pt7b.h>
+#include <Fonts/FreeSansBold18pt7b.h>
+#include <Fonts/FreeSansBold24pt7b.h>
+#include <Fonts/FreeSansBoldOblique12pt7b.h>
+#include <Fonts/FreeSansBoldOblique18pt7b.h>
+#include <Fonts/FreeSansBoldOblique24pt7b.h>
 #pragma endregion
 
 
@@ -78,7 +116,7 @@
 // E-ink display
 extern GxEPD2_BW<GxEPD2_310_GDEQ031T10, GxEPD2_310_GDEQ031T10::HEIGHT> display;
 // OLED 
-extern U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2;
+extern U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2;
 
 // ===================== INPUT DEVICES =====================
 // Keypad controller
@@ -99,19 +137,16 @@ extern unsigned long lastTouchTime;          // Last touch time
 extern Buzzer buzzer;
 
 // ===================== RTC =====================
-// Real-time clock
-extern RTC_PCF8563 rtc; // RTC chip
-extern const char daysOfTheWeek[7][12]; // Day names
+
 
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
 extern USBMSC msc;           // USB MSC object
 extern bool mscEnabled;      // Is USB MSC active?
-extern sdmmc_card_t* card;   // SD card pointer
 
 // ===================== SYSTEM SETTINGS =====================
 // Persistent preferences
-extern Preferences prefs;        // NVS preferences
+
 extern int TIMEOUT;              // Auto sleep timeout (seconds)
 extern bool DEBUG_VERBOSE;       // Extra debug output
 extern bool SYSTEM_CLOCK;        // Show clock on screen
@@ -146,9 +181,7 @@ extern TaskHandle_t einkHandlerTaskHandle; // E-Ink handler task
 
 // ===================== KEYBOARD STATE =====================
 // extern char currentKB[4][10];        // Current keyboard layout
-extern volatile bool SDCARD_INSERT;  // SD card inserted event
-extern bool noSD;                    // No SD card present
-extern volatile bool SDActive;       // SD card active
+
 
 // ===================== FILES & TEXT =====================
 extern String editingFile;           // Currently edited file
@@ -169,7 +202,7 @@ extern KBState CurrentKBState;           // Current keyboard state
 
 enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON, CALC };
 extern const String appStateNames[];     // App state names
-extern const unsigned char *appIcons[10]; // App icons
+extern const unsigned char *appIcons[9]; // App icons
 extern AppState CurrentAppState;         // Current app state
 
 // ===================== TXT APP =====================
@@ -461,7 +494,6 @@ void updateBattState();
 String removeChar(String str, char character);
 void appendToFile(String path, String inText);
 void setCpuSpeed(int newFreq);
-//void playJingle(String jingle); // migrated to pocketmage_bz.h
 void deepSleep(bool alternateScreenSaver = false);
 void loadState(bool changeState = true);
 int stringToInt(String str);
@@ -533,16 +565,6 @@ void updateTaskArray();
 void einkHandler_TASKS();
 void processKB_TASKS();
 
-// <settings.cpp>
-void SETTINGS_INIT();
-void processKB_settings();
-void einkHandler_settings();
-void settingCommandSelect(String command);
-
-// <USB.cpp>
-void USB_INIT();
-void processKB_USB();
-void einkHandler_USB();
 
 // <CALENDAR.cpp>
 void CALENDAR_INIT();

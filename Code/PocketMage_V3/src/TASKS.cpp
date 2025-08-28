@@ -32,7 +32,6 @@ void sortTasksByDueDate(std::vector<std::vector<String>> &tasks) {
 }
 
 void updateTasksFile() {
-  SDActive = true;
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing tasks file first
@@ -48,7 +47,6 @@ void updateTasksFile() {
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-  SDActive = false;
 }
 
 void addTask(String taskName, String dueDate, String priority, String completed) {
@@ -60,10 +58,9 @@ void addTask(String taskName, String dueDate, String priority, String completed)
 }
 
 void updateTaskArray() {
-  SDActive = true;
   setCpuFrequencyMhz(240);
   delay(50);
-  File file = SD_MMC.open("/sys/tasks.txt", "r"); // Open the text file in read mode
+  File file = SPIFFS.open("/sys/tasks.txt", "r"); // Open the text file in read mode
   if (!file) {
     Serial.println("Failed to open file for reading");
     return;
@@ -99,7 +96,6 @@ void updateTaskArray() {
   file.close();  // Close the file
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-  SDActive = false;
 }
 
 
@@ -317,12 +313,12 @@ void einkHandler_TASKS() {
     case TASKS0:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
         // DRAW APP
-        display.drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
+        EINK().getDisplay().drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
 
         // DRAW FILE LIST
         updateTaskArray();
@@ -335,13 +331,13 @@ void einkHandler_TASKS() {
 
           int loopCount = std::min((int)tasks.size(), MAX_FILES);
           for (int i = 0; i < loopCount; i++) {
-            display.setFont(&FreeSerif9pt7b);
+            EINK().setTXTFont(&FreeSerif9pt7b);
             // PRINT TASK NAME
-            display.setCursor(29, 54 + (17 * i));
-            display.print(tasks[i][0].c_str());
+            EINK().getDisplay().setCursor(29, 54 + (17 * i));
+            EINK().getDisplay().print(tasks[i][0].c_str());
             // PRINT TASK DUE DATE
-            display.setCursor(231, 54 + (17 * i));
-            display.print(convertDateFormat(tasks[i][1]).c_str());
+            EINK().getDisplay().setCursor(231, 54 + (17 * i));
+            EINK().getDisplay().print(convertDateFormat(tasks[i][1]).c_str());
             Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
           }
         }
@@ -353,12 +349,12 @@ void einkHandler_TASKS() {
       case TASKS0_NEWTASK:
         if (newState) {
           newState = false;
-          display.setRotation(3);
-          display.setFullWindow();
-          display.fillScreen(GxEPD_WHITE);
+          EINK().getDisplay().setRotation(3);
+          EINK().getDisplay().setFullWindow();
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
           // DRAW APP
-          display.drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
+          EINK().getDisplay().drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
 
           // DRAW FILE LIST
           updateTaskArray();
@@ -369,13 +365,13 @@ void einkHandler_TASKS() {
 
             int loopCount = std::min((int)tasks.size(), MAX_FILES);
             for (int i = 0; i < loopCount; i++) {
-              display.setFont(&FreeSerif9pt7b);
+              EINK().setTXTFont(&FreeSerif9pt7b);
               // PRINT TASK NAME
-              display.setCursor(29, 54 + (17 * i));
-              display.print(tasks[i][0].c_str());
+              EINK().getDisplay().setCursor(29, 54 + (17 * i));
+              EINK().getDisplay().print(tasks[i][0].c_str());
               // PRINT TASK DUE DATE
-              display.setCursor(231, 54 + (17 * i));
-              display.print(convertDateFormat(tasks[i][1]).c_str());
+              EINK().getDisplay().setCursor(231, 54 + (17 * i));
+              EINK().getDisplay().print(convertDateFormat(tasks[i][1]).c_str());
               Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
             }
           }
@@ -394,13 +390,13 @@ void einkHandler_TASKS() {
     case TASKS1:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("T:" + tasks[selectedTask][0]);
-        display.drawBitmap(0, 0, tasksApp1, 320, 218, GxEPD_BLACK);
+        EINK().getDisplay().drawBitmap(0, 0, tasksApp1, 320, 218, GxEPD_BLACK);
 
         EINK().refresh();
       }

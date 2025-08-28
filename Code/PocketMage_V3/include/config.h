@@ -11,7 +11,7 @@
 #define TXT_APP_STYLE 1                         // 0: Old Style (NOT SUPPORTED), 1: New Style
 #define SET_CLOCK_ON_UPLOAD false               // Should system clock be set automatically on code upload?
 #define TOUCH_TIMEOUT_MS 1200                   // Delay after scrolling to return to typing mode (ms)
-#define SYS_METADATA_FILE "/sys/SDMMC_META.txt" // File path to the file system metadata file
+#define SYS_METADATA_FILE "/sys/SPIFFS_META.txt" // File path to the file system metadata file
 #define POWER_SAVE_FREQ 40                      // CPU freq for power save mode
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////|
 
@@ -22,24 +22,15 @@
 
 #define KB_IRQ        8
 #define PWR_BTN       38
-#define BAT_SENS      4
+#define BAT_SENS      6
 #define CHRG_SENS     39
 #define RTC_INT       1 
 
-#define SPI_MOSI      14
-#define SPI_SCK       15
-
-#define OLED_CS       47
-#define OLED_DC       46
-#define OLED_RST      45
-
 #define EPD_CS        2
 #define EPD_DC        21
-#define EPD_RST       9
+#define EPD_RST       16
 #define EPD_BUSY      37
 
-#define SD_CLK        12
-#define SD_CMD        11
-#define SD_D0         13
+
 
 #endif

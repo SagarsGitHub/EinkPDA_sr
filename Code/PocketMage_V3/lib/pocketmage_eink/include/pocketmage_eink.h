@@ -27,6 +27,42 @@
 #include <Fonts/FreeMono12pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
 #include <Fonts/FreeSerif12pt7b.h>
+// Font includes
+// Mono
+#include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <Fonts/FreeMonoOblique9pt7b.h>
+#include <Fonts/FreeMonoBoldOblique9pt7b.h>
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeMonoBoldOblique12pt7b.h>
+#include <Fonts/FreeMonoBoldOblique18pt7b.h>
+#include <Fonts/FreeMonoBoldOblique24pt7b.h>
+
+// Serif
+#include <Fonts/FreeSerif9pt7b.h>
+#include <Fonts/FreeSerifBold9pt7b.h>
+#include <Fonts/FreeSerifItalic9pt7b.h>
+#include <Fonts/FreeSerifBoldItalic9pt7b.h>
+#include <Fonts/FreeSerifBold12pt7b.h>
+#include <Fonts/FreeSerifBold18pt7b.h>
+#include <Fonts/FreeSerifBold24pt7b.h>
+#include <Fonts/FreeSerifBoldItalic12pt7b.h>
+#include <Fonts/FreeSerifBoldItalic18pt7b.h>
+#include <Fonts/FreeSerifBoldItalic24pt7b.h>
+
+// Sans
+#include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
+#include <Fonts/FreeSansOblique9pt7b.h>
+#include <Fonts/FreeSansBoldOblique9pt7b.h>
+#include <Fonts/FreeSansBold12pt7b.h>
+#include <Fonts/FreeSansBold18pt7b.h>
+#include <Fonts/FreeSansBold24pt7b.h>
+#include <Fonts/FreeSansBoldOblique12pt7b.h>
+#include <Fonts/FreeSansBoldOblique18pt7b.h>
+#include <Fonts/FreeSansBoldOblique24pt7b.h>
 #pragma endregion
 
 // Type alias for readability
@@ -65,6 +101,7 @@ public:
   uint8_t maxLines() const;
   const GFXfont* getCurrentFont();
   uint8_t getFontHeight() const;
+  DisplayT& getDisplay() const;
   uint8_t getLineSpacing() const;
   
   void forceSlowFullUpdate(bool force);

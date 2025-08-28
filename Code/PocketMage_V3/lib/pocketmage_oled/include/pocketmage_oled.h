@@ -47,7 +47,6 @@ public:
   void setClock(RTC_PCF8563* rtc, bool* systemClock, bool* showYear, const char (*days)[12])   // Clock
   { rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}
   void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}  // Flags
-  void setSD(volatile bool* sdActive)                       { sdActive_ = sdActive;}
   void setScrollBitmap(const uint8_t* bmp128x32)            { scrollBmp_ = bmp128x32;}  // Static assets
   void setMaxCharsPerLineEinkGetter(MaxCharsFn fn) { maxCharsFn_ = std::move(fn);}
   

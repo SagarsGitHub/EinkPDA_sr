@@ -314,7 +314,7 @@ struct DocLine {
 
   // Split word objects into lines
   void splitToLines() {
-    uint16_t textWidth = display.width();
+    uint16_t textWidth = EINK().getDisplay().width();
 
     if (style == '>' || style == '-' || style == 'L' || style == 'C') {
       textWidth -= SPECIAL_PADDING;
@@ -326,14 +326,14 @@ struct DocLine {
 
     for (auto &w : words) {
       const GFXfont *font = pickFont(style, w.bold, w.italic);
-      display.setFont(font);
+      EINK().setTXTFont(font);
 
       int16_t x1, y1;
       uint16_t wpx, hpx;
-      display.getTextBounds(w.text.c_str(), 0, 0, &x1, &y1, &wpx, &hpx);
+      EINK().getDisplay().getTextBounds(w.text.c_str(), 0, 0, &x1, &y1, &wpx, &hpx);
 
       int spaceWidth;
-      display.getTextBounds(SPACEWIDTH_SYMBOL, 0, 0, &x1, &y1, (uint16_t*)&spaceWidth, &hpx);
+      EINK().getDisplay().getTextBounds(SPACEWIDTH_SYMBOL, 0, 0, &x1, &y1, (uint16_t*)&spaceWidth, &hpx);
 
       // Calculate width for this word plus space
       int addWidth = wpx + spaceWidth + 12; // IDK why 12 makes the text wrap work perfectly...
@@ -363,8 +363,8 @@ struct DocLine {
 
     // Horizontal Rules just print a line
     if (style == 'H') {
-      display.drawFastHLine(0, cursorY + 3, display.width(), GxEPD_BLACK);
-      display.drawFastHLine(0, cursorY + 4, display.width(), GxEPD_BLACK);
+      EINK().getDisplay().drawFastHLine(0, cursorY + 3, EINK().getDisplay().width(), GxEPD_BLACK);
+      EINK().getDisplay().drawFastHLine(0, cursorY + 4, EINK().getDisplay().width(), GxEPD_BLACK);
       return 8;
     }
 
@@ -381,10 +381,10 @@ struct DocLine {
       uint16_t max_hpx = 0;
       for (auto &w : ln.words) {
         const GFXfont *font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
         int16_t x1, y1;
         uint16_t wpx, hpx;
-        display.getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
+        EINK().getDisplay().getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
         if (hpx > max_hpx) max_hpx = hpx;
       }
 
@@ -394,20 +394,20 @@ struct DocLine {
       // 2. Draw all words at the same baseline
       for (auto &w : ln.words) {
         const GFXfont *font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
 
         int16_t x1, y1;
         uint16_t wpx, hpx;
-        display.getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
+        EINK().getDisplay().getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
 
         // Draw word at the baseline
-        display.setCursor(cursorX, cursorY + max_hpx);
-        display.print(w.text);
+        EINK().getDisplay().setCursor(cursorX, cursorY + max_hpx);
+        EINK().getDisplay().print(w.text);
 
         // Advance cursor (word width + space)
         int16_t sx1, sy1;
         uint16_t sw, sh;
-        display.getTextBounds(SPACEWIDTH_SYMBOL, cursorX, cursorY, &sx1, &sy1, &sw, &sh);
+        EINK().getDisplay().getTextBounds(SPACEWIDTH_SYMBOL, cursorX, cursorY, &sx1, &sy1, &sw, &sh);
 
         cursorX += wpx + sw;
       }
@@ -421,22 +421,22 @@ struct DocLine {
 
     // Blockquotes get a vertical line on the left
     if (style =='>') {
-      display.drawFastVLine(SPECIAL_PADDING/2, startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine((SPECIAL_PADDING/2)+1, startY, (cursorY-startY), GxEPD_BLACK);
+      EINK().getDisplay().drawFastVLine(SPECIAL_PADDING/2, startY, (cursorY-startY), GxEPD_BLACK);
+      EINK().getDisplay().drawFastVLine((SPECIAL_PADDING/2)+1, startY, (cursorY-startY), GxEPD_BLACK);
     }
 
     // Code Blocks get a vertical line on each side
     else if (style == 'C') {
-      display.drawFastVLine(SPECIAL_PADDING/4, startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine(display.width() - (SPECIAL_PADDING/4), startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine((SPECIAL_PADDING/4) + 1, startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine(display.width() - (SPECIAL_PADDING/4) - 1, startY, (cursorY-startY), GxEPD_BLACK);
+      EINK().getDisplay().drawFastVLine(SPECIAL_PADDING/4, startY, (cursorY-startY), GxEPD_BLACK);
+      EINK().getDisplay().drawFastVLine(EINK().getDisplay().width() - (SPECIAL_PADDING/4), startY, (cursorY-startY), GxEPD_BLACK);
+      EINK().getDisplay().drawFastVLine((SPECIAL_PADDING/4) + 1, startY, (cursorY-startY), GxEPD_BLACK);
+      EINK().getDisplay().drawFastVLine(EINK().getDisplay().width() - (SPECIAL_PADDING/4) - 1, startY, (cursorY-startY), GxEPD_BLACK);
     }
 
     // Headings get a horizontal line below them
     else if (style =='1' || style == '2' || style == '3') {
-      display.drawFastHLine(0, cursorY - 2, display.width(), GxEPD_BLACK);
-      display.drawFastHLine(0, cursorY - 3, display.width(), GxEPD_BLACK);
+      EINK().getDisplay().drawFastHLine(0, cursorY - 2, EINK().getDisplay().width(), GxEPD_BLACK);
+      EINK().getDisplay().drawFastHLine(0, cursorY - 3, EINK().getDisplay().width(), GxEPD_BLACK);
     }
 
     return cursorY - startY;
@@ -471,21 +471,13 @@ std::vector<DocLine> docLines;
 
 // Load File
 void loadMarkdownFile(const String &path) {
-  if (noSD) {
-    OLED().oledWord("LOAD FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-
-  SDActive = true;
   setCpuFrequencyMhz(240);
   delay(50);
 
   docLines.clear();
-  File file = SD_MMC.open(path.c_str());
+  File file = SPIFFS.open(path.c_str());
   if (!file) {
     Serial.println("Failed to open file");
-    SDActive = false;
     return;
   }
 
@@ -543,7 +535,6 @@ void loadMarkdownFile(const String &path) {
   populateLines(docLines);
 
   if (SAVE_POWER) setCpuFrequencyMhz(80);
-  SDActive = false;
 }
 
 // Count number of display lines
@@ -564,7 +555,7 @@ int displayDocument(int startX = 0, int startY = 0) {
     int heightUsed = doc.displayLine(startX, cursorY);
 
     // If the line is off the bottom of the screen, stop drawing
-    if (cursorY > display.height()) break;
+    if (cursorY > EINK().getDisplay().height()) break;
 
     cursorY += heightUsed;
   }
@@ -624,8 +615,8 @@ void updateScroll() {
 }
 
 void TXT_INIT() {
-  loadMarkdownFile("/markdownTest.txt");
-  OLED().oledWord("FILE LOADED");
+  //loadMarkdownFile("/markdownTest.txt");
+  //OLED().oledWord("FILE LOADED");
   delay(500);
 
   initFonts();
@@ -639,12 +630,15 @@ void TXT_INIT() {
 void einkHandler_TXT_NEW() {
   if (updateScreen) {
     OLED().oledWord("DISPLAYING TXT");
-
+    delay(200);
     updateScreen = false;
-    display.setFullWindow();
-    display.fillScreen(GxEPD_WHITE);
+    EINK().getDisplay().firstPage();
+    do {
+    EINK().getDisplay().setFullWindow();
+    EINK().getDisplay().fillScreen(GxEPD_WHITE);
     displayDocument();
-    EINK().refresh();
+    } while (EINK().getDisplay().nextPage());
+    //EINK().refresh();
   }
 }
 

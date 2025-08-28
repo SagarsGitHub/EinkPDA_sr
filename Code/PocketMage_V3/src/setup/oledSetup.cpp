@@ -47,12 +47,10 @@ void wireOled() {
   // lamda to avoid redundant functions To Do: make class interface for each pocketmage component in library
   oled.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
   oled.setMSC(&mscEnabled);
-  oled.setSD(&SDActive);
   oled.setScrollBitmap(scrolloled0);
   oled.setReferenceWidth(display.width());
   oled.setMeasureTextWidth(einkMeasureWidth);
   oled.setMaxCharsPerLineEinkGetter([]{ return EINK().maxCharsPerLine(); });
-  oled.setClock(&rtc, &SYSTEM_CLOCK, &SHOW_YEAR, daysOfTheWeek);
 }
 
 // oled object reference for other apps

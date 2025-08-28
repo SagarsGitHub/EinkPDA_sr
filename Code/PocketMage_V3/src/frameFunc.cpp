@@ -76,7 +76,7 @@ size_t sliceThatFits(const char* s, size_t n, int maxTextWidth) {
     buf[len++] = c;
     buf[len] = '\0';
 
-    display.getTextBounds(buf, 0, 0, &x1, &y1, &w, &h);
+    EINK().getDisplay().getTextBounds(buf, 0, 0, &x1, &y1, &w, &h);
     if ((int)w > maxTextWidth) break;
 
     best = i + 1;
@@ -167,8 +167,8 @@ void einkFramesDynamic(std::vector<Frame*> &frames, bool doFull_) {
   int maxX = -32768, maxY = -32768;
   for (Frame* frame : frames) {
     if (!frame) continue;
-    const int width = display.width()  - frame->left  - frame->right;
-    const int height = display.height() - frame->top   - frame->bottom;
+    const int width = EINK().getDisplay().width()  - frame->left  - frame->right;
+    const int height = EINK().getDisplay().height() - frame->top   - frame->bottom;
     if (width <= 0 || height <= 0) continue;
     if (frame->left < minX) minX = frame->left;
     if (frame->top  < minY) minY = frame->top;
@@ -184,41 +184,42 @@ void einkFramesDynamic(std::vector<Frame*> &frames, bool doFull_) {
 
   EINK().setTXTFont(EINK().getCurrentFont());
 
-  display.setPartialWindow(frameX, frameY, frameW, frameH);
-  display.firstPage();
+  EINK().getDisplay().setPartialWindow(frameX, frameY, frameW, frameH);
+  EINK().getDisplay().firstPage();
   do {
     if (doFull_) {
-      display.fillRect(frameX, frameY, frameW, frameH, GxEPD_WHITE);
+      EINK().getDisplay().fillRect(frameX, frameY, frameW, frameH, GxEPD_WHITE);
     }
-    //Serial.println("Drawing Text!");
+    Serial.println("Drawing Text!");
     for (Frame* frame : frames) {
       if (!frame || (!frame->source && !frame->bitmap)) continue;
-
-      const int frameW = display.width()  - frame->left - frame->right;
-      const int frameH = display.height() - frame->top  - frame->bottom;
+      Serial.println("In frame loop");
+      const int frameW = EINK().getDisplay().width()  - frame->left - frame->right;
+      const int frameH = EINK().getDisplay().height() - frame->top  - frame->bottom;
       if (frameW <= 0 || frameH <= 0) continue;
 
       // if frame overlaps or is inverted, fill box with proper color
       if (frame->invert || frame->overlap) {
-        display.fillRect(frame->left, frame->top, frameW, frameH,
+        Serial.println("drawing invert overlap");
+        EINK().getDisplay().fillRect(frame->left, frame->top, frameW, frameH,
                         frame->invert ? GxEPD_BLACK : GxEPD_WHITE);
       }
 
       if (frame->box) {
-        //Serial.println("drawing box!");
+        Serial.println("drawing box!");
         if (frameW > 2 && frameH > 2) {
           drawFrameBox(frame->left + 1, frame->top + 1, frameW - 2, frameH - 2,frame->invert);
         }
       }
       if (frame->bitmap) {
-
+              Serial.println("drawing bitmap!");
         if (frame->bitmapW <= frameW && frame->bitmapH <= frameH) {
 
           const uint16_t bitColor = frame->invert ? GxEPD_WHITE : GxEPD_BLACK;
           if (frame->bitmapW <= frameW && frame->bitmapH <= frameH) {
               int x = frame->left + (frameW - frame->bitmapW) / 2;
               int y = frame->top  + (frameH - frame->bitmapH) / 2;
-              display.drawBitmap(x, y, frame->bitmap, frame->bitmapW, frame->bitmapH, bitColor);
+              EINK().getDisplay().drawBitmap(x, y, frame->bitmap, frame->bitmapW, frame->bitmapH, bitColor);
           }
 
         }
@@ -229,7 +230,7 @@ void einkFramesDynamic(std::vector<Frame*> &frames, bool doFull_) {
 
       frame->maxLines = (lineStride > 1) ? (frameH / lineStride) - 1 : 0;
       if (frame->maxLines <= 0) continue;
-
+      Serial.println("Clamping Scroll");
       const long total  = frame->source ? (long)frame->source->size() : 0L;
       clampScroll(*frame);
 
@@ -299,28 +300,29 @@ void einkFramesDynamic(std::vector<Frame*> &frames, bool doFull_) {
    
       }
     //Serial.println("Stopped Drawing Text!");
-  } while (display.nextPage());
+  } while (EINK().getDisplay().nextPage());
     //Serial.println("Done drawing frames!");
 }
 // DRAW BOX AROUND FRAME !!
 void drawFrameBox(int usableX, int usableY, int usableWidth, int usableHeight,bool invert) {
   // draw box around frame within the partial window
   if (invert){
-    display.drawFastHLine(usableX, usableY, usableWidth, GxEPD_WHITE); // Top
-    display.drawFastHLine(usableX, usableY + usableHeight - 1, usableWidth, GxEPD_WHITE); // Bottom
-    display.drawFastVLine(usableX, usableY, usableHeight, GxEPD_WHITE); // Left
-    display.drawFastVLine(usableX + usableWidth - 1, usableY, usableHeight, GxEPD_WHITE); // Right
+    EINK().getDisplay().drawFastHLine(usableX, usableY, usableWidth, GxEPD_WHITE); // Top
+    EINK().getDisplay().drawFastHLine(usableX, usableY + usableHeight - 1, usableWidth, GxEPD_WHITE); // Bottom
+    EINK().getDisplay().drawFastVLine(usableX, usableY, usableHeight, GxEPD_WHITE); // Left
+    EINK().getDisplay().drawFastVLine(usableX + usableWidth - 1, usableY, usableHeight, GxEPD_WHITE); // Right
   } else {
 
-    display.drawFastHLine(usableX, usableY, usableWidth, GxEPD_BLACK); // Top
-    display.drawFastHLine(usableX, usableY + usableHeight - 1, usableWidth, GxEPD_BLACK); // Bottom
-    display.drawFastVLine(usableX, usableY, usableHeight, GxEPD_BLACK); // Left
-    display.drawFastVLine(usableX + usableWidth - 1, usableY, usableHeight, GxEPD_BLACK); // Right
+    EINK().getDisplay().drawFastHLine(usableX, usableY, usableWidth, GxEPD_BLACK); // Top
+    EINK().getDisplay().drawFastHLine(usableX, usableY + usableHeight - 1, usableWidth, GxEPD_BLACK); // Bottom
+    EINK().getDisplay().drawFastVLine(usableX, usableY, usableHeight, GxEPD_BLACK); // Left
+    EINK().getDisplay().drawFastVLine(usableX + usableWidth - 1, usableY, usableHeight, GxEPD_BLACK); // Right
   }
 }
 // DRAW SINGLE LINE IN FRAME -- NOTE: remove ~C~ and ~R~ with switch to lineview flags
 void drawLineInFrame(String &srcLine, int lineIndex, Frame &frame, int usableY, bool clearLine, bool isPartial) {
     if (srcLine.length() == 0) return;
+    EINK().setTXTFont(EINK().getCurrentFont());
     // get alignment and remove alignment marker
     String line = srcLine;
     bool rightAlign  = line.startsWith("~R~");
@@ -328,7 +330,7 @@ void drawLineInFrame(String &srcLine, int lineIndex, Frame &frame, int usableY, 
     if (rightAlign || centerAlign) line.remove(0, 3);
     int16_t x1, y1;
     uint16_t lineWidth, lineHeight;
-    display.getTextBounds(line, 0, 0, &x1, &y1, &lineWidth, &lineHeight);
+    EINK().getDisplay().getTextBounds(line, 0, 0, &x1, &y1, &lineWidth, &lineHeight);
     int cursorX = computeCursorX(frame, rightAlign, centerAlign, x1, lineWidth);
     // set yRaw to frame top + spaces taken by all previous lines
     int yRaw = frame.top + lineIndex * (EINK().getFontHeight() + EINK().getLineSpacing());
@@ -338,14 +340,14 @@ void drawLineInFrame(String &srcLine, int lineIndex, Frame &frame, int usableY, 
     if (clearLine) {
         int yClear = alignDown8(yRaw);
         int clearHeight = alignUp8(EINK().getFontHeight() + EINK().getLineSpacing() + abs(y1));
-        display.fillRect(frame.left, yClear,
-                         display.width() - frame.left - frame.right,
+        EINK().getDisplay().fillRect(frame.left, yClear,
+                         EINK().getDisplay().width() - frame.left - frame.right,
                          clearHeight,
                          frame.invert ? GxEPD_BLACK :GxEPD_WHITE);
     }
-    display.setCursor(cursorX, yDraw);
-    frame.invert ? display.setTextColor(GxEPD_WHITE) : display.setTextColor(GxEPD_BLACK);
-    display.print(line);
+    EINK().getDisplay().setCursor(cursorX, yDraw);
+    frame.invert ? EINK().getDisplay().setTextColor(GxEPD_WHITE) : EINK().getDisplay().setTextColor(GxEPD_BLACK);
+    EINK().getDisplay().print(line);
 }
 
 ///////////////////////////// FRAME SCROLL FUNCTIONS
@@ -438,14 +440,14 @@ void oledScrollFrame() {
 
   for (long int i = previewBottom; i >= previewTop && i >= 0; --i) {
     if (i < 0 || i >= count) continue;
-
     int16_t x1, y1;
     uint16_t charWidth, charHeight;
     LineView lv = CurrentFrameState->source->line(i);
     String line = String(lv.ptr).substring(0, lv.len);
 
     if (line.startsWith("    ")) {
-      display.getTextBounds(line.substring(4), 0, 0, &x1, &y1, &charWidth, &charHeight);
+
+      EINK().getDisplay().getTextBounds(line.substring(4), 0, 0, &x1, &y1, &charWidth, &charHeight);
       int lineWidth = map(charWidth, 0, 320, 0, 49);
       lineWidth = constrain(lineWidth, 0, 49);
 
@@ -456,7 +458,7 @@ void oledScrollFrame() {
         // u8g2.drawBox(68, boxY, lineWidth, 2);
       }
     } else {
-      display.getTextBounds(line, 0, 0, &x1, &y1, &charWidth, &charHeight);
+      EINK().getDisplay().getTextBounds(line, 0, 0, &x1, &y1, &charWidth, &charHeight);
       int lineWidth = map(charWidth, 0, 320, 0, 56);
       lineWidth = constrain(lineWidth, 0, 56);
 
@@ -516,7 +518,7 @@ void getVisibleRange(Frame *f, long totalLines, long &startLine, long &endLine) 
 int computeCursorX(Frame &frame, bool rightAlign, bool centerAlign, int16_t x1, uint16_t lineWidth) {
   // right padding to avoid overlaps with frame  
   const int padding = 16;
-  int usableWidth = display.width() - frame.left - frame.right;
+  int usableWidth = EINK().getDisplay().width() - frame.left - frame.right;
   int base;
   // draw lines with alignment
   if (rightAlign) {

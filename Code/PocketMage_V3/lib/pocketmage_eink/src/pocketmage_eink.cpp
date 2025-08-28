@@ -7,7 +7,6 @@
 //  o888ooooood8         o888o o8o        `8  o888o  o888o  //
 
 #include <pocketmage_eink.h>
-
 PocketmageEink::PocketmageEink(DisplayT& d) : display_(d) {}
 
 // ===================== main functions =====================
@@ -24,10 +23,9 @@ void PocketmageEink::refresh() {
     partialCounter_++;
   }
 
-  display_.display(false);
-
   display_.setFullWindow();
   display_.fillScreen(GxEPD_WHITE);
+  display_.display(false);
   display_.hibernate();
 }
 void PocketmageEink::multiPassRefresh(int passes) {
@@ -83,11 +81,10 @@ void PocketmageEink::computeFontMetrics_() {
 }
 void PocketmageEink::setTXTFont(const GFXfont* font) {
   // SET THE FONT
-  const bool changed = (currentFont_ != font);
   currentFont_ = font; 
   display_.setFont(currentFont_); 
   // maxCharsPerLine and maxLines
-  if (changed) computeFontMetrics_();
+ computeFontMetrics_();
 }
 void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
   if (!lines_ || !currentFont_ || !dynamicScroll_) return;
@@ -111,7 +108,7 @@ void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
     for (uint8_t i = size - displayLines - scrollOffset; i < size - scrollOffset; i++) {
       if ((*lines_)[i].length() == 0) continue;
       display_.setFullWindow();
-      //display_.fillRect(0, (fontHeight_ + lineSpacing_) * (i - (size - displayLines - scrollOffset)), display.width(), (fontHeight_ + lineSpacing_), GxEPD_WHITE)
+      //display_.fillRect(0, (fontHeight_ + lineSpacing_) * (i - (size - displayLines - scrollOffset)), EINK().getDisplay().width(), (fontHeight_ + lineSpacing_), GxEPD_WHITE)
       display_.setCursor(0, fontHeight_ + ((fontHeight_ + lineSpacing_) * (i - (size - displayLines - scrollOffset))));
       display_.print((*lines_)[i]);
     }
@@ -157,3 +154,4 @@ uint8_t PocketmageEink::maxCharsPerLine() const { return maxCharsPerLine_; }
 uint8_t PocketmageEink::maxLines()        const { return maxLines_; }
 uint8_t PocketmageEink::getFontHeight()   const { return fontHeight_; }
 uint8_t PocketmageEink::getLineSpacing()  const { return lineSpacing_; }
+DisplayT& PocketmageEink::getDisplay()    const {return display_;}    

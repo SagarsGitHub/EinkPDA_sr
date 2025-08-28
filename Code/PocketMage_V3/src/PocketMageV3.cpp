@@ -27,20 +27,11 @@ void applicationEinkHandler() {
     case TASKS:
       einkHandler_TASKS();
       break;
-    case SETTINGS:
-      einkHandler_settings();
-      break;
-    case USB_APP:
-      einkHandler_USB();
-      break;
-    case CALENDAR:
-      einkHandler_CALENDAR();
-      break;
     case LEXICON:
       einkHandler_LEXICON();
       break;
-    case JOURNAL:
-      einkHandler_JOURNAL();
+    case CALC:
+      einkHandler_CALC();
       break;
     // ADD APP CASES HERE
     default:
@@ -73,20 +64,11 @@ void processKB() {
     case TASKS:
       processKB_TASKS();
       break;
-    case SETTINGS:
-      processKB_settings();
-      break;
-    case USB_APP:
-      processKB_USB();
-      break;
-    case CALENDAR:
-      processKB_CALENDAR();
-      break;
     case LEXICON:
       processKB_LEXICON();
       break;
-    case JOURNAL:
-      processKB_JOURNAL();
+    case CALC:
+      processKB_CALC();
       break;
     // ADD APP CASES HERE
     default:
@@ -108,29 +90,28 @@ void processKB() {
 void setup() {
   Serial.begin(115200);
   Wire.begin(I2C_SDA, I2C_SCL);
-  SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
   // setupSys() to begin here
   // OLED SETUP
   setupOled();
 
-  // STARTUP JINGLE
-  setupBZ();
-  
+  Serial.println("setup oled!");
   // WAKE INTERRUPT SETUP
   pinMode(KB_IRQ, INPUT);
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_8, 0);
 
+
   // KEYBOARD SETUP
   setupKB();
-
+  Serial.println("setup kb!");
   // EINK HANDLER SETUP
+
   setupEink();
-  
+  Serial.println("setup eink!");
+
   // SD CARD SETUP
   setupSD();
 
 
-  
   // POWER SETUP
   pinMode(PWR_BTN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PWR_BTN), PWR_BTN_irq, FALLING);
@@ -138,7 +119,7 @@ void setup() {
   pinMode(BAT_SENS, INPUT);
   //WiFi.mode(WIFI_OFF);
   //btStop();
-
+ 
   // SET CPU CLOCK FOR POWER SAVE MODE
   if (SAVE_POWER) setCpuFrequencyMhz(40 );
   else            setCpuFrequencyMhz(240);
@@ -149,22 +130,50 @@ void setup() {
     OLED().oledWord("TouchPad Failed");
     delay(1000);
   }
-  cap.setAutoconfig(true);
 
   // setupRTC() to begin here
   // RTC SETUP
-  pinMode(RTC_INT, INPUT);
-  if (!rtc.begin()) {
-    Serial.println("Couldn't find RTC");
-    Serial.flush();
-    delay(1000);
-  }
-  // SET CLOCK IF NEEDED
-  if (SET_CLOCK_ON_UPLOAD || rtc.lostPower()) rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  rtc.start();
+    frames.reserve(MAX_FRAMES);
+  //oledWord("setting cap thershold to 5,1");
+  
+  // Step 1: Stop electrode operation
+  cap.writeRegister(0x5E, 0x00); // ECR = 0x00 (stop mode)
+
+  // Step 2: Set touch/release thresholds (ELE0–ELE2 example)
+  cap.writeRegister(0x41, 0x03); // ELE0 Touch
+  cap.writeRegister(0x4B, 0x01); // ELE0 Release
+  cap.writeRegister(0x42, 0x03); // ELE1 Touch
+  cap.writeRegister(0x4C, 0x01); // ELE1 Release
+  cap.writeRegister(0x43, 0x01); // ELE2 Touch
+  cap.writeRegister(0x4D, 0x00); // ELE2 Release
+  
+  // Step 3: Set filter & debounce settings (optional, but good idea)
+  cap.writeRegister(0x2B, 0x01); // MHD rising
+  cap.writeRegister(0x2C, 0x01); // NHD amount
+  // 0x00 before
+  cap.writeRegister(0x2D, 0x10); // NCL rising
+  cap.writeRegister(0x2E, 0x00); // FDL rising
+
+  cap.writeRegister(0x2F, 0x01); // MHD falling
+  cap.writeRegister(0x30, 0x01); // NHD falling
+  // 0xFF before
+  cap.writeRegister(0x31, 0x64); // NCL falling
+  cap.writeRegister(0x32, 0x30); // FDL falling
+  
+  cap.writeRegister(0x5B, 0x01); // Debounce: 1 touch, 1 release
+
+  // Step 4: Configure baseline tracking control
+  cap.writeRegister(0x7B, 0x00); // Baseline filter config (optional for tuning)
+  //cap.writeRegister(0x7E, 90);  // Target level
+  //cap.writeRegister(0x7C, 117); // USL = 90 * 1.3
+  //cap.writeRegister(0x7D, 63);  // LSL = 90 * 0.7
+  // Step 5: Enable 3 electrodes with baseline tracking
+  cap.writeRegister(0x5E, 0b10000000 + 12); // ECR: 0b10000011 (baseline tracking + 3 electrodes)
+      delay(250);
 
   // Set "random" seed
-  randomSeed(analogRead(BAT_SENS));
+  //randomSeed(analogRead(BAT_SENS));
+  useRealRandomGenerator(true);
   // end setupSys()
 }
 

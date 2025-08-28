@@ -21,20 +21,20 @@ void LEXICON_INIT() {
 
 void loadDefinitions(String word) {
   OLED().oledWord("Loading Definitions");
-  SDActive = true;
+
   setCpuFrequencyMhz(240);
   delay(50);
 
   defList.clear();  // Clear previous results
 
-  if (word.length() == 0 || noSD) return;
+  if (word.length() == 0) return;
 
   char firstChar = tolower(word[0]);
   if (firstChar < 'a' || firstChar > 'z') return;
 
   String filePath = "/dict/" + String((char)toupper(firstChar)) + ".txt";
 
-  File file = SD_MMC.open(filePath);
+  File file = SPIFFS.open(filePath);
   if (!file) {
     OLED().oledWord("Missing Dictionary!");
     delay(2000);
@@ -82,7 +82,7 @@ void loadDefinitions(String word) {
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-  SDActive = false;
+
 }
 
 void processKB_LEXICON() {
@@ -228,38 +228,44 @@ void einkHandler_LEXICON() {
     case MENU:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.drawBitmap(0, 0, _lex0, 320, 218, GxEPD_BLACK);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().firstPage();
+        do {
+        EINK().getDisplay().drawBitmap(0, 0, _lex0, 320, 218, GxEPD_BLACK);
 
         EINK().drawStatusBar("Type a Word:");
 
+
+        } while (EINK().getDisplay().nextPage());
         EINK().multiPassRefresh(2);
       }
       break;
     case DEF:
       if (newState) {
         newState = false;
+        EINK().getDisplay().firstPage();
+        do {
+        EINK().getDisplay().drawBitmap(0, 0, _lex1, 320, 218, GxEPD_BLACK);
 
-        display.drawBitmap(0, 0, _lex1, 320, 218, GxEPD_BLACK);
-
-        display.setTextColor(GxEPD_BLACK);
+        EINK().getDisplay().setTextColor(GxEPD_BLACK);
 
         // Draw Word
-        display.setFont(&FreeSerif12pt7b);
-        display.setCursor(12, 50);
-        display.print(defList[definitionIndex].first);
+        EINK().setTXTFont(&FreeSerif12pt7b);
+        EINK().getDisplay().setCursor(12, 50);
+        EINK().getDisplay().print(defList[definitionIndex].first);
 
         // Draw Definition
-        display.setFont(&FreeSerif9pt7b);
-        display.setCursor(8, 87);
+        EINK().setTXTFont(&FreeSerif9pt7b);
+        EINK().getDisplay().setCursor(8, 87);
         // ADD WORD WRAP
-        display.print(defList[definitionIndex].second);
+        EINK().getDisplay().print(defList[definitionIndex].second);
 
         EINK().drawStatusBar("Type a New Word:");
-
+        } while (EINK().getDisplay().nextPage());
         EINK().forceSlowFullUpdate(true);
         EINK().refresh();
+
       }
       break;
   }

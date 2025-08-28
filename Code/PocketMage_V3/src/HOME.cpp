@@ -25,7 +25,7 @@ void commandSelect(String command) {
     command = removeChar(command, ' ');
     command = removeChar(command, '-');
     keypad.disableInterrupts();
-    SD().listDir(SD_MMC, "/");
+    SD().listDir(SPIFFS, "/");
     keypad.enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
@@ -44,7 +44,7 @@ void commandSelect(String command) {
     command = removeChar(command, ' ');
     command = removeChar(command, '/');
     keypad.disableInterrupts();
-    SD().listDir(SD_MMC, "/");
+    SD().listDir(SPIFFS, "/");
     keypad.enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
@@ -93,10 +93,6 @@ void commandSelect(String command) {
     FILEWIZ_INIT();
   }
   /////////////////////////////
-  else if (command == "back up" || command == "export" || command == "transfer" || command == "usb transfer" || command == "usb" || command == "3") {
-    USB_INIT();
-  }
-  /////////////////////////////
   else if (command == "tasks" || command == "task" || command == "6") {
     TASKS_INIT();
   }
@@ -108,18 +104,8 @@ void commandSelect(String command) {
   else if (command == "calc" || command == "calculator" || command == "math" || command == "10") {
     CALC_INIT();
   }
-  /////////////////////////////
-  else if (command == "preferences" || command == "setting" || command == "settings" || command == "5") {
-    SETTINGS_INIT();
-  }
-  else if (command == "cal" || command == "calendar" || command == "7") {
-    CALENDAR_INIT();
-  }
   else if (command == "lex" || command == "lexicon" || command == "dict" || command == "dictionary" || command == "9") {
     LEXICON_INIT();
-  }
-  else if (command == "journ" || command == "journal" || command == "daily" || command == "8") {
-    JOURNAL_INIT();
   }
   /////////////////////////////
   else if (command == "i farted") {
@@ -150,14 +136,14 @@ void commandSelect(String command) {
     OLED().oledWord("...");
     delay(1000);
   } 
-  else {
-    settingCommandSelect(command);
-  }
 }
 
 void drawHome() {
-  display.setRotation(3);
-  display.fillScreen(GxEPD_WHITE);
+  EINK().getDisplay().setFullWindow();
+  EINK().getDisplay().firstPage();
+  do {
+  EINK().getDisplay().setRotation(3);
+  EINK().getDisplay().fillScreen(GxEPD_WHITE);
   
   int16_t x1, y1;
   uint16_t charWidth, charHeight;
@@ -168,7 +154,7 @@ void drawHome() {
   uint8_t startX = 20;    // Initial X position
   uint8_t startY = 20;    // Initial Y position
 
-  display.setFont(&FreeSerif9pt7b);
+  EINK().setTXTFont(&FreeSerif9pt7b);
   for (int i = 0; i < sizeof(appIcons) / sizeof(appIcons[0]); i++) {
     int row = i / appsPerRow;
     int col = i % appsPerRow;
@@ -176,14 +162,15 @@ void drawHome() {
     int xPos = startX + (spacingX * col);
     int yPos = startY + (spacingY * row);
 
-    display.drawBitmap(xPos, yPos, appIcons[i], iconSize, iconSize, GxEPD_BLACK);
-    display.getTextBounds(appStateNames[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
-    display.setCursor(xPos + (iconSize / 2) - (charWidth / 2), yPos + iconSize + 13);
-    display.print(appStateNames[i]);
+    EINK().getDisplay().drawBitmap(xPos, yPos, appIcons[i], iconSize, iconSize, GxEPD_BLACK);
+    EINK().getDisplay().getTextBounds(appStateNames[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
+    EINK().getDisplay().setCursor(xPos + (iconSize / 2) - (charWidth / 2), yPos + iconSize + 13);
+    EINK().getDisplay().print(appStateNames[i]);
   }
-  display.setFont(&FreeMonoBold9pt7b);
+  EINK().setTXTFont(&FreeMonoBold9pt7b);
 
   EINK().drawStatusBar("Type a Command:");
+    } while (EINK().getDisplay().nextPage());
 }
 
 void drawThickLine(int x0, int y0, int x1, int y1, int thickness) {
@@ -196,7 +183,7 @@ void drawThickLine(int x0, int y0, int x1, int y1, int thickness) {
   for (float i = 0; i <= length; i += thickness / 2.0) {
     int cx = round(x0 + i * stepX);
     int cy = round(y0 + i * stepY);
-    display.fillCircle(cx, cy, thickness / 2, GxEPD_BLACK);
+    EINK().getDisplay().fillCircle(cx, cy, thickness / 2, GxEPD_BLACK);
   }
 }
 
@@ -262,15 +249,6 @@ void processKB_HOME() {
         }
       }
       break;
-
-    case NOWLATER:
-      DateTime now = rtc.now();
-      if (prevTime != now.minute()) {
-        prevTime = now.minute();
-        newState = true;
-      }
-      else newState = false;
-      break;
   }
 }
 
@@ -279,63 +257,10 @@ void einkHandler_HOME() {
     case HOME_HOME:
       if (newState) {
         newState = false;
+
         drawHome();
-        EINK().refresh();
-        //EINK().multiPassRefresh(2);
-      }
-      break;
-
-    case NOWLATER:
-      if (newState) {
-        newState = false;
-
-        // BACKGROUND
-        display.drawBitmap(0, 0, nowLaterallArray[0], 320, 240, GxEPD_BLACK);
-
-        // CLOCK HANDS
-        float pi = 3.14159;
-
-        float hourLength    = 25;
-        float minuteLength  = 40;
-        uint8_t hourWidth   = 5;
-        uint8_t minuteWidth = 2;
-
-        uint8_t centerX     = 76;
-        uint8_t centerY     = 94;
-
-        DateTime now = rtc.now();
-
-        // Convert time to proper angles in radians
-        float minuteAngle = (now.minute() / 60.0) * 2 * pi;  
-        float hourAngle   = ((now.hour() % 12) / 12.0 + (now.minute() / 60.0) / 12.0) * 2 * pi;
-
-        // Convert angles to coordinates
-        uint8_t minuteX = (minuteLength * cos(minuteAngle - pi/2)) + centerX;
-        uint8_t minuteY = (minuteLength * sin(minuteAngle - pi/2)) + centerY;
-        uint8_t hourX   = (hourLength   * cos(hourAngle   - pi/2)) + centerX;
-        uint8_t hourY   = (hourLength   * sin(hourAngle   - pi/2)) + centerY;
-
-        drawThickLine(centerX, centerY, minuteX, minuteY, minuteWidth);
-        drawThickLine(centerX, centerY, hourX  , hourY  , hourWidth);
-
-        // WEATHER
-
-        // TASKS/CALENDAR
-        //151,68
-        if (!tasks.empty()) {
-          if (DEBUG_VERBOSE) Serial.println("Printing Tasks");
-
-          int loopCount = std::min((int)tasks.size(), 7);
-          for (int i = 0; i < loopCount; i++) {
-            display.setFont(&FreeSerif9pt7b);
-            // PRINT TASK NAME
-            display.setCursor(151, 68 + (25 * i));
-            display.print(tasks[i][0].c_str());
-          }
-        }
-
-        EINK().forceSlowFullUpdate(true);
-        EINK().refresh();
+       
+        //EINK().multiPassRefesh(2);
       }
       break;
   }

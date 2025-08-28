@@ -24,40 +24,31 @@ int countVisibleChars(String input) {
 }
 
 void saveFile() {
-  if (noSD) {
-    OLED().oledWord("SAVE FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-  else {
-    SDActive = true;
-    setCpuFrequencyMhz(240);
-    delay(50);
+  setCpuFrequencyMhz(240);
+  delay(50);
 
-    String textToSave = vectorToString();
-    if (DEBUG_VERBOSE) {
-      Serial.println("Text to save:");
-      Serial.println(textToSave);
-    }
-    if (editingFile == "" || editingFile == "-") editingFile = "/temp.txt";
-    keypad.disableInterrupts();
-    if (!editingFile.startsWith("/")) editingFile = "/" + editingFile;
-    //OLED().oledWord("Saving File: "+ editingFile);
-    SD().writeFile(SD_MMC, (editingFile).c_str(), textToSave.c_str());
-    //OLED().oledWord("Saved: "+ editingFile);
-
-    // Write MetaData
-    writeMetadata(editingFile);
-    
-    //delay(1000);
-    keypad.enableInterrupts();
-    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-    SDActive = false;
+  String textToSave = vectorToString();
+  if (DEBUG_VERBOSE) {
+    Serial.println("Text to save:");
+    Serial.println(textToSave);
   }
+  if (editingFile == "" || editingFile == "-") editingFile = "/temp.txt";
+  keypad.disableInterrupts();
+  if (!editingFile.startsWith("/")) editingFile = "/" + editingFile;
+  //OLED().oledWord("Saving File: "+ editingFile);
+  SD().writeFile(SPIFFS, (editingFile).c_str(), textToSave.c_str());
+  //OLED().oledWord("Saved: "+ editingFile);
+
+  // Write MetaData
+  writeMetadata(editingFile);
+  
+  //delay(1000);
+  keypad.enableInterrupts();
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 }
 
 void writeMetadata(const String& path) {
-  File file = SD_MMC.open(path);
+  File file = SPIFFS.open(path, "r");
   if (!file || file.isDirectory()) {
     Serial.println("Invalid file for metadata.");
     return;
@@ -71,23 +62,23 @@ void writeMetadata(const String& path) {
   String fileSizeStr = String(fileSizeBytes) + " Bytes";
 
   // Get line and char counts
-  int charCount = countVisibleChars(SD().readFileToString(SD_MMC, path.c_str()));
+  int charCount = countVisibleChars(SD().readFileToString(SPIFFS, path.c_str()));
 
   String charStr  = String(charCount) + " Char";
 
   // Get current time from RTC
-  DateTime now = rtc.now();
+  //DateTime now = rtc.now();
   char timestamp[20];
-  sprintf(timestamp, "%04d%02d%02d-%02d%02d",
-          now.year(), now.month(), now.day(), now.hour(), now.minute());
+  //sprintf(timestamp, "%04d%02d%02d-%02d%02d",
+  //       now.year(), now.month(), now.day(), now.hour(), now.minute());
 
   // Compose new metadata line
-  String newEntry = path + "|" + timestamp + "|" + fileSizeStr + "|" + charStr;
+  String newEntry = path + "|" + fileSizeStr + "|" + charStr;
 
   const char* metaPath = SYS_METADATA_FILE;
 
   // Read existing entries and rebuild the file without duplicates
-  File metaFile = SD_MMC.open(metaPath, FILE_READ);
+  File metaFile = SPIFFS.open(metaPath, FILE_READ);
   String updatedMeta = "";
   bool replaced = false;
 
@@ -109,7 +100,7 @@ void writeMetadata(const String& path) {
   }
 
   // Write back the updated metadata
-  metaFile = SD_MMC.open(metaPath, FILE_WRITE);
+  metaFile = SPIFFS.open(metaPath, FILE_WRITE);
   if (!metaFile) {
     Serial.println("Failed to open metadata file for writing.");
     return;
@@ -121,67 +112,51 @@ void writeMetadata(const String& path) {
 }
 
 void loadFile(bool showOLED) {
-  if (noSD) {
-    OLED().oledWord("LOAD FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-  else {
-    SDActive = true;
-    setCpuFrequencyMhz(240);
-    delay(50);
 
-    keypad.disableInterrupts();
-    if (showOLED) OLED().oledWord("Loading File");
-    if (!editingFile.startsWith("/")) editingFile = "/" + editingFile;
-    String textToLoad = SD().readFileToString(SD_MMC, (editingFile).c_str());
-    if (DEBUG_VERBOSE) {
-      Serial.println("Text to load:");
-      Serial.println(textToLoad);
-    }
-    stringToVector(textToLoad);
-    keypad.enableInterrupts();
-    if (showOLED) {
-      OLED().oledWord("File Loaded");
-      delay(200);
-    }
-    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-    SDActive = false;
+  setCpuFrequencyMhz(240);
+  delay(50);
+
+  keypad.disableInterrupts();
+  if (showOLED) OLED().oledWord("Loading File");
+  if (!editingFile.startsWith("/")) editingFile = "/" + editingFile;
+  String textToLoad = SD().readFileToString(SPIFFS, (editingFile).c_str());
+  if (DEBUG_VERBOSE) {
+    Serial.println("Text to load:");
+    Serial.println(textToLoad);
   }
+  stringToVector(textToLoad);
+  keypad.enableInterrupts();
+  if (showOLED) {
+    OLED().oledWord("File Loaded");
+    delay(200);
+  }
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+ 
 }
 
 void delFile(String fileName) {
-  if (noSD) {
-    OLED().oledWord("DELETE FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-  else {
-    SDActive = true;
-    setCpuFrequencyMhz(240);
-    delay(50);
+  setCpuFrequencyMhz(240);
+  delay(50);
 
-    keypad.disableInterrupts();
-    //OLED().oledWord("Deleting File: "+ fileName);
-    if (!fileName.startsWith("/")) fileName = "/" + fileName;
-    SD().deleteFile(SD_MMC, fileName.c_str());
-    //OLED().oledWord("Deleted: "+ fileName);
+  keypad.disableInterrupts();
+  //OLED().oledWord("Deleting File: "+ fileName);
+  if (!fileName.startsWith("/")) fileName = "/" + fileName;
+  SD().deleteFile(SPIFFS, fileName.c_str());
+  //OLED().oledWord("Deleted: "+ fileName);
 
-    // Delete MetaData
-    deleteMetadata(fileName);
+  // Delete MetaData
+  deleteMetadata(fileName);
 
-    delay(1000);
-    keypad.enableInterrupts();
-    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-    SDActive = false;
-  }
+  delay(1000);
+  keypad.enableInterrupts();
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 }
 
 void deleteMetadata(String path) {
   const char* metaPath = SYS_METADATA_FILE;
   
   // Open metadata file for reading
-  File metaFile = SD_MMC.open(metaPath, FILE_READ);
+  File metaFile = SPIFFS.open(metaPath, "r");
   if (!metaFile) {
     Serial.println("Metadata file not found.");
     return;
@@ -198,10 +173,10 @@ void deleteMetadata(String path) {
   metaFile.close();
 
   // Delete the original metadata file
-  SD_MMC.remove(metaPath);
+  SPIFFS.remove(metaPath);
 
   // Recreate the file and write back the kept lines
-  File writeFile = SD_MMC.open(metaPath, FILE_WRITE);
+  File writeFile = SPIFFS.open(metaPath, "w");
   if (!writeFile) {
     Serial.println("Failed to recreate metadata file.");
     return;
@@ -216,31 +191,22 @@ void deleteMetadata(String path) {
 }
 
 void renFile(String oldFile, String newFile) {
-  if (noSD) {
-    OLED().oledWord("RENAME FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-  else {
-    SDActive = true;
-    setCpuFrequencyMhz(240);
-    delay(50);
+  setCpuFrequencyMhz(240);
+  delay(50);
 
-    keypad.disableInterrupts();
-    //OLED().oledWord("Renaming "+ oldFile + " to " + newFile);
-    if (!oldFile.startsWith("/")) oldFile = "/" + oldFile;
-    if (!newFile.startsWith("/")) newFile = "/" + newFile;
-    SD().renameFile(SD_MMC, oldFile.c_str(), newFile.c_str());
-    OLED().oledWord(oldFile + " -> " + newFile);
-    delay(1000);
+  keypad.disableInterrupts();
+  //OLED().oledWord("Renaming "+ oldFile + " to " + newFile);
+  if (!oldFile.startsWith("/")) oldFile = "/" + oldFile;
+  if (!newFile.startsWith("/")) newFile = "/" + newFile;
+  SD().renameFile(SPIFFS, oldFile.c_str(), newFile.c_str());
+  OLED().oledWord(oldFile + " -> " + newFile);
+  delay(1000);
 
-    // Update MetaData
-    renMetadata(oldFile, newFile);
+  // Update MetaData
+  renMetadata(oldFile, newFile);
 
-    keypad.enableInterrupts();
-    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-    SDActive = false;
-  }
+  keypad.enableInterrupts();
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ); 
 }
 
 void renMetadata(String oldPath, String newPath) {
@@ -248,7 +214,7 @@ void renMetadata(String oldPath, String newPath) {
   const char* metaPath = SYS_METADATA_FILE;
 
   // Open metadata file for reading
-  File metaFile = SD_MMC.open(metaPath, FILE_READ);
+  File metaFile = SPIFFS.open(metaPath, "r");
   if (!metaFile) {
     Serial.println("Metadata file not found.");
     return;
@@ -276,10 +242,10 @@ void renMetadata(String oldPath, String newPath) {
   metaFile.close();
 
   // Delete old metadata file
-  SD_MMC.remove(metaPath);
+  SPIFFS.remove(metaPath);
 
   // Recreate file and write updated lines
-  File writeFile = SD_MMC.open(metaPath, FILE_WRITE);
+  File writeFile = SPIFFS.open(metaPath, "w");
   if (!writeFile) {
     Serial.println("Failed to recreate metadata file.");
     return;
@@ -295,57 +261,39 @@ void renMetadata(String oldPath, String newPath) {
 }
 
 void copyFile(String oldFile, String newFile) {
-  if (noSD) {
-    OLED().oledWord("COPY FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-  else {
-    SDActive = true;
-    setCpuFrequencyMhz(240);
-    delay(50);
+  setCpuFrequencyMhz(240);
+  delay(50);
 
-    keypad.disableInterrupts();
-    OLED().oledWord("Loading File");
-    if (!oldFile.startsWith("/")) oldFile = "/" + oldFile;
-    if (!newFile.startsWith("/")) newFile = "/" + newFile;
-    String textToLoad = SD().readFileToString(SD_MMC, (oldFile).c_str());
-    SD().writeFile(SD_MMC, (newFile).c_str(), textToLoad.c_str());
-    OLED().oledWord("Saved: "+ newFile);
+  keypad.disableInterrupts();
+  OLED().oledWord("Loading File");
+  if (!oldFile.startsWith("/")) oldFile = "/" + oldFile;
+  if (!newFile.startsWith("/")) newFile = "/" + newFile;
+  String textToLoad = SD().readFileToString(SPIFFS, (oldFile).c_str());
+  SD().writeFile(SPIFFS, (newFile).c_str(), textToLoad.c_str());
+  OLED().oledWord("Saved: "+ newFile);
 
-    // Write MetaData
-    writeMetadata(newFile);
+  // Write MetaData
+  writeMetadata(newFile);
 
-    delay(1000);
-    keypad.enableInterrupts();
+  delay(1000);
+  keypad.enableInterrupts();
 
-    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-    SDActive = false;
-  }
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 }
 
 void appendToFile(String path, String inText) {
-  if (noSD) {
-    OLED().oledWord("OP FAILED - No SD!");
-    delay(5000);
-    return;
-  }
-  else {
-    SDActive = true;
-    setCpuFrequencyMhz(240);
-    delay(50);
+  setCpuFrequencyMhz(240);
+  delay(50);
 
-    keypad.disableInterrupts();
-    SD().appendFile(SD_MMC, path.c_str(), inText.c_str());
+  keypad.disableInterrupts();
+  SD().appendFile(SPIFFS, path.c_str(), inText.c_str());
 
-    // Write MetaData
-    writeMetadata(path);
+  // Write MetaData
+  writeMetadata(path);
 
-    keypad.enableInterrupts();
+  keypad.enableInterrupts();
 
-    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-    SDActive = false;
-  }
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 }
 
 String vectorToString() {
@@ -357,10 +305,10 @@ String vectorToString() {
 
     int16_t x1, y1;
     uint16_t charWidth, charHeight;
-    display.getTextBounds(allLines[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
+    EINK().getDisplay().getTextBounds(allLines[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
 
     // Add newline only if the line doesn't fully use the available space
-    if (charWidth < display.width() && i < allLines.size() - 1) {
+    if (charWidth < EINK().getDisplay().width() && i < allLines.size() - 1) {
       result += '\n';
     }
   }
@@ -378,10 +326,10 @@ void stringToVector(String inputText) {
 
     int16_t x1, y1;
     uint16_t charWidth, charHeight;
-    display.getTextBounds(currentLine_, 0, 0, &x1, &y1, &charWidth, &charHeight);
+    EINK().getDisplay().getTextBounds(currentLine_, 0, 0, &x1, &y1, &charWidth, &charHeight);
 
     // Check if new line needed
-    if ((c == '\n' || charWidth >= display.width() - 5) && !currentLine_.isEmpty()) {
+    if ((c == '\n' || charWidth >= EINK().getDisplay().width() - 5) && !currentLine_.isEmpty()) {
       if (currentLine_.endsWith(" ")) {
         allLines.push_back(currentLine_);
         currentLine_ = "";
@@ -569,10 +517,6 @@ void setTimeFromString(String timeStr) {
       delay(500);
       return;
     }
-
-    DateTime now = rtc.now();  // Get current date
-    rtc.adjust(DateTime(now.year(), now.month(), now.day(), hours, minutes, 0));
-
     Serial.println("Time updated!");
 }
 
@@ -615,9 +559,11 @@ void playJingle(String jingle) {
 }
 */
 void printDebug() {
-  DateTime now = rtc.now();
-  if (now.second() != prevSec) {
-    prevSec = now.second();
+  //DateTime now = rtc.now();
+  prevTimeMillis = millis();
+
+  if (prevTimeMillis > 50000) {
+    prevTimeMillis = 0;
 
     // DIVIDER
     Serial.print("//////////////////////////////////////_DEBUG_//////////////////////////////////////"); 
@@ -632,28 +578,11 @@ void printDebug() {
     // READ AND DISPLAY BATTERY VOLTAGE
     float batteryVoltage = (analogRead(BAT_SENS) * (3.3 / 4095.0) * 2) + 0.2;
     Serial.print(", BAT: "); Serial.print(batteryVoltage, 2); // Print with 2 decimal places
-    
-    // DISPLAY CLOCK SPEED
-    Serial.print(", CPU_FRQ: "); Serial.print(getCpuFrequencyMhz(), 1);
 
     // FAST FULL UPDATE MODE
     Serial.print(", FFU: "); Serial.println(GxEPD2_310_GDEQ031T10::useFastFullUpdate);
 
-    // DISPLAY SYSTEM TIME
-    Serial.print("SYSTEM_CLOCK: ");
-    Serial.print(now.month(), DEC);
-    Serial.print('/');
-    Serial.print(now.day(), DEC);
-    Serial.print('/');
-    Serial.print(now.year(), DEC);
-    Serial.print(" (");
-    Serial.print(daysOfTheWeek[now.dayOfTheWeek()]);
-    Serial.print(") ");
-    Serial.print(now.hour(), DEC);
-    Serial.print(':');
-    Serial.print(now.minute(), DEC);
-    Serial.print(':');
-    Serial.print(now.second(), DEC);
+
     
     Serial.println();
   }
@@ -712,19 +641,19 @@ void checkTimeout() {
           case TXT:
             if (SLEEPMODE == "TEXT" && editingFile != "") {
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
-              display.setFullWindow();
+              EINK().getDisplay().setFullWindow();
               EINK().einkTextDynamic(true, true);
                     
-              display.setFont(&FreeMonoBold9pt7b);
+              EINK().setTXTFont(&FreeMonoBold9pt7b);
               
-              display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
-              display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
-              display.setCursor(4, display.height()-6);
-              display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
+              EINK().getDisplay().fillRect(0,EINK().getDisplay().height()-26,EINK().getDisplay().width(),26,GxEPD_WHITE);
+              EINK().getDisplay().drawRect(0,EINK().getDisplay().height()-20,EINK().getDisplay().width(),20,GxEPD_BLACK);
+              EINK().getDisplay().setCursor(4, EINK().getDisplay().height()-6);
+              EINK().getDisplay().drawBitmap(EINK().getDisplay().width()-30,EINK().getDisplay().height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
               EINK().statusBar(editingFile, true);
               
-              display.fillRect(320-86, 240-52, 87, 52, GxEPD_WHITE);
-              display.drawBitmap(320-86, 240-52, sleep1, 87, 52, GxEPD_BLACK);
+              EINK().getDisplay().fillRect(320-86, 240-52, 87, 52, GxEPD_WHITE);
+              EINK().getDisplay().drawBitmap(320-86, 240-52, sleep1, 87, 52, GxEPD_BLACK);
 
               // Put device to sleep with alternate sleep screen
               deepSleep(true);
@@ -737,11 +666,10 @@ void checkTimeout() {
             break;
         }
         
-        display.nextPage();
-        display.hibernate();
+        EINK().getDisplay().nextPage();
+        EINK().getDisplay().hibernate();
         
         //Sleep the device
-        BZ().playJingle(Jingle::Shutdown);
         esp_deep_sleep_start();
       }
   }
@@ -759,12 +687,6 @@ void checkTimeout() {
 
     
     if (digitalRead(CHRG_SENS) == HIGH) {
-      // Save last state
-      prefs.begin("PocketMage", false);
-      prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
-      prefs.putString("editingFile", editingFile);
-      prefs.end();
-
       CurrentAppState = HOME;
       CurrentHOMEState = NOWLATER;
       updateTaskArray();
@@ -774,13 +696,10 @@ void checkTimeout() {
       OLEDPowerSave  = true;
       disableTimeout = true;
       newState = true;
-      
-      // Shutdown Jingle
-      BZ().playJingle(Jingle::Shutdown);
 
       // Clear screen
-      display.setFullWindow();
-      display.fillScreen(GxEPD_WHITE);
+      EINK().getDisplay().setFullWindow();
+      EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
     }
     else {
@@ -788,18 +707,18 @@ void checkTimeout() {
         case TXT:
           if (SLEEPMODE == "TEXT" && editingFile != "") {
             EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
-            display.setFullWindow();
+            EINK().getDisplay().setFullWindow();
             EINK().einkTextDynamic(true, true);    
-            display.setFont(&FreeMonoBold9pt7b);
+            EINK().setTXTFont(&FreeMonoBold9pt7b);
             
-            display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
-            display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
-            display.setCursor(4, display.height()-6);
-            display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
+            EINK().getDisplay().fillRect(0,EINK().getDisplay().height()-26,EINK().getDisplay().width(),26,GxEPD_WHITE);
+            EINK().getDisplay().drawRect(0,EINK().getDisplay().height()-20,EINK().getDisplay().width(),20,GxEPD_BLACK);
+            EINK().getDisplay().setCursor(4, EINK().getDisplay().height()-6);
+            EINK().getDisplay().drawBitmap(EINK().getDisplay().width()-30,EINK().getDisplay().height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
             EINK().statusBar(editingFile, true);
             
-            display.fillRect(320-86, 240-52, 87, 52, GxEPD_WHITE);
-            display.drawBitmap(320-86, 240-52, sleep1, 87, 52, GxEPD_BLACK);
+            EINK().getDisplay().fillRect(320-86, 240-52, 87, 52, GxEPD_WHITE);
+            EINK().getDisplay().drawBitmap(320-86, 240-52, sleep1, 87, 52, GxEPD_BLACK);
 
             deepSleep(true);
           }
@@ -820,7 +739,7 @@ void checkTimeout() {
     if (HOME_ON_BOOT) CurrentAppState = HOME;
     else CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
     prefs.end();*/
-    loadState();
+  
     keypad.flush();
 
     CurrentHOMEState = HOME_HOME;
@@ -829,11 +748,8 @@ void checkTimeout() {
       u8g2.setPowerSave(0);
       OLEDPowerSave = false;
     }
-    display.fillScreen(GxEPD_WHITE);
+    EINK().getDisplay().fillScreen(GxEPD_WHITE);
     EINK().forceSlowFullUpdate(true);
-
-    // Play startup jingle
-    BZ().playJingle(Jingle::Startup);
 
     EINK().refresh();
     delay(200);
@@ -851,16 +767,15 @@ void deepSleep(bool alternateScreenSaver) {
     einkHandlerTaskHandle = NULL;
   }
   
-  // Shutdown Jingle
-  BZ().playJingle(Jingle::Shutdown);
 
   if (alternateScreenSaver == false) {
     int numScreensavers = sizeof(ScreenSaver_allArray) / sizeof(ScreenSaver_allArray[0]);
     int randomScreenSaver_ = esp_random() % numScreensavers;
 
-    //display.setPartialWindow(0, 0, 320, 60);
-    display.setFullWindow();
-    display.drawBitmap(0, 0, ScreenSaver_allArray[randomScreenSaver_], 320, 240, GxEPD_BLACK);
+    //EINK().getDisplay().setPartialWindow(0, 0, 320, 60);
+    EINK().getDisplay().setFullWindow();
+    EINK().getDisplay().fillScreen(GxEPD_WHITE);
+    EINK().getDisplay().drawBitmap(0, 0, ScreenSaver_allArray[randomScreenSaver_], 320, 240, GxEPD_BLACK);
     EINK().multiPassRefresh(2);
   }
   else {
@@ -871,79 +786,10 @@ void deepSleep(bool alternateScreenSaver) {
   }
 
   // Put E-Ink to sleep
-  display.hibernate();
+  EINK().getDisplay().hibernate();
 
-  // Save last state
-  prefs.begin("PocketMage", false);
-  prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
-  prefs.putString("editingFile", editingFile);
-  prefs.end();
       
   // Sleep the ESP32
   esp_deep_sleep_start();
 }
 
-void loadState(bool changeState) {
-  // LOAD PREFERENCES
-  prefs.begin("PocketMage", true); // Read-Only
-  // Misc
-  TIMEOUT           = prefs.getInt("TIMEOUT", 120);
-  DEBUG_VERBOSE     = prefs.getBool("DEBUG_VERBOSE", true);
-  SYSTEM_CLOCK      = prefs.getBool("SYSTEM_CLOCK", true);
-  SHOW_YEAR         = prefs.getBool("SHOW_YEAR", true);
-  SAVE_POWER        = prefs.getBool("SAVE_POWER", true);
-  ALLOW_NO_MICROSD  = prefs.getBool("ALLOW_NO_SD", false);
-  editingFile       = prefs.getString("editingFile", "");
-  HOME_ON_BOOT      = prefs.getBool("HOME_ON_BOOT", false);
-  OLED_BRIGHTNESS   = prefs.getInt("OLED_BRIGHTNESS", 255);
-  OLED_MAX_FPS      = prefs.getInt("OLED_MAX_FPS", 30);
-
-  // Update State (if needed)
-  if (changeState) {
-    u8g2.setContrast(OLED_BRIGHTNESS);
-
-    if (HOME_ON_BOOT) CurrentAppState = HOME;
-    else CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
-    
-    keypad.flush();
-
-    // Initialize boot app if needed
-    switch (CurrentAppState) {
-      case HOME:
-        newState = true;
-        break;
-      case TXT:
-        if (editingFile != "") loadFile(false);
-        else {
-          stringToVector("");
-        }
-        CurrentKBState  = NORMAL;
-        dynamicScroll = 0;
-        newLineAdded = true;
-        newState = false;
-        break;
-      case SETTINGS:
-        newState = true;
-        break;
-      case TASKS:
-        TASKS_INIT();
-        break;
-      case USB_APP:
-        CurrentAppState = HOME;
-        CurrentKBState  = NORMAL;
-        newState = true;
-        break;
-      case CALENDAR:
-        CALENDAR_INIT();
-        break;
-      case LEXICON:
-        LEXICON_INIT();
-        break;
-      case JOURNAL:
-        JOURNAL_INIT();
-        break;
-    }
-  }
-
-  prefs.end();
-}

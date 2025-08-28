@@ -158,9 +158,9 @@ void processKB_TXT_OLD() {
         if (currentLine.length() > 0) {
           int16_t x1, y1;
           uint16_t charWidth, charHeight;
-          display.getTextBounds(currentLine, 0, 0, &x1, &y1, &charWidth, &charHeight);
+          EINK().getDisplay().getTextBounds(currentLine, 0, 0, &x1, &y1, &charWidth, &charHeight);
 
-          if (charWidth >= display.width()-5) {
+          if (charWidth >= EINK().getDisplay().width()-5) {
             // If currentLine ends with a space, just start a new line
             if (currentLine.endsWith(" ")) {
               allLines.push_back(currentLine);
@@ -198,7 +198,7 @@ void processKB_TXT_OLD() {
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
-          display.fillScreen(GxEPD_WHITE);
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
         }
         else if (inchar >= '0' && inchar <= '9'){
           int fileIndex = (inchar == '0') ? 10 : (inchar - '0');
@@ -209,7 +209,7 @@ void processKB_TXT_OLD() {
               CurrentTXTState = WIZ3;
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
-              display.fillScreen(GxEPD_WHITE);
+              EINK().getDisplay().fillScreen(GxEPD_WHITE);
             }
             //Selected file exists, prompt to save current file
             else {      
@@ -218,7 +218,7 @@ void processKB_TXT_OLD() {
               CurrentTXTState = WIZ1;
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
-              display.fillScreen(GxEPD_WHITE);
+              EINK().getDisplay().fillScreen(GxEPD_WHITE);
             }
           }
           //Selected file is current file, return to editor
@@ -228,7 +228,7 @@ void processKB_TXT_OLD() {
             newLineAdded = true;
             currentWord = "";
             currentLine = "";
-            display.fillScreen(GxEPD_WHITE);
+            EINK().getDisplay().fillScreen(GxEPD_WHITE);
           }
 
         }
@@ -249,7 +249,7 @@ void processKB_TXT_OLD() {
           CurrentKBState = FUNC;
           EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
           newState = true;
-          display.fillScreen(GxEPD_WHITE);
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
         }
         else if (inchar >= '0' && inchar <= '9'){
           int numSelect = (inchar == '0') ? 10 : (inchar - '0');
@@ -263,7 +263,7 @@ void processKB_TXT_OLD() {
               CurrentKBState = NORMAL;
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
-              display.fillScreen(GxEPD_WHITE);
+              EINK().getDisplay().fillScreen(GxEPD_WHITE);
             }
             //File to be saved exists
             else {
@@ -279,7 +279,7 @@ void processKB_TXT_OLD() {
               newLineAdded = true;
               currentWord = "";
               currentLine = "";
-              display.fillScreen(GxEPD_WHITE);
+              EINK().getDisplay().fillScreen(GxEPD_WHITE);
             }
           }
           //NO  (don't save current file)
@@ -293,7 +293,7 @@ void processKB_TXT_OLD() {
             newLineAdded = true;
             currentWord = "";
             currentLine = "";
-            display.fillScreen(GxEPD_WHITE);
+            EINK().getDisplay().fillScreen(GxEPD_WHITE);
           }
         }
 
@@ -436,7 +436,7 @@ void processKB_TXT_OLD() {
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
-          display.fillScreen(GxEPD_WHITE);
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
         }
         else if (inchar >= '0' && inchar <= '9') {
           int fontIndex = (inchar == '0') ? 10 : (inchar - '0');
@@ -478,7 +478,7 @@ void processKB_TXT_OLD() {
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
-          display.fillScreen(GxEPD_WHITE);
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
         }
 
         currentMillis = millis();
@@ -499,9 +499,9 @@ void einkHandler_TXT_OLD() {
     switch (CurrentTXTState) {
       case TXT_:
         if (newState && doFull) {
-          display.setRotation(3);
-          display.setFullWindow();
-          display.fillScreen(GxEPD_WHITE);
+          EINK().getDisplay().setRotation(3);
+          EINK().getDisplay().setFullWindow();
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
           EINK().refresh();
         }
         if (newLineAdded && !newState) {
@@ -510,117 +510,117 @@ void einkHandler_TXT_OLD() {
         }
         break;
       case WIZ0:
-        display.setFullWindow();
+        EINK().getDisplay().setFullWindow();
         EINK().einkTextDynamic(true, true);      
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
-        display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
-        display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
-        display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
-        display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(0,EINK().getDisplay().height()-26,EINK().getDisplay().width(),26,GxEPD_WHITE);
+        EINK().getDisplay().drawRect(0,EINK().getDisplay().height()-20,EINK().getDisplay().width(),20,GxEPD_BLACK);
+        EINK().getDisplay().setCursor(4, EINK().getDisplay().height()-6);
+        //EINK().getDisplay().print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
+        EINK().getDisplay().drawBitmap(EINK().getDisplay().width()-30,EINK().getDisplay().height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
-        display.fillRect(60,0,200,218,GxEPD_WHITE);
-        display.drawBitmap(60,0,fileWizLiteallArray[0],200,218, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(60,0,200,218,GxEPD_WHITE);
+        EINK().getDisplay().drawBitmap(60,0,fileWizLiteallArray[0],200,218, GxEPD_BLACK);
 
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir(SPIFFS, "/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
-          display.setCursor(88, 54+(17*i));
-          display.print(filesList[i]);
+          EINK().getDisplay().setCursor(88, 54+(17*i));
+          EINK().getDisplay().print(filesList[i]);
         }
 
         EINK().refresh();
         CurrentKBState = FUNC;
         break;
       case WIZ1:
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
-        display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
-        display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
-        display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
-        display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(0,EINK().getDisplay().height()-26,EINK().getDisplay().width(),26,GxEPD_WHITE);
+        EINK().getDisplay().drawRect(0,EINK().getDisplay().height()-20,EINK().getDisplay().width(),20,GxEPD_BLACK);
+        EINK().getDisplay().setCursor(4, EINK().getDisplay().height()-6);
+        //EINK().getDisplay().print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
+        EINK().getDisplay().drawBitmap(EINK().getDisplay().width()-30,EINK().getDisplay().height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
-        display.fillRect(60,0,200,218,GxEPD_WHITE);
-        display.drawBitmap(60,0,fileWizLiteallArray[1],200,218, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(60,0,200,218,GxEPD_WHITE);
+        EINK().getDisplay().drawBitmap(60,0,fileWizLiteallArray[1],200,218, GxEPD_BLACK);
 
         EINK().refresh();
         CurrentKBState = FUNC;
         break;
       case WIZ2:
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
-        display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
-        display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
-        display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
-        display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(0,EINK().getDisplay().height()-26,EINK().getDisplay().width(),26,GxEPD_WHITE);
+        EINK().getDisplay().drawRect(0,EINK().getDisplay().height()-20,EINK().getDisplay().width(),20,GxEPD_BLACK);
+        EINK().getDisplay().setCursor(4, EINK().getDisplay().height()-6);
+        //EINK().getDisplay().print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
+        EINK().getDisplay().drawBitmap(EINK().getDisplay().width()-30,EINK().getDisplay().height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
-        display.fillRect(60,0,200,218,GxEPD_WHITE);
-        display.drawBitmap(60,0,fileWizLiteallArray[2],200,218, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(60,0,200,218,GxEPD_WHITE);
+        EINK().getDisplay().drawBitmap(60,0,fileWizLiteallArray[2],200,218, GxEPD_BLACK);
 
         EINK().refresh();
         CurrentKBState = NORMAL;
         break;
       case WIZ3:
-        display.setFullWindow();
+        EINK().getDisplay().setFullWindow();
         EINK().einkTextDynamic(true, true);      
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
-        display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
-        display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
-        display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
-        display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(0,EINK().getDisplay().height()-26,EINK().getDisplay().width(),26,GxEPD_WHITE);
+        EINK().getDisplay().drawRect(0,EINK().getDisplay().height()-20,EINK().getDisplay().width(),20,GxEPD_BLACK);
+        EINK().getDisplay().setCursor(4, EINK().getDisplay().height()-6);
+        //EINK().getDisplay().print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
+        EINK().getDisplay().drawBitmap(EINK().getDisplay().width()-30,EINK().getDisplay().height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
-        display.fillRect(60,0,200,218,GxEPD_WHITE);
-        display.drawBitmap(60,0,fileWizLiteallArray[3],200,218, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(60,0,200,218,GxEPD_WHITE);
+        EINK().getDisplay().drawBitmap(60,0,fileWizLiteallArray[3],200,218, GxEPD_BLACK);
 
         EINK().refresh();
         CurrentKBState = NORMAL;
         break;
       case FONT:
-        display.setFullWindow();
+        EINK().getDisplay().setFullWindow();
         EINK().einkTextDynamic(true, true);      
         
         EINK().drawStatusBar("Select a Font (0-9)");
 
-        display.fillRect(60,0,200,218,GxEPD_WHITE);
-        display.drawBitmap(60,0,fontfont0,200,218, GxEPD_BLACK);
+        EINK().getDisplay().fillRect(60,0,200,218,GxEPD_WHITE);
+        EINK().getDisplay().drawBitmap(60,0,fontfont0,200,218, GxEPD_BLACK);
 
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir(SPIFFS, "/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < 7; i++) {
-          display.setCursor(88, 54+(17*i));
+          EINK().getDisplay().setCursor(88, 54+(17*i));
           switch (i) {
             case 0:
-              display.setFont(&FreeMonoBold9pt7b);
+              EINK().setTXTFont(&FreeMonoBold9pt7b);
               break;
             case 1:
-              display.setFont(&FreeSans9pt7b);
+              EINK().setTXTFont(&FreeSans9pt7b);
               break;
             case 2:
-              display.setFont(&FreeSerif9pt7b);
+              EINK().setTXTFont(&FreeSerif9pt7b);
               break;
             case 3:
-              display.setFont(&FreeSerifBold9pt7b);
+              EINK().setTXTFont(&FreeSerifBold9pt7b);
               break;
             case 4:
-              display.setFont(&FreeMono12pt7b);
+              EINK().setTXTFont(&FreeMono12pt7b);
               break;
             case 5:
-              display.setFont(&FreeSans12pt7b);
+              EINK().setTXTFont(&FreeSans12pt7b);
               break;
             case 6:
-              display.setFont(&FreeSerif12pt7b);
+              EINK().setTXTFont(&FreeSerif12pt7b);
               break;
           }
-          display.print("Font Number " + String(i+1));
+          EINK().getDisplay().print("Font Number " + String(i+1));
         }
 
         EINK().refresh();

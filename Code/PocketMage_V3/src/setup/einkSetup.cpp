@@ -13,12 +13,14 @@ static PocketmageEink eink(display);
 
 // Setup for Eink Class
 void setupEink() {
+
   wireEink();
-  display.init(115200);
-  display.setRotation(3);
-  display.setTextColor(GxEPD_BLACK);
-  display.setFullWindow();
+  EINK().getDisplay().init(115200);
+  EINK().getDisplay().setRotation(3);
+  EINK().getDisplay().setTextColor(GxEPD_BLACK);
+  EINK().getDisplay().setFullWindow();
   EINK().setTXTFont(&FreeMonoBold9pt7b); // default font, computeFontMetrics_()
+  newState = 1;
 
   xTaskCreatePinnedToCore(
     einkHandler,             // Function name

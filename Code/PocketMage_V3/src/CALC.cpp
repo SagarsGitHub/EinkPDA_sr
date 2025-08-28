@@ -6,6 +6,7 @@
 // `88b    ooo   .8'     `888.   888       o `88b    ooo //
 //  `Y8bood8P'  o88o     o8888o o888ooooood8  `Y8bood8P' // 
 #include <pocketmage.h>
+
 static String currentLine = "";
 static String currentWord = "";
 static volatile bool doFull = false;
@@ -196,12 +197,11 @@ void closeCalc(AppState newAppState){
   frames.clear();
   frames.push_back(&calcScreen);
   if (CurrentCALCState == CALC3){
-    CurrentCALCState == CALC0;
+    CurrentCALCState = CALC0;
   }
   // essential to display next app correctly 
-  display.setFullWindow();
-
-  display.fillScreen(GxEPD_WHITE);
+  EINK().getDisplay().setFullWindow();
+  EINK().getDisplay().fillScreen(GxEPD_WHITE);
   u8g2.clearBuffer();
   dynamicScroll = 0;
   prev_dynamicScroll = -1;
@@ -214,16 +214,16 @@ void closeCalc(AppState newAppState){
     newState        = true;
     CurrentKBState  = NORMAL; 
     disableTimeout = false;
-    EINK().refresh(); 
   }
 }
 
 // CALC FRAME
 void drawCalc(){
   // SET FONT
+  EINK().getDisplay().setFullWindow();
   EINK().setTXTFont(EINK().getCurrentFont());
-  display.setFullWindow();
-  display.firstPage();
+  Serial.println("drawing calc!");
+  EINK().getDisplay().firstPage();
   do {
     // print status bar
     if (CurrentCALCState == CALC4){
@@ -232,51 +232,52 @@ void drawCalc(){
       EINK().drawStatusBar("\"/4\" -> info | \"/6\" -> EXIT");
     }
     // draw calc bitmap
-    display.drawBitmap(0, 0, calcAllArray[0], 320, 218, GxEPD_BLACK);
+
+    EINK().getDisplay().drawBitmap(0, 0, calcAllArray[0], 320, 218, GxEPD_BLACK);
     // print current calc mode
-    display.setCursor(25, 20);
+    EINK().getDisplay().setCursor(25, 20);
     switch (CurrentCALCState) {
       case CALC0:      
         //standard mode
-        display.print("Calc: Standard");
+        EINK().getDisplay().print("Calc: Standard");
         break;
       case CALC1:
         //programming mode
-        display.print("Calc: Programming");
+        EINK().getDisplay().print("Calc: Programming");
         break;
       case CALC2:
         //scientific mode
-        display.print("Calc: Scientific");
+        EINK().getDisplay().print("Calc: Scientific");
         break;
       case CALC3:
         //conversions
-        display.print("Calc: Conversions");
+        EINK().getDisplay().print("Calc: Conversions");
         break;
       case CALC4:
         //help mode
-        display.print("Calc: Help");
+        EINK().getDisplay().print("Calc: Help");
         break;  
     }
     // print current trig mode
-    display.setCursor(240, 20);
+    EINK().getDisplay().setCursor(240, 20);
     if (!(CurrentCALCState == CALC4)){
     switch (trigType){
       // 0 = degree mode
       case (0):
-        display.print("deg");
+        EINK().getDisplay().print("deg");
       break;
       // 1 = radian mode
       case (1):
-        display.print("rad");
+        EINK().getDisplay().print("rad");
       break;
       // 2 = gradian mode
       case (2):
-        display.print("gon");
+        EINK().getDisplay().print("gon");
       break;
     }
   }
-  } while (display.nextPage());
-  
+  } while (EINK().getDisplay().nextPage());
+  Serial.println("done drawing calc!");
 }
 #pragma endregion
 
@@ -996,11 +997,11 @@ void printAnswer(String cleanExpression,const Unit *convA,const Unit *convB) {
   int16_t x1, y1;
   uint16_t exprWidth, resultWidth, charHeight;
   String resultOutput = "";
-  int maxWidth = display.width();
+  int maxWidth = EINK().getDisplay().width();
   int result = calculate(cleanExpression, resultOutput,convA,convB);
 
   // Set font before measuring text
-  display.setFont(EINK().getCurrentFont());
+  EINK().setTXTFont(EINK().getCurrentFont());
   if (CurrentCALCState == CALC3 && convA && convB){
     // Non-breaking space keeps value and unit together during wrapping
     const char* SP = " ";
@@ -1027,8 +1028,8 @@ void calcCRInput(){
         // programming mode
         CurrentCALCState = CALC0;
         OLED().oledWord("Programming Mode not implemented"); 
-        calcSwitchedStates = 1;
         delay(1000);
+        calcSwitchedStates = 1;
     }
     else if (currentLine == "/2"){
         // scientific mode
@@ -1051,6 +1052,7 @@ void calcCRInput(){
     else if (currentLine == "/5") {
         // write current file to text
         OLED().oledWord("Exporting Data to TXT!");
+        delay(1000);
 
         // CHANGED: copy from source into a vector
         allLines = sourceToVector(CurrentFrameState->source);
@@ -1118,6 +1120,7 @@ void calcCRInput(){
 // CALC INITIALIZETION
 void CALC_INIT() {
   // open calc
+  Serial.println("Initializing CALC!");
   CurrentAppState = CALC;
   CurrentKBState = FUNC;
   CurrentCALCState = CALC0;
@@ -1237,10 +1240,10 @@ void processKB_CALC() {
             calcClear();
             currentLine = "";
             OLED().oledWord("Clearing...");
+            delay(500);
             drawCalc();
             //Serial.println("In CALC3 Mode calling frames");
             einkFramesDynamic(frames,false);
-            display.refresh();
             delay(300);
           }
         }
@@ -1379,9 +1382,9 @@ void processKB_CALC() {
           calcClear();
           currentLine = "";
           OLED().oledWord("Clearing...");
+          delay(500);
           drawCalc();
           einkFramesDynamic(frames,false);
-          display.refresh();
           delay(300);
         }
         // LEFT (scroll up)
@@ -1428,6 +1431,7 @@ void processKB_CALC() {
           calcClear();
           currentLine = "";
           OLED().oledWord("Clearing...");
+          delay(500);
           drawCalc();
           einkFramesDynamic(frames,false);
           delay(300);
@@ -1518,7 +1522,7 @@ void processKB_CALC() {
 
           // REFRESH SCREEN
 
-          EINK().refresh();
+          EINK().getDisplay().refresh();
           drawCalc();
           einkFramesDynamic(frames,true);
 
@@ -1528,6 +1532,7 @@ void processKB_CALC() {
         if (currentMillis - OLEDFPSMillis >= 16) {
           OLEDFPSMillis = currentMillis;
           OLED().oledLine(currentWord, false);
+
         }
 
         break;
@@ -1585,26 +1590,28 @@ void einkHandler_CALC() {
       }
       drawCalc();
       newLineAdded = true;
-      einkFramesDynamic(frames,true);
+      einkFramesDynamic(frames,false);
       
     } else {
+
       switch (CurrentCALCState) {
         case CALC0:
           //standard mode
           if (newState && doFull) { 
+            EINK().setFastFullRefresh(false);
             drawCalc();
             einkFramesDynamic(frames,false);
-            //refresh();
             doFull = false;
           } else if (newLineAdded && !newState) {
             refresh_count++;
             if (refresh_count > REFRESH_MAX_CALC){
+              EINK().getDisplay().setFullWindow();
               drawCalc(); 
-              EINK().setFastFullRefresh(false);
+              EINK().setFastFullRefresh(true);
               einkFramesDynamic(frames,true);
               refresh_count = 0;
             } else {
-              einkFramesDynamic(frames,true);
+              einkFramesDynamic(frames,false);
             }
             EINK().setFastFullRefresh(true);
           } else if (newState && !newLineAdded) {
@@ -1618,7 +1625,7 @@ void einkHandler_CALC() {
           //scientific mode
           if (newState && doFull) { 
             drawCalc();
-            einkFramesDynamic(frames,true);
+            einkFramesDynamic(frames,false);
             //refresh();
             doFull = false;
           } else if (newLineAdded && !newState) {
@@ -1629,7 +1636,7 @@ void einkHandler_CALC() {
               einkFramesDynamic(frames,true);
               refresh_count = 0;
             } else {
-              einkFramesDynamic(frames,true);
+              einkFramesDynamic(frames,false);
             }
             EINK().setFastFullRefresh(true);
           } else if (newState && !newLineAdded) {
@@ -1641,7 +1648,7 @@ void einkHandler_CALC() {
           if (newState && doFull) { 
             drawCalc();
             //Serial.println("In CALC3 Mode calling frames");
-            einkFramesDynamic(frames,true);
+            einkFramesDynamic(frames,false);
             //refresh();
             doFull = false;
           } else if (newLineAdded && !newState) {
@@ -1654,7 +1661,7 @@ void einkHandler_CALC() {
               refresh_count = 0;
             } else {
               //Serial.println("In CALC3 Mode calling frames");
-              einkFramesDynamic(frames,true);
+              einkFramesDynamic(frames,false);
             }
             EINK().setFastFullRefresh(true);
           } else if (newState && !newLineAdded) {
@@ -1684,28 +1691,28 @@ void einkHandler_CALC() {
           }
           break;
         case CALCFONT:
-          display.firstPage();
+          EINK().getDisplay().firstPage();
           do {
             // false avoids full refresh
             EINK().einkTextDynamic(true, false);      
-            display.setPartialWindow(60, 0, 200, 218);
+            EINK().getDisplay().setPartialWindow(60, 0, 200, 218);
             EINK().drawStatusBar("Select a Font (0-9)");
-            display.fillRect(60, 0, 200, 218, GxEPD_WHITE);
-            display.drawBitmap(60, 0, fontfont0, 200, 218, GxEPD_BLACK);
+            EINK().getDisplay().fillRect(60, 0, 200, 218, GxEPD_WHITE);
+            EINK().getDisplay().drawBitmap(60, 0, fontfont0, 200, 218, GxEPD_BLACK);
             for (int i = 0; i < 7; i++) {
-              display.setCursor(88, 54 + (17 * i));
+              EINK().getDisplay().setCursor(88, 54 + (17 * i));
               switch (i) {
-                case 0: display.setFont(&FreeMonoBold9pt7b); break;
-                case 1: display.setFont(&FreeSans9pt7b); break;
-                case 2: display.setFont(&FreeSerif9pt7b); break;
-                case 3: display.setFont(&FreeSerifBold9pt7b); break;
-                case 4: display.setFont(&FreeMono12pt7b); break;
-                case 5: display.setFont(&FreeSans12pt7b); break;
-                case 6: display.setFont(&FreeSerif12pt7b); break;
+                case 0: EINK().setTXTFont(&FreeMonoBold9pt7b); break;
+                case 1: EINK().setTXTFont(&FreeSans9pt7b); break;
+                case 2: EINK().setTXTFont(&FreeSerif9pt7b); break;
+                case 3: EINK().setTXTFont(&FreeSerifBold9pt7b); break;
+                case 4: EINK().setTXTFont(&FreeMono12pt7b); break;
+                case 5: EINK().setTXTFont(&FreeSans12pt7b); break;
+                case 6: EINK().setTXTFont(&FreeSerif12pt7b); break;
               }
-              display.print("Font Number " + String(i + 1));
+              EINK().getDisplay().print("Font Number " + String(i + 1));
             }
-          } while (display.nextPage());
+          } while (EINK().getDisplay().nextPage());
           CurrentKBState = FUNC;
           newState = false;
           newLineAdded = false;

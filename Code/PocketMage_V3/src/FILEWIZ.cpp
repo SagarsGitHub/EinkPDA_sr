@@ -306,81 +306,88 @@ void einkHandler_FILEWIZ() {
     case WIZ0_:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
-
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().firstPage();
+        do {
         // DRAW APP
+        EINK().setFastFullRefresh(false);
         EINK().drawStatusBar("Select a File (0-9)");
-        display.drawBitmap(0, 0, fileWizardallArray[0], 320, 218, GxEPD_BLACK);
+        EINK().getDisplay().drawBitmap(0, 0, fileWizardallArray[0], 320, 218, GxEPD_BLACK);
 
         // DRAW FILE LIST
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir(SPIFFS, "/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
-          display.setCursor(30, 54+(17*i));
-          display.print(filesList[i]);
+          EINK().getDisplay().setCursor(30, 54+(17*i));
+          EINK().getDisplay().print(filesList[i]);
         }
+        } while (EINK().getDisplay().nextPage());
 
-        EINK().refresh();
       }
       break;
     case WIZ1_:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
         // DRAW APP
+        EINK().getDisplay().firstPage();
+        do {
         EINK().drawStatusBar("- " + workingFile);
-        display.drawBitmap(0, 0, fileWizardallArray[1], 320, 218, GxEPD_BLACK);
+        EINK().getDisplay().drawBitmap(0, 0, fileWizardallArray[1], 320, 218, GxEPD_BLACK);
 
-        EINK().refresh();
+        } while (EINK().getDisplay().nextPage());
       }
       break;
     case WIZ1_YN:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
         // DRAW APP
+        EINK().getDisplay().firstPage();
+        do {
         EINK().drawStatusBar("DEL:" + workingFile + "?(Y/N)");
-        display.drawBitmap(0, 0, fileWizardallArray[1], 320, 218, GxEPD_BLACK);
-
-        EINK().refresh();
+        EINK().getDisplay().drawBitmap(0, 0, fileWizardallArray[1], 320, 218, GxEPD_BLACK);
+        } while (EINK().getDisplay().nextPage());
       }
       break;
     case WIZ2_R:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
         // DRAW APP
+        EINK().getDisplay().firstPage();
+        do {
         EINK().drawStatusBar("Enter New Filename:");
-        display.drawBitmap(0, 0, fileWizardallArray[2], 320, 218, GxEPD_BLACK);
-
-        EINK().refresh();
+        EINK().getDisplay().drawBitmap(0, 0, fileWizardallArray[2], 320, 218, GxEPD_BLACK);
+        } while (EINK().getDisplay().nextPage());
       }
       break;
     case WIZ2_C:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().getDisplay().setRotation(3);
+        EINK().getDisplay().setFullWindow();
+        EINK().getDisplay().fillScreen(GxEPD_WHITE);
 
         // DRAW APP
+        EINK().getDisplay().firstPage();
+        do {
         EINK().drawStatusBar("Enter Name For Copy:");
-        display.drawBitmap(0, 0, fileWizardallArray[2], 320, 218, GxEPD_BLACK);
-
-        EINK().refresh();
+        EINK().getDisplay().drawBitmap(0, 0, fileWizardallArray[2], 320, 218, GxEPD_BLACK);
+        } while (EINK().getDisplay().nextPage());
       }
       break;
   }
