@@ -1153,6 +1153,7 @@ void CALC_INIT() {
 }
 // KB HANDLER
 void processKB_CALC() {
+
   if (OLEDPowerSave) {
     u8g2.setPowerSave(0);
     OLEDPowerSave = false;
@@ -1182,11 +1183,10 @@ void processKB_CALC() {
 
       // CONVERSIONS MODE 
       case CALC3:
-
         // HANDLE INPUTS
         // no char recieved
         if (inchar == 0);  
-        else if (inchar == 12) {
+        else if (inchar == 8) {
           if (currentLine.length() > 0) {
             currentLine.remove(currentLine.length() - 1);
           }
@@ -1248,8 +1248,10 @@ void processKB_CALC() {
           }
         }
         // LEFT (scroll up)
-        else if (inchar == 19 || inchar == 5) {
+        else if (inchar == 19 || inchar == 12) {
+          Serial.println("Pressed LEFT in CALC3!");
           if (CurrentFrameState != &conversionFrameA){
+            Serial.println("Switching to frame A!");
             CurrentFrameState->bottom = CurrentFrameState->origBottom;
             CurrentFrameState = &conversionFrameA;
             dynamicScroll = CurrentFrameState->scroll;
@@ -1281,7 +1283,7 @@ void processKB_CALC() {
         //SAVE Recieved (no plan to save calculations)
         else if (inchar == 6) {}
         //LOAD Recieved (no plan to load calculations)
-        else if (inchar == 5) {}
+        else if (inchar == 12) {}
         //FILE Recieved (switch to unit types tab)
         else if (inchar == 7) {
           if (CurrentFrameState != &conversionUnit){
@@ -1336,7 +1338,7 @@ void processKB_CALC() {
         // HANDLE INPUTS
         // no char recieved
         if (inchar == 0);  
-        else if (inchar == 12) {
+        else if (inchar == 8) {
           if (currentLine.length() > 0) {
             currentLine.remove(currentLine.length() - 1);
           }
@@ -1388,7 +1390,7 @@ void processKB_CALC() {
           delay(300);
         }
         // LEFT (scroll up)
-        else if (inchar == 19 || inchar == 5) {
+        else if (inchar == 19 || inchar == 12) {
           if (dynamicScroll < CurrentFrameState->source->size() - (9 + SCROLL_MAX)){
              dynamicScroll += SCROLL_MAX;
           } else if (dynamicScroll < CurrentFrameState->source->size() - (9 + SCROLL_MED)){
@@ -1425,7 +1427,7 @@ void processKB_CALC() {
         //SAVE Recieved (no plan to save calculations)
         else if (inchar == 6) {}
         //LOAD Recieved (no plan to load calculations)
-        else if (inchar == 5) {}
+        else if (inchar == 13) {}
         //FILE Recieved 
         else if (inchar == 7) {
           calcClear();
@@ -1468,7 +1470,7 @@ void processKB_CALC() {
         //No char recieved
         if (inchar == 0);
         //BKSP Recieved
-        else if (inchar == 12 || inchar == 8) {                  
+        else if (inchar == 8) {                  
           CurrentCALCState = CALC0;
           CurrentKBState = NORMAL;
           newLineAdded = false;
