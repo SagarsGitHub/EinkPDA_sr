@@ -50,7 +50,7 @@ void USBAppShutdown() {
       OLED().oledWord("Insert SD Card and Reboot!");
       delay(5000);
       u8g2.setPowerSave(1);
-      BZ().playJingle(Jingle::Shutdown);
+      BZ().playJingle(Jingles::Shutdown);
       esp_deep_sleep_start();
       return;
     }

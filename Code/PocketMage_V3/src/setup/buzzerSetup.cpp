@@ -6,7 +6,7 @@ static PocketmageBZ bz(buzzer);
 
 // Setup for Buzzer Class
 void setupBZ() {
-  BZ().playJingle(Jingle::Startup);
+  BZ().playJingle(Jingles::Startup);
 }
 
 

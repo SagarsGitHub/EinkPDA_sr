@@ -26,7 +26,7 @@ void setupSD() {
       // Put OLED to sleep
       u8g2.setPowerSave(1);
       // Shut Down Jingle
-      BZ().playJingle(Jingle::Shutdown);
+      BZ().playJingle(Jingles::Shutdown);
       // Sleep
       esp_deep_sleep_start();
       return;

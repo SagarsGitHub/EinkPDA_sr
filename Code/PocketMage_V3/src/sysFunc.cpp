@@ -741,7 +741,7 @@ void checkTimeout() {
         display.hibernate();
         
         //Sleep the device
-        BZ().playJingle(Jingle::Shutdown);
+        BZ().playJingle(Jingles::Shutdown);
         esp_deep_sleep_start();
       }
   }
@@ -776,7 +776,7 @@ void checkTimeout() {
       newState = true;
       
       // Shutdown Jingle
-      BZ().playJingle(Jingle::Shutdown);
+      BZ().playJingle(Jingles::Shutdown);
 
       // Clear screen
       display.setFullWindow();
@@ -833,7 +833,7 @@ void checkTimeout() {
     EINK().forceSlowFullUpdate(true);
 
     // Play startup jingle
-    BZ().playJingle(Jingle::Startup);
+    BZ().playJingle(Jingles::Startup);
 
     EINK().refresh();
     delay(200);
@@ -852,7 +852,7 @@ void deepSleep(bool alternateScreenSaver) {
   }
   
   // Shutdown Jingle
-  BZ().playJingle(Jingle::Shutdown);
+  BZ().playJingle(Jingles::Shutdown);
 
   if (alternateScreenSaver == false) {
     int numScreensavers = sizeof(ScreenSaver_allArray) / sizeof(ScreenSaver_allArray[0]);
