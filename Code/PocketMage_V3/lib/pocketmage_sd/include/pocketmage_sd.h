@@ -39,6 +39,7 @@ public:
   void deleteFile(fs::FS &fs, const char *path);
 
 private:
+  static constexpr const char*  tag               = "MAGE_SD";
   fs::FS*                       fileSys_          = nullptr;    // class reference to sd file system object
 
   PocketmageOled*               oled_             = nullptr;

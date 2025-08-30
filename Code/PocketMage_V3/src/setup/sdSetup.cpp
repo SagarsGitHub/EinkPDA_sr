@@ -1,5 +1,6 @@
 #include <pocketmage.h>
 
+static constexpr const char* TAG = "SD";
 
 // Initialization of sd class
 static PocketmageSD sd;
@@ -12,7 +13,8 @@ static PocketmageSD sd;
 void setupSD() {
   SD_MMC.setPins(SD_CLK, SD_CMD, SD_D0);
   if (!SD_MMC.begin("/sdcard", true) || SD_MMC.cardType() == CARD_NONE) {
-    Serial.println("MOUNT FAILED");
+    ESP_LOGE(TAG, "MOUNT FAILED");
+
     OLED().oledWord("SD Card Not Detected!");
     delay(2000);
     if (ALLOW_NO_MICROSD) {

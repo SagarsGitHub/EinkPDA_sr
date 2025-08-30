@@ -11,145 +11,169 @@
 // Font includes
 // Mono
 #include <Fonts/FreeMono9pt7b.h>
-#include <Fonts/FreeMonoBold9pt7b.h>
-#include <Fonts/FreeMonoOblique9pt7b.h>
-#include <Fonts/FreeMonoBoldOblique9pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
 #include <Fonts/FreeMonoBold18pt7b.h>
 #include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
 #include <Fonts/FreeMonoBoldOblique12pt7b.h>
 #include <Fonts/FreeMonoBoldOblique18pt7b.h>
 #include <Fonts/FreeMonoBoldOblique24pt7b.h>
+#include <Fonts/FreeMonoBoldOblique9pt7b.h>
+#include <Fonts/FreeMonoOblique9pt7b.h>
 
 // Serif
 #include <Fonts/FreeSerif9pt7b.h>
-#include <Fonts/FreeSerifBold9pt7b.h>
-#include <Fonts/FreeSerifItalic9pt7b.h>
-#include <Fonts/FreeSerifBoldItalic9pt7b.h>
 #include <Fonts/FreeSerifBold12pt7b.h>
 #include <Fonts/FreeSerifBold18pt7b.h>
 #include <Fonts/FreeSerifBold24pt7b.h>
+#include <Fonts/FreeSerifBold9pt7b.h>
 #include <Fonts/FreeSerifBoldItalic12pt7b.h>
 #include <Fonts/FreeSerifBoldItalic18pt7b.h>
 #include <Fonts/FreeSerifBoldItalic24pt7b.h>
+#include <Fonts/FreeSerifBoldItalic9pt7b.h>
+#include <Fonts/FreeSerifItalic9pt7b.h>
 
 // Sans
 #include <Fonts/FreeSans9pt7b.h>
-#include <Fonts/FreeSansBold9pt7b.h>
-#include <Fonts/FreeSansOblique9pt7b.h>
-#include <Fonts/FreeSansBoldOblique9pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
 #include <Fonts/FreeSansBold18pt7b.h>
 #include <Fonts/FreeSansBold24pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeSansBoldOblique12pt7b.h>
 #include <Fonts/FreeSansBoldOblique18pt7b.h>
 #include <Fonts/FreeSansBoldOblique24pt7b.h>
+#include <Fonts/FreeSansBoldOblique9pt7b.h>
+#include <Fonts/FreeSansOblique9pt7b.h>
 
-
+#include "esp32-hal-log.h"
+#include "esp_log.h"
 
 // ------------------ General ------------------
 enum TXTState_NEW { TXT_, WIZ0, WIZ1, WIZ2, WIZ3, FONT };
 TXTState_NEW CurrentTXTState_NEW = TXT_;
 
-#define TYPE_INTERFACE_TIMEOUT 5000 // ms
-#define SCROLL_LINE_OFFSET     3    // lines
+#define TYPE_INTERFACE_TIMEOUT 5000  // ms
+#define SCROLL_LINE_OFFSET 3         // lines
 
 // ------------------ Fonts ------------------
-#define SPECIAL_PADDING      20  // Padding for lists, code blocks, quote blocks
-#define SPACEWIDTH_SYMBOL    "n" // n is roughly the width of a space
-#define WORDWIDTH_BUFFER     0   // Add extra spacing to each word
-#define DISPLAY_WIDTH_BUFFER 0   // Add margin for text wrap calc
-#define HEADING_LINE_PADDING 8   // Padding between each line
-#define NORMAL_LINE_PADDING  2   
+#define SPECIAL_PADDING 20      // Padding for lists, code blocks, quote blocks
+#define SPACEWIDTH_SYMBOL "n"   // n is roughly the width of a space
+#define WORDWIDTH_BUFFER 0      // Add extra spacing to each word
+#define DISPLAY_WIDTH_BUFFER 0  // Add margin for text wrap calc
+#define HEADING_LINE_PADDING 8  // Padding between each line
+#define NORMAL_LINE_PADDING 2
 
 enum FontFamily { serif = 0, sans = 1, mono = 2 };
 uint8_t fontStyle = sans;
 
 struct FontMap {
-    const GFXfont* normal;
-    const GFXfont* normal_B;
-    const GFXfont* normal_I;
-    const GFXfont* normal_BI;
+  const GFXfont* normal;
+  const GFXfont* normal_B;
+  const GFXfont* normal_I;
+  const GFXfont* normal_BI;
 
-    const GFXfont* h1;
-    const GFXfont* h1_B;
-    const GFXfont* h1_I;
-    const GFXfont* h1_BI;
+  const GFXfont* h1;
+  const GFXfont* h1_B;
+  const GFXfont* h1_I;
+  const GFXfont* h1_BI;
 
-    const GFXfont* h2;
-    const GFXfont* h2_B;
-    const GFXfont* h2_I;
-    const GFXfont* h2_BI;
+  const GFXfont* h2;
+  const GFXfont* h2_B;
+  const GFXfont* h2_I;
+  const GFXfont* h2_BI;
 
-    const GFXfont* h3;
-    const GFXfont* h3_B;
-    const GFXfont* h3_I;
-    const GFXfont* h3_BI;
+  const GFXfont* h3;
+  const GFXfont* h3_B;
+  const GFXfont* h3_I;
+  const GFXfont* h3_BI;
 
-    const GFXfont* code;
-    const GFXfont* code_B;
-    const GFXfont* code_I;
-    const GFXfont* code_BI;
+  const GFXfont* code;
+  const GFXfont* code_B;
+  const GFXfont* code_I;
+  const GFXfont* code_BI;
 
-    const GFXfont* quote;
-    const GFXfont* quote_B;
-    const GFXfont* quote_I;
-    const GFXfont* quote_BI;
+  const GFXfont* quote;
+  const GFXfont* quote_B;
+  const GFXfont* quote_I;
+  const GFXfont* quote_BI;
 
-    const GFXfont* list;
-    const GFXfont* list_B;
-    const GFXfont* list_I;
-    const GFXfont* list_BI;
+  const GFXfont* list;
+  const GFXfont* list_B;
+  const GFXfont* list_I;
+  const GFXfont* list_BI;
 };
 
 FontMap fonts[3];
 
-void setFontStyle(FontFamily f) { fontStyle = f; }
+void setFontStyle(FontFamily f) {
+  fontStyle = f;
+}
 
 const GFXfont* pickFont(char style, bool bold, bool italic) {
-  FontMap &fm = fonts[fontStyle];  // currently active family
+  FontMap& fm = fonts[fontStyle];  // currently active family
 
   switch (style) {
-    case '1': // H1
-      if (bold && italic) return fm.h1_BI;
-      if (bold) return fm.h1_B;
-      if (italic) return fm.h1_I;
+    case '1':  // H1
+      if (bold && italic)
+        return fm.h1_BI;
+      if (bold)
+        return fm.h1_B;
+      if (italic)
+        return fm.h1_I;
       return fm.h1;
 
-    case '2': // H2
-      if (bold && italic) return fm.h2_BI;
-      if (bold) return fm.h2_B;
-      if (italic) return fm.h2_I;
+    case '2':  // H2
+      if (bold && italic)
+        return fm.h2_BI;
+      if (bold)
+        return fm.h2_B;
+      if (italic)
+        return fm.h2_I;
       return fm.h2;
 
-    case '3': // H3
-      if (bold && italic) return fm.h3_BI;
-      if (bold) return fm.h3_B;
-      if (italic) return fm.h3_I;
+    case '3':  // H3
+      if (bold && italic)
+        return fm.h3_BI;
+      if (bold)
+        return fm.h3_B;
+      if (italic)
+        return fm.h3_I;
       return fm.h3;
 
-    case '>': // Quote
-      if (bold && italic) return fm.quote_BI;
-      if (bold) return fm.quote_B;
-      if (italic) return fm.quote_I;
+    case '>':  // Quote
+      if (bold && italic)
+        return fm.quote_BI;
+      if (bold)
+        return fm.quote_B;
+      if (italic)
+        return fm.quote_I;
       return fm.quote;
 
-    case '-': // List
-      if (bold && italic) return fm.list_BI;
-      if (bold) return fm.list_B;
-      if (italic) return fm.list_I;
+    case '-':  // List
+      if (bold && italic)
+        return fm.list_BI;
+      if (bold)
+        return fm.list_B;
+      if (italic)
+        return fm.list_I;
       return fm.list;
 
-    case 'C': // Code
-      if (bold && italic) return fm.code_BI;
-      if (bold) return fm.code_B;
-      if (italic) return fm.code_I;
+    case 'C':  // Code
+      if (bold && italic)
+        return fm.code_BI;
+      if (bold)
+        return fm.code_B;
+      if (italic)
+        return fm.code_I;
       return fm.code;
 
-    default: // Normal
-      if (bold && italic) return fm.normal_BI;
-      if (bold) return fm.normal_B;
-      if (italic) return fm.normal_I;
+    default:  // Normal
+      if (bold && italic)
+        return fm.normal_BI;
+      if (bold)
+        return fm.normal_B;
+      if (italic)
+        return fm.normal_I;
       return fm.normal;
   }
 }
@@ -174,39 +198,41 @@ struct LineObject {
 
 // Document Line object
 struct DocLine {
-  char style;                                        // Markdown style: '1', '2', '3', '>', '-', etc.
-  String line;                                       // Raw line content
-  std::vector<wordObject> words;                     // Parsed words with formatting
-  std::vector<LineObject> lines;                     // split into line objects
-  
+  char style;                     // Markdown style: '1', '2', '3', '>', '-', etc.
+  String line;                    // Raw line content
+  std::vector<wordObject> words;  // Parsed words with formatting
+  std::vector<LineObject> lines;  // split into line objects
+
   // Parse the line into wordObjects
   void parseWords() {
     words.clear();
     int i = 0;
     while (i < line.length()) {
-      if (line[i] == '*' && i+1 < line.length() && line[i+1] == '*') {
+      if (line[i] == '*' && i + 1 < line.length() && line[i + 1] == '*') {
         // Bold **...**
         int end = line.indexOf("**", i + 2);
-        if (end == -1) end = line.length();
+        if (end == -1)
+          end = line.length();
         String segment = line.substring(i + 2, end);
         splitIntoWords(segment, true, false);
         i = end + 2;
-      } 
-      else if (line[i] == '*') {
+      } else if (line[i] == '*') {
         // Italic *...*
         int end = line.indexOf("*", i + 1);
-        if (end == -1) end = line.length();
+        if (end == -1)
+          end = line.length();
         String segment = line.substring(i + 1, end);
         splitIntoWords(segment, false, true);
         i = end + 1;
-      } 
-      else {
+      } else {
         // Normal text until next * or **
         int nextBold = line.indexOf("**", i);
         int nextItalic = line.indexOf("*", i);
         int end = line.length();
-        if (nextBold >= 0) end = min(end, nextBold);
-        if (nextItalic >= 0) end = min(end, nextItalic);
+        if (nextBold >= 0)
+          end = min(end, nextBold);
+        if (nextItalic >= 0)
+          end = min(end, nextItalic);
         String segment = line.substring(i, end);
         splitIntoWords(segment, false, false);
         i = end;
@@ -226,8 +252,8 @@ struct DocLine {
     LineObject currentLine;
     int lineWidth = 0;
 
-    for (auto &w : words) {
-      const GFXfont *font = pickFont(style, w.bold, w.italic);
+    for (auto& w : words) {
+      const GFXfont* font = pickFont(style, w.bold, w.italic);
       display.setFont(font);
 
       int16_t x1, y1;
@@ -238,7 +264,8 @@ struct DocLine {
       display.getTextBounds(SPACEWIDTH_SYMBOL, 0, 0, &x1, &y1, (uint16_t*)&spaceWidth, &hpx);
 
       // Calculate width for this word plus space
-      int addWidth = wpx + spaceWidth + WORDWIDTH_BUFFER; // IDK why 12 makes the text wrap work perfectly...
+      int addWidth =
+          wpx + spaceWidth + WORDWIDTH_BUFFER;  // IDK why 12 makes the text wrap work perfectly...
 
       // If the word doesn't fit, start a new line
       if (lineWidth > 0 && (lineWidth + addWidth > textWidth)) {
@@ -263,17 +290,20 @@ struct DocLine {
     ulong offsetLineScroll = 0;
     if (lineScroll <= SCROLL_LINE_OFFSET) {
       offsetLineScroll = 0;
-    }
-    else offsetLineScroll = lineScroll - SCROLL_LINE_OFFSET;
+    } else
+      offsetLineScroll = lineScroll - SCROLL_LINE_OFFSET;
 
     int cursorY = startY;
 
     // Lists and Blockquotes are padded on the left
-    if (style =='>' || style == '-' || style == 'L') startX += SPECIAL_PADDING;
-    else if (style == 'C') startX += (SPECIAL_PADDING/2);
+    if (style == '>' || style == '-' || style == 'L')
+      startX += SPECIAL_PADDING;
+    else if (style == 'C')
+      startX += (SPECIAL_PADDING / 2);
 
-    for (auto &ln : lines) {
-      if (ln.index < offsetLineScroll) continue; // skip lines above scroll
+    for (auto& ln : lines) {
+      if (ln.index < offsetLineScroll)
+        continue;  // skip lines above scroll
 
       // Horizontal Rules just print a line
       if (style == 'H' && (cursorY + 4) > 0 && (cursorY + 3) < display.height()) {
@@ -286,21 +316,23 @@ struct DocLine {
 
       // 1. Find max height for this line
       uint16_t max_hpx = 0;
-      for (auto &w : ln.words) {
-        const GFXfont *font = pickFont(style, w.bold, w.italic);
+      for (auto& w : ln.words) {
+        const GFXfont* font = pickFont(style, w.bold, w.italic);
         display.setFont(font);
         int16_t x1, y1;
         uint16_t wpx, hpx;
         display.getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
-        if (hpx > max_hpx) max_hpx = hpx;
+        if (hpx > max_hpx)
+          max_hpx = hpx;
       }
 
       // Add space for headings
-      if (style =='1' || style == '2' || style == '3') max_hpx += 4;
+      if (style == '1' || style == '2' || style == '3')
+        max_hpx += 4;
 
       // 2. Draw all words at the same baseline
-      for (auto &w : ln.words) {
-        const GFXfont *font = pickFont(style, w.bold, w.italic);
+      for (auto& w : ln.words) {
+        const GFXfont* font = pickFont(style, w.bold, w.italic);
         display.setFont(font);
 
         int16_t x1, y1;
@@ -321,27 +353,32 @@ struct DocLine {
 
       // Move down for next line
       uint8_t padding = 0;
-      if (style =='1' || style == '2' || style == '3') padding = HEADING_LINE_PADDING;
-      else padding = NORMAL_LINE_PADDING;
+      if (style == '1' || style == '2' || style == '3')
+        padding = HEADING_LINE_PADDING;
+      else
+        padding = NORMAL_LINE_PADDING;
       cursorY += max_hpx + padding;
     }
 
     // Blockquotes get a vertical line on the left
-    if (style =='>') {
-      display.drawFastVLine(SPECIAL_PADDING/2, startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine((SPECIAL_PADDING/2)+1, startY, (cursorY-startY), GxEPD_BLACK);
+    if (style == '>') {
+      display.drawFastVLine(SPECIAL_PADDING / 2, startY, (cursorY - startY), GxEPD_BLACK);
+      display.drawFastVLine((SPECIAL_PADDING / 2) + 1, startY, (cursorY - startY), GxEPD_BLACK);
     }
 
     // Code Blocks get a vertical line on each side
     else if (style == 'C') {
-      display.drawFastVLine(SPECIAL_PADDING/4, startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine(display.width() - (SPECIAL_PADDING/4), startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine((SPECIAL_PADDING/4) + 1, startY, (cursorY-startY), GxEPD_BLACK);
-      display.drawFastVLine(display.width() - (SPECIAL_PADDING/4) - 1, startY, (cursorY-startY), GxEPD_BLACK);
+      display.drawFastVLine(SPECIAL_PADDING / 4, startY, (cursorY - startY), GxEPD_BLACK);
+      display.drawFastVLine(display.width() - (SPECIAL_PADDING / 4), startY, (cursorY - startY),
+                            GxEPD_BLACK);
+      display.drawFastVLine((SPECIAL_PADDING / 4) + 1, startY, (cursorY - startY), GxEPD_BLACK);
+      display.drawFastVLine(display.width() - (SPECIAL_PADDING / 4) - 1, startY, (cursorY - startY),
+                            GxEPD_BLACK);
     }
 
     // Headings get a horizontal line below them
-    else if ((style =='1' || style == '2' || style == '3') && (cursorY - 2) > 0 && (cursorY - 3) < display.height()) {
+    else if ((style == '1' || style == '2' || style == '3') && (cursorY - 2) > 0 &&
+             (cursorY - 3) < display.height()) {
       display.drawFastHLine(0, cursorY - 2, display.width(), GxEPD_BLACK);
       display.drawFastHLine(0, cursorY - 3, display.width(), GxEPD_BLACK);
     }
@@ -353,7 +390,7 @@ struct DocLine {
     // 74px on OLED horizontally
     u8g2.setDrawColor(1);
 
-    int specialPadding = 8; //px
+    int specialPadding = 8;  // px
 
     int cursorY = startY;
 
@@ -364,32 +401,55 @@ struct DocLine {
     }
 
     // Lists and Blockquotes are padded on the left
-    if (style =='>' || style == '-' || style == 'L') startX += specialPadding;
-    else if (style == 'C') startX += (specialPadding/2);
+    if (style == '>' || style == '-' || style == 'L')
+      startX += specialPadding;
+    else if (style == 'C')
+      startX += (specialPadding / 2);
 
-    for (auto &ln : lines) {
-      if (ln.index < lineScroll) continue; // skip lines above scroll
+    for (auto& ln : lines) {
+      if (ln.index < lineScroll)
+        continue;  // skip lines above scroll
 
       int cursorX = startX;
 
       // 1. Find height for this line
       int max_hpx = 0;
       switch (style) {
-        case 'T': max_hpx = 2;    break;
-        case '1': max_hpx = 5;    break;
-        case '2': max_hpx = 4;    break;
-        case '3': max_hpx = 3;    break;
-        case 'C': max_hpx = 2;    break;
-        case '>': max_hpx = 2;    break;
-        case '-': max_hpx = 2;    break;
-        case 'L': max_hpx = 2;    break;
-        case 'H': max_hpx = 1;    break;
-        default:  max_hpx = 2;    break;
+        case 'T':
+          max_hpx = 2;
+          break;
+        case '1':
+          max_hpx = 5;
+          break;
+        case '2':
+          max_hpx = 4;
+          break;
+        case '3':
+          max_hpx = 3;
+          break;
+        case 'C':
+          max_hpx = 2;
+          break;
+        case '>':
+          max_hpx = 2;
+          break;
+        case '-':
+          max_hpx = 2;
+          break;
+        case 'L':
+          max_hpx = 2;
+          break;
+        case 'H':
+          max_hpx = 1;
+          break;
+        default:
+          max_hpx = 2;
+          break;
       }
 
       // 2. Draw all words at the same baseline
-      for (auto &w : ln.words) {
-        const GFXfont *font = pickFont(style, w.bold, w.italic);
+      for (auto& w : ln.words) {
+        const GFXfont* font = pickFont(style, w.bold, w.italic);
         display.setFont(font);
 
         int16_t x1, y1;
@@ -407,37 +467,37 @@ struct DocLine {
 
       u8g2.drawBox(startX + 2, cursorY, boxWidth, max_hpx);
 
-
       // Move down for next line
       cursorY += max_hpx + 1;
     }
 
     // Blockquotes get a vertical line on the left
-    if (style =='>' && (cursorY-1) > 0) {
-      u8g2.drawVLine((specialPadding/2), startY, (cursorY-startY)-1);
+    if (style == '>' && (cursorY - 1) > 0) {
+      u8g2.drawVLine((specialPadding / 2), startY, (cursorY - startY) - 1);
     }
 
     // Code Blocks get a vertical line on each side
-    else if (style == 'C' && (cursorY-1) > 0) {
-      u8g2.drawVLine(SPECIAL_PADDING/4 - 3, startY, (cursorY-startY)-1);
-      u8g2.drawVLine(80 - (SPECIAL_PADDING/4) + 3, startY, (cursorY-startY)-1);
+    else if (style == 'C' && (cursorY - 1) > 0) {
+      u8g2.drawVLine(SPECIAL_PADDING / 4 - 3, startY, (cursorY - startY) - 1);
+      u8g2.drawVLine(80 - (SPECIAL_PADDING / 4) + 3, startY, (cursorY - startY) - 1);
     }
 
     // Headings get a horizontal line below them
-    else if ((style =='1' || style == '2' || style == '3')  && (cursorY-2) > 0) {
-      u8g2.drawHLine(0, cursorY-2, 80);
+    else if ((style == '1' || style == '2' || style == '3') && (cursorY - 2) > 0) {
+      u8g2.drawHLine(0, cursorY - 2, 80);
     }
 
     return cursorY - startY;
   }
 
-  private:
+ private:
   // Helper: split a string segment into words and push them into words vector
-  void splitIntoWords(const String &segment, bool bold, bool italic) {
+  void splitIntoWords(const String& segment, bool bold, bool italic) {
     int start = 0;
     while (start < segment.length()) {
       int nextSpace = segment.indexOf(' ', start);
-      if (nextSpace == -1) nextSpace = segment.length();
+      if (nextSpace == -1)
+        nextSpace = segment.length();
       String word = segment.substring(start, nextSpace);
       if (word.length() > 0) {
         words.push_back({word, bold, italic});
@@ -456,7 +516,7 @@ std::vector<DocLine> docLines;
 int getTotalDisplayLines() {
   int total = 0;
   for (const auto& doc : docLines) {
-      total += doc.lines.size();
+    total += doc.lines.size();
   }
   return total;
 }
@@ -465,12 +525,13 @@ int getTotalDisplayLines() {
 int displayDocument(int startX = 0, int startY = 0) {
   int cursorY = startY;
 
-  for (auto &doc : docLines) {
+  for (auto& doc : docLines) {
     // Display this DocLine, offset by current cursorY
     int heightUsed = doc.displayLine(startX, cursorY);
 
     // If the line is off the bottom of the screen, stop drawing
-    if (cursorY > display.height()) break;
+    if (cursorY > display.height())
+      break;
 
     cursorY += heightUsed;
   }
@@ -482,12 +543,13 @@ int displayDocument(int startX = 0, int startY = 0) {
 int displayDocumentPreview(int startX = 0, int startY = 0) {
   int cursorY = startY;
 
-  for (auto &doc : docLines) {
+  for (auto& doc : docLines) {
     // Display this DocLine, offset by current cursorY
     int heightUsed = doc.displayLinePreview(startX, cursorY);
 
     // If the line is off the bottom of the screen, stop drawing
-    if (cursorY > u8g2.getDisplayHeight()) break;
+    if (cursorY > u8g2.getDisplayHeight())
+      break;
 
     cursorY += heightUsed;
   }
@@ -498,6 +560,7 @@ int displayDocumentPreview(int startX = 0, int startY = 0) {
 
 // Scroll
 void updateScroll() {
+  const char* tag = "TOUCH";
   static int lastTouchPos = -1;
   static unsigned long lastTouchTime = 0;
   static int prev_lineScroll = 0;
@@ -509,10 +572,10 @@ void updateScroll() {
   for (int i = 0; i < 9; i++) {
     if (touched & (1 << i)) {
       touchPos = i;
-      Serial.print("Prev pad: ");
-      Serial.print(lastTouchPos);
-      Serial.print("   Touched pad: ");
-      Serial.println(touchPos);
+
+      ESP_LOGI(tag, "Prev pad: %d\tTouched pad: \n", lastTouchPos,
+               touchPos);  // TODO(logging): come up with more descriptive tags
+
       break;
     }
   }
@@ -520,7 +583,7 @@ void updateScroll() {
   unsigned long currentTime = millis();
 
   if (touchPos != -1) {  // If a touch is detected
-    Serial.println("Touch Detected");
+    ESP_LOGI(tag, "Touch detected\n");
 
     if (lastTouchPos != -1) {  // Compare with previous touch
       int touchDelta = abs(touchPos - lastTouchPos);
@@ -531,22 +594,20 @@ void updateScroll() {
         if (touchPos < lastTouchPos && lineScroll < maxScroll) {
           prev_lineScroll = lineScroll;
           lineScroll++;
-        } 
-        else if (touchPos > lastTouchPos && lineScroll > 0) {
+        } else if (touchPos > lastTouchPos && lineScroll > 0) {
           prev_lineScroll = lineScroll;
           lineScroll--;
         }
       }
     }
 
-    lastTouchPos  = touchPos;       // update tracked touch
-    lastTouch     = touchPos;       // <--- update UI flag
-    lastTouchTime = currentTime;    // reset timeout
-  } 
-  else if (lastTouchPos != -1 && (currentTime - lastTouchTime > TOUCH_TIMEOUT_MS)) {
+    lastTouchPos = touchPos;      // update tracked touch
+    lastTouch = touchPos;         // <--- update UI flag
+    lastTouchTime = currentTime;  // reset timeout
+  } else if (lastTouchPos != -1 && (currentTime - lastTouchTime > TOUCH_TIMEOUT_MS)) {
     // Timeout: reset both
     lastTouchPos = -1;
-    lastTouch    = -1;              // <--- reset UI flag
+    lastTouch = -1;  // <--- reset UI flag
 
     if (prev_lineScroll != lineScroll) {
       updateScreen = true;
@@ -558,11 +619,13 @@ void updateScroll() {
 
 bool lineHasText(const LineObject& lineObj) {
   // Check if line has any words
-  if (lineObj.words.empty()) return false;
+  if (lineObj.words.empty())
+    return false;
 
   // Check if any word has non-empty text
   for (const auto& w : lineObj.words) {
-    if (w.text.length() > 0) return true;
+    if (w.text.length() > 0)
+      return true;
   }
 
   return false;
@@ -574,13 +637,15 @@ void toolBar(wordObject& wordObj) {
 
   switch (CurrentKBState) {
     case 1:
-    u8g2.drawStr((u8g2.getDisplayWidth() - u8g2.getStrWidth("SHIFT")) / 2, u8g2.getDisplayHeight(), "SHIFT");
-    break;
+      u8g2.drawStr((u8g2.getDisplayWidth() - u8g2.getStrWidth("SHIFT")) / 2,
+                   u8g2.getDisplayHeight(), "SHIFT");
+      break;
     case 2:
-    u8g2.drawStr((u8g2.getDisplayWidth() - u8g2.getStrWidth("FN")) / 2,    u8g2.getDisplayHeight(), "FN");
-    break;
+      u8g2.drawStr((u8g2.getDisplayWidth() - u8g2.getStrWidth("FN")) / 2, u8g2.getDisplayHeight(),
+                   "FN");
+      break;
     default:
-    break;
+      break;
   }
 
   // Show line type
@@ -588,16 +653,36 @@ void toolBar(wordObject& wordObj) {
   String lineTypeLabel;
 
   switch (currentDocLineType) {
-    case 'T': lineTypeLabel = "BODY";   break;
-    case '1': lineTypeLabel = "H1";     break;
-    case '2': lineTypeLabel = "H2";     break;
-    case '3': lineTypeLabel = "H3";     break;
-    case 'C': lineTypeLabel = "CODE";   break;
-    case '>': lineTypeLabel = "QUOTE";  break;
-    case '-': lineTypeLabel = "U LIST"; break;
-    case 'L': lineTypeLabel = "O LIST"; break;
-    case 'H': lineTypeLabel = "H RULE"; break;
-    default:  lineTypeLabel = "";       break; // fallback if none match
+    case 'T':
+      lineTypeLabel = "BODY";
+      break;
+    case '1':
+      lineTypeLabel = "H1";
+      break;
+    case '2':
+      lineTypeLabel = "H2";
+      break;
+    case '3':
+      lineTypeLabel = "H3";
+      break;
+    case 'C':
+      lineTypeLabel = "CODE";
+      break;
+    case '>':
+      lineTypeLabel = "QUOTE";
+      break;
+    case '-':
+      lineTypeLabel = "U LIST";
+      break;
+    case 'L':
+      lineTypeLabel = "O LIST";
+      break;
+    case 'H':
+      lineTypeLabel = "H RULE";
+      break;
+    default:
+      lineTypeLabel = "";
+      break;  // fallback if none match
   }
 
   if (lineTypeLabel.length() > 0) {
@@ -606,55 +691,61 @@ void toolBar(wordObject& wordObj) {
 
   // Show edit type
   if (currentEditMode == edit_append) {
-    u8g2.drawStr(u8g2.getStrWidth(lineTypeLabel.c_str()) + 4, u8g2.getDisplayHeight(), " -> APPEND");
-  }
-  else if (currentEditMode == edit_inline) {
-    u8g2.drawStr(u8g2.getStrWidth(lineTypeLabel.c_str()) + 4, u8g2.getDisplayHeight(), " -> INLINE");
+    u8g2.drawStr(u8g2.getStrWidth(lineTypeLabel.c_str()) + 4, u8g2.getDisplayHeight(),
+                 " -> APPEND");
+  } else if (currentEditMode == edit_inline) {
+    u8g2.drawStr(u8g2.getStrWidth(lineTypeLabel.c_str()) + 4, u8g2.getDisplayHeight(),
+                 " -> INLINE");
   }
 
   // Bold and italic indicator
   if (wordObj.bold == true && wordObj.italic == true) {
-    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("BOLD+ITALIC"), u8g2.getDisplayHeight(), "BOLD+ITALIC");
-  }
-  else if (wordObj.bold == true && wordObj.italic == false) {
-    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("BOLD"), u8g2.getDisplayHeight(), "BOLD");
-  }
-  else if (wordObj.bold == false && wordObj.italic == true) {
-    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("ITALIC"), u8g2.getDisplayHeight(), "ITALIC");
-  }
-  else {
-    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("NORMAL"), u8g2.getDisplayHeight(), "NORMAL");
+    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("BOLD+ITALIC"), u8g2.getDisplayHeight(),
+                 "BOLD+ITALIC");
+  } else if (wordObj.bold == true && wordObj.italic == false) {
+    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("BOLD"), u8g2.getDisplayHeight(),
+                 "BOLD");
+  } else if (wordObj.bold == false && wordObj.italic == true) {
+    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("ITALIC"), u8g2.getDisplayHeight(),
+                 "ITALIC");
+  } else {
+    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("NORMAL"), u8g2.getDisplayHeight(),
+                 "NORMAL");
   }
 }
 
 void setFontOLED(bool bold, bool italic) {
-  if (bold && italic) u8g2.setFont(u8g2_font_luBIS18_tf); // bold italics
-  else if (bold && !italic) u8g2.setFont(u8g2_font_luBS18_tf);  // bold
-  else if (!bold && italic) u8g2.setFont(u8g2_font_luIS18_tf);  // italics
-  else u8g2.setFont(u8g2_font_lubR18_tf);  // regular
+  if (bold && italic)
+    u8g2.setFont(u8g2_font_luBIS18_tf);  // bold italics
+  else if (bold && !italic)
+    u8g2.setFont(u8g2_font_luBS18_tf);  // bold
+  else if (!bold && italic)
+    u8g2.setFont(u8g2_font_luIS18_tf);  // italics
+  else
+    u8g2.setFont(u8g2_font_lubR18_tf);  // regular
   return;
 }
 
 LineObject* getLineObjectByIndex(ulong targetIndex) {
-  for (auto &doc : docLines) {
-    for (auto &line : doc.lines) {
+  for (auto& doc : docLines) {
+    for (auto& line : doc.lines) {
       if (line.index == targetIndex) {
         return &line;
       }
     }
   }
-  return nullptr; // not found
+  return nullptr;  // not found
 }
 
 char getStyleFromScrollLine(ulong scrollLineIndex) {
-  for (auto &doc : docLines) {
-    for (auto &line : doc.lines) {
+  for (auto& doc : docLines) {
+    for (auto& line : doc.lines) {
       if (line.index == scrollLineIndex) {
         return doc.style;  // <-- Return the DocLine style
       }
     }
   }
-  return 'T'; // fallback if not found
+  return 'T';  // fallback if not found
 }
 
 // Returns the pixel width of a LineObject on the OLED (vector of wordObjects)
@@ -665,7 +756,7 @@ int getLineWidthOLED(const LineObject& lineObj) {
 
     uint16_t wpx = u8g2.getStrWidth(w.text.c_str());
 
-    int spaceWidth = u8g2.getStrWidth(" "/*SPACEWIDTH_SYMBOL*/);
+    int spaceWidth = u8g2.getStrWidth(" " /*SPACEWIDTH_SYMBOL*/);
 
     // Add word width + space width (except after last word)
     lineWidth += wpx;
@@ -679,7 +770,7 @@ int getLineWidthOLED(const LineObject& lineObj) {
 void scrollPreview() {
   u8g2.clearBuffer();
 
-  uint16_t xInit = u8g2.getDisplayWidth()/3;
+  uint16_t xInit = u8g2.getDisplayWidth() / 3;
 
   LineObject* scrollLinePtr = getLineObjectByIndex(lineScroll);
   if (!scrollLinePtr) {
@@ -707,7 +798,7 @@ void scrollPreview() {
         uint8_t spaceWidth = u8g2.getStrWidth(" ");
         xpos += wpx + spaceWidth;
       } else {
-        xpos += wpx; // just the word width
+        xpos += wpx;  // just the word width
       }
     }
 
@@ -716,16 +807,36 @@ void scrollPreview() {
     String lineTypeLabel = "";
 
     switch (style) {
-      case 'T': lineTypeLabel = "BODY";        break;
-      case '1': lineTypeLabel = "HEAD 1";      break;
-      case '2': lineTypeLabel = "HEAD 2";      break;
-      case '3': lineTypeLabel = "HEAD 3";      break;
-      case 'C': lineTypeLabel = "CODE BLK";    break;
-      case '>': lineTypeLabel = "QUOTE BLK";   break;
-      case '-': lineTypeLabel = "UNORD LIST";  break;
-      case 'L': lineTypeLabel = "ORDER LIST";  break;
-      case 'H': lineTypeLabel = "HORIZ RULE";  break;
-      default:  lineTypeLabel = "?";           break;
+      case 'T':
+        lineTypeLabel = "BODY";
+        break;
+      case '1':
+        lineTypeLabel = "HEAD 1";
+        break;
+      case '2':
+        lineTypeLabel = "HEAD 2";
+        break;
+      case '3':
+        lineTypeLabel = "HEAD 3";
+        break;
+      case 'C':
+        lineTypeLabel = "CODE BLK";
+        break;
+      case '>':
+        lineTypeLabel = "QUOTE BLK";
+        break;
+      case '-':
+        lineTypeLabel = "UNORD LIST";
+        break;
+      case 'L':
+        lineTypeLabel = "ORDER LIST";
+        break;
+      case 'H':
+        lineTypeLabel = "HORIZ RULE";
+        break;
+      default:
+        lineTypeLabel = "?";
+        break;
     }
 
     String lineInfoStr = "L:" + String(lineScroll) + "-" + lineTypeLabel;
@@ -734,7 +845,8 @@ void scrollPreview() {
     u8g2.drawStr(xInit, u8g2.getDisplayHeight(), lineInfoStr.c_str());
 
     // Draw tooltip
-    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("Tab:Edit Inline"), u8g2.getDisplayHeight(), "Tab: Edit Inline");
+    u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("Tab:Edit Inline"),
+                 u8g2.getDisplayHeight(), "Tab: Edit Inline");
 
     // Draw Seperator
     u8g2.drawVLine(80, 0, u8g2.getDisplayHeight());
@@ -742,14 +854,14 @@ void scrollPreview() {
     // Draw Preview
     int totalUsed = displayDocumentPreview(0, 0);
 
-  }
-  else {
+  } else {
     return;
   }
   u8g2.sendBuffer();
 }
 
-void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsUsed, bool currentlyTyping) {
+void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsUsed,
+                       bool currentlyTyping) {
   u8g2.clearBuffer();
 
   // Draw line text
@@ -769,13 +881,13 @@ void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsU
         uint8_t spaceWidth = u8g2.getStrWidth(" ");
         xpos += wpx + spaceWidth;
       } else {
-        xpos += wpx; // just the word width
+        xpos += wpx;  // just the word width
       }
     }
 
-    if (lineHasText(lineObj)) u8g2.drawVLine(xpos + 2, 1, 22);
-  } 
-  else {
+    if (lineHasText(lineObj))
+      u8g2.drawVLine(xpos + 2, 1, 22);
+  } else {
     // Line is too long to fit, display from right to left
     uint16_t xpos = u8g2.getDisplayWidth() - 8;
 
@@ -787,7 +899,7 @@ void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsU
 
       // Subtract spacing *only if not the rightmost word*
       if (i == 0) {
-        xpos -= wpx; // rightmost word
+        xpos -= wpx;  // rightmost word
       } else {
         uint8_t spaceWidth = u8g2.getStrWidth(" ");
         xpos -= (wpx + spaceWidth);
@@ -802,25 +914,28 @@ void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsU
     u8g2.drawVLine(u8g2.getDisplayWidth() - 6, 1, 22);
   }
 
-  //PROGRESS BAR
+  // PROGRESS BAR
   if (lineHasText(lineObj) == true && pixelsUsed > 0) {
-    if (pixelsUsed > display.width() - DISPLAY_WIDTH_BUFFER) pixelsUsed = display.width() - DISPLAY_WIDTH_BUFFER;
-    //uint8_t progress = map(pixelsUsed, 0, display.width() - DISPLAY_WIDTH_BUFFER, 0, u8g2.getDisplayWidth());
-    uint8_t progress = map(min(pixelsUsed, display.width() - DISPLAY_WIDTH_BUFFER), 0, display.width() - DISPLAY_WIDTH_BUFFER, 0, u8g2.getDisplayWidth() - 1);
+    if (pixelsUsed > display.width() - DISPLAY_WIDTH_BUFFER)
+      pixelsUsed = display.width() - DISPLAY_WIDTH_BUFFER;
+    // uint8_t progress = map(pixelsUsed, 0, display.width() - DISPLAY_WIDTH_BUFFER, 0,
+    // u8g2.getDisplayWidth());
+    uint8_t progress = map(min(pixelsUsed, display.width() - DISPLAY_WIDTH_BUFFER), 0,
+                           display.width() - DISPLAY_WIDTH_BUFFER, 0, u8g2.getDisplayWidth() - 1);
 
     u8g2.drawVLine(u8g2.getDisplayWidth(), 0, 2);
     u8g2.drawVLine(0, 0, 2);
 
     u8g2.drawHLine(0, 0, progress);
     u8g2.drawHLine(0, 1, progress);
-    //u8g2.drawHLine(0, 2, progress);
+    // u8g2.drawHLine(0, 2, progress);
 
     // LINE END WARNING INDICATOR
     if (progress > (u8g2.getDisplayWidth() * 0.8)) {
       if ((millis() / 400) % 2 == 0) {  // ON for 200ms, OFF for 200ms
-        u8g2.drawVLine(u8g2.getDisplayWidth()-1, 8, 32-16);
-        u8g2.drawLine(u8g2.getDisplayWidth()-1,15,u8g2.getDisplayWidth()-4,12);
-        u8g2.drawLine(u8g2.getDisplayWidth()-1,15,u8g2.getDisplayWidth()-4,18);
+        u8g2.drawVLine(u8g2.getDisplayWidth() - 1, 8, 32 - 16);
+        u8g2.drawLine(u8g2.getDisplayWidth() - 1, 15, u8g2.getDisplayWidth() - 4, 12);
+        u8g2.drawLine(u8g2.getDisplayWidth() - 1, 15, u8g2.getDisplayWidth() - 4, 18);
       }
     }
     // New line on space animation
@@ -828,9 +943,9 @@ void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsU
       // Sawtooth animation
       uint period = 8000;
       uint x1 = map(millis() % period, 0, period, 0, u8g2.getDisplayWidth());
-      uint x2 = map((millis() + period/4) % period, 0, period, 0, u8g2.getDisplayWidth());
-      uint x3 = map((millis() + period/2) % period, 0, period, 0, u8g2.getDisplayWidth());
-      uint x4 = map((millis() + (3*period)/4) % period, 0, period, 0, u8g2.getDisplayWidth());
+      uint x2 = map((millis() + period / 4) % period, 0, period, 0, u8g2.getDisplayWidth());
+      uint x3 = map((millis() + period / 2) % period, 0, period, 0, u8g2.getDisplayWidth());
+      uint x4 = map((millis() + (3 * period) / 4) % period, 0, period, 0, u8g2.getDisplayWidth());
 
       // Draw scrolling box
       u8g2.setDrawColor(0);
@@ -845,8 +960,7 @@ void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsU
   if (currentlyTyping) {
     // Show toolbar
     toolBar(currentWord);
-  }
-  else {
+  } else {
     // Show infobar
     OLED().infoBar();
   }
@@ -854,30 +968,29 @@ void oledEditorDisplay(LineObject& lineObj, wordObject& currentWord, int pixelsU
   u8g2.sendBuffer();
 }
 
-
 // ------------------ Document ------------------
 
 // Parse and split all DocLines into rendered lines
-void populateLines(std::vector<DocLine> &docLines) {
+void populateLines(std::vector<DocLine>& docLines) {
   indexCounter = 0;
 
-  for (auto &doc : docLines) {
+  for (auto& doc : docLines) {
     doc.parseWords();
     doc.splitToLines();
   }
 }
 
 void refreshAllLineIndexes() {
-  indexCounter = 0;  // reset counter if you want indexes to start from 0
-  for (auto &docLine : docLines) {          // iterate through all DocLines
-    for (auto &line : docLine.lines) {    // iterate through each LineObject
+  indexCounter = 0;                     // reset counter if you want indexes to start from 0
+  for (auto& docLine : docLines) {      // iterate through all DocLines
+    for (auto& line : docLine.lines) {  // iterate through each LineObject
       line.index = indexCounter++;
     }
   }
 }
 
 // Load File
-void loadMarkdownFile(const String &path) {
+void loadMarkdownFile(const String& path) {
   if (noSD) {
     OLED().oledWord("LOAD FAILED - No SD!");
     delay(5000);
@@ -891,7 +1004,8 @@ void loadMarkdownFile(const String &path) {
   docLines.clear();
   File file = SD_MMC.open(path.c_str());
   if (!file) {
-    Serial.println("Failed to open file");
+    ESP_LOGE("SD", "Failed to open file: %s\n", file.path());  // FIXME: - Come up with better error handling
+                                                             //        - Should this be Error or Warning?
     SDActive = false;
     return;
   }
@@ -900,45 +1014,38 @@ void loadMarkdownFile(const String &path) {
     String line = file.readStringUntil('\n');
     line.trim();
     char style = 'T';
-    String content = line; // default is full line
+    String content = line;  // default is full line
 
     if (line.startsWith("### ")) {
       style = '3';
-      content = line.substring(4); // remove "### "
-    }
-    else if (line.startsWith("## ")) {
+      content = line.substring(4);  // remove "### "
+    } else if (line.startsWith("## ")) {
       style = '2';
-      content = line.substring(3); // remove "## "
-    }
-    else if (line.startsWith("# ")) {
+      content = line.substring(3);  // remove "## "
+    } else if (line.startsWith("# ")) {
       style = '1';
-      content = line.substring(2); // remove "# "
-    }
-    else if (line.startsWith("> ")) {
+      content = line.substring(2);  // remove "# "
+    } else if (line.startsWith("> ")) {
       style = '>';
-      content = line.substring(2); // remove "> "
-    }
-    else if (line.startsWith("- ")) {
+      content = line.substring(2);  // remove "> "
+    } else if (line.startsWith("- ")) {
       style = '-';
-      //content = line.substring(2); // remove "- "
-    }
-    else if (line == "---") {
+      // content = line.substring(2); // remove "- "
+    } else if (line == "---") {
       style = 'H';
-      content = "---"; // horizontal line has no content
-    }
-    else if ((line.startsWith("'''")) || (line.startsWith("'") && line.endsWith("'"))) {
+      content = "---";  // horizontal line has no content
+    } else if ((line.startsWith("'''")) || (line.startsWith("'") && line.endsWith("'"))) {
       if (line.startsWith("'''")) {
         content = line.substring(3);
-      }
-      else {
+      } else {
         content = line.substring(1, line.length() - 1);
       }
 
       style = 'C';
-    }
-    else if (line.length() > 2 && isDigit(line.charAt(0)) && line.charAt(1) == '.' && line.charAt(2) == ' ') {
+    } else if (line.length() > 2 && isDigit(line.charAt(0)) && line.charAt(1) == '.' &&
+               line.charAt(2) == ' ') {
       style = 'L';
-      //content = line.substring(3); // remove "1. ", "2. ", etc.
+      // content = line.substring(3); // remove "1. ", "2. ", etc.
     }
 
     docLines.push_back({style, content, {}});
@@ -949,15 +1056,15 @@ void loadMarkdownFile(const String &path) {
   if (docLines.empty()) {
     docLines.push_back({'T', "", {}});
     editingLine_index = 0;
-  }
-  else {
+  } else {
     editingLine_index = docLines.size() - 1;
   }
 
   // Populate all the lines
   populateLines(docLines);
 
-  if (SAVE_POWER) setCpuFrequencyMhz(80);
+  if (SAVE_POWER)
+    setCpuFrequencyMhz(80);
   SDActive = false;
 }
 
@@ -965,7 +1072,7 @@ void loadMarkdownFile(const String &path) {
 int getLineWidth(const LineObject& lineObj, char style) {
   int lineWidth = 0;
   for (const auto& w : lineObj.words) {
-    const GFXfont *font = pickFont(style, w.bold, w.italic);
+    const GFXfont* font = pickFont(style, w.bold, w.italic);
     display.setFont(font);
 
     int16_t x1, y1;
@@ -1017,32 +1124,36 @@ void editAppend(char inchar) {
   }
 
   // HANDLE INPUTS
-  //No char recieved
-  if (inchar == 0) {}
-  //Return home
+  // No char recieved
+  if (inchar == 0) {
+  }
+  // Return home
   else if (inchar == 12) {
     HOME_INIT();
   }
-  //TAB Recieved
+  // TAB Recieved
   else if (inchar == 9) {
     // If scrolling, edit inline
     if (lastTouch != -1) {
-
     }
-    
-  }                                      
-  //SHIFT Recieved
-  else if (inchar == 17) {                                  
-    if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-    else CurrentKBState = SHIFT;
+
   }
-  //FN Recieved
-  else if (inchar == 18) {                                  
-    if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-    else CurrentKBState = FUNC;
+  // SHIFT Recieved
+  else if (inchar == 17) {
+    if (CurrentKBState == SHIFT)
+      CurrentKBState = NORMAL;
+    else
+      CurrentKBState = SHIFT;
   }
-  //Space Recieved
-  else if (inchar == 32) {                                  
+  // FN Recieved
+  else if (inchar == 18) {
+    if (CurrentKBState == FUNC)
+      CurrentKBState = NORMAL;
+    else
+      CurrentKBState = FUNC;
+  }
+  // Space Recieved
+  else if (inchar == 32) {
     if (getLineWidth(*lastLine, editingDocLine.style) > display.width() - DISPLAY_WIDTH_BUFFER) {
       // Word does not fit -> wrap to new line
       // Remove the word from the old line
@@ -1092,7 +1203,7 @@ void editAppend(char inchar) {
     // Finish current DocLine and create a new one
     DocLine newDocLine;
     newDocLine.style = 'T';
-    
+
     // Add one line and one empty word
     LineObject newLine;
     newLine.index = indexCounter++;
@@ -1114,55 +1225,49 @@ void editAppend(char inchar) {
     updateScreen = true;
     moveView = true;
   }
-  //ESC / CLEAR Recieved
-  else if (inchar == 20) {                                  
-
+  // ESC / CLEAR Recieved
+  else if (inchar == 20) {
   }
   // LEFT
-  else if (inchar == 19) {                                  
-    
+  else if (inchar == 19) {
   }
   // RIGHT
-  else if (inchar == 21) {                                  
-    
+  else if (inchar == 21) {
   }
   // SHFT + LEFT (Text type select)
-  else if (inchar == 28) {                                  
-      // Define the cycle order
-      static const char styleCycle[] = { 'T', '1', '2', '3', '>', 'L', '-', 'C', 'H' };
-      static const int numStyles = sizeof(styleCycle) / sizeof(styleCycle[0]);
+  else if (inchar == 28) {
+    // Define the cycle order
+    static const char styleCycle[] = {'T', '1', '2', '3', '>', 'L', '-', 'C', 'H'};
+    static const int numStyles = sizeof(styleCycle) / sizeof(styleCycle[0]);
 
-      // Find current style index
-      int currentIndex = 0;
-      for (int i = 0; i < numStyles; i++) {
-        if (editingDocLine.style == styleCycle[i]) {
-          currentIndex = i;
-          break;
-        }
+    // Find current style index
+    int currentIndex = 0;
+    for (int i = 0; i < numStyles; i++) {
+      if (editingDocLine.style == styleCycle[i]) {
+        currentIndex = i;
+        break;
       }
+    }
 
-      // Move to next style in cycle
-      currentIndex = (currentIndex + 1) % numStyles;
-      editingDocLine.style = styleCycle[currentIndex];
+    // Move to next style in cycle
+    currentIndex = (currentIndex + 1) % numStyles;
+    editingDocLine.style = styleCycle[currentIndex];
   }
   // SHFT + RIGHT (Word type select)
-  else if (inchar == 30) {                                  
+  else if (inchar == 30) {
     if (lastWord->bold == false && lastWord->italic == false) {
       // If regular text switch to bold
       lastWord->bold = true;
       lastWord->italic = false;
-    }
-    else if (lastWord->bold == true && lastWord->italic == false) {
+    } else if (lastWord->bold == true && lastWord->italic == false) {
       // If bold switch to italic
       lastWord->bold = false;
       lastWord->italic = true;
-    }
-    else if (lastWord->bold == false && lastWord->italic == true) {
+    } else if (lastWord->bold == false && lastWord->italic == true) {
       // If italic switch to bold+italic
       lastWord->bold = true;
       lastWord->italic = true;
-    }
-    else if (lastWord->bold == true && lastWord->italic == true) {
+    } else if (lastWord->bold == true && lastWord->italic == true) {
       // If bold+italic switch to regular text
       lastWord->bold = false;
       lastWord->italic = false;
@@ -1173,35 +1278,34 @@ void editAppend(char inchar) {
     if (lastWord->text.length() > 0) {
       // Remove the last character of the current word
       lastWord->text.remove(lastWord->text.length() - 1);
-    } 
-    else {
+    } else {
       // Current word is empty, move to previous word or line
       LineObject* linePtr = lastLine;
       wordObject* wordPtr = lastWord;
 
       if (linePtr->words.size() > 1) {
-          // Pop the empty word and go to the previous word in the same line
-          linePtr->words.pop_back();
-          wordPtr = &linePtr->words.back();
+        // Pop the empty word and go to the previous word in the same line
+        linePtr->words.pop_back();
+        wordPtr = &linePtr->words.back();
       } else {
-          // First word in the line
-          DocLine& docLineRef = docLines[editingLine_index];
+        // First word in the line
+        DocLine& docLineRef = docLines[editingLine_index];
 
-          if (docLineRef.lines.size() > 1) {
-              // Move to previous LineObject in the same DocLine
-              docLineRef.lines.pop_back();
-              linePtr = &docLineRef.lines.back();
-              wordPtr = &linePtr->words.back();
-          } else if (editingLine_index > 0) {
-              // Move to previous DocLine
-              editingLine_index--;
-              DocLine& prevDocLine = docLines[editingLine_index];
-              linePtr = &prevDocLine.lines.back();
-              wordPtr = &linePtr->words.back();
-          } else {
-              // At very start of document, nothing to do
-              return;
-          }
+        if (docLineRef.lines.size() > 1) {
+          // Move to previous LineObject in the same DocLine
+          docLineRef.lines.pop_back();
+          linePtr = &docLineRef.lines.back();
+          wordPtr = &linePtr->words.back();
+        } else if (editingLine_index > 0) {
+          // Move to previous DocLine
+          editingLine_index--;
+          DocLine& prevDocLine = docLines[editingLine_index];
+          linePtr = &prevDocLine.lines.back();
+          wordPtr = &linePtr->words.back();
+        } else {
+          // At very start of document, nothing to do
+          return;
+        }
       }
 
       // Update lastLine / lastWord references
@@ -1209,25 +1313,23 @@ void editAppend(char inchar) {
       lastWord = wordPtr;
     }
   }
-  //SAVE Recieved
+  // SAVE Recieved
   else if (inchar == 6) {
-
   }
-  //FILE Recieved
+  // FILE Recieved
   else if (inchar == 7) {
-    
   }
-  // Font Switcher 
-  else if (inchar == 14) {                                  
+  // Font Switcher
+  else if (inchar == 14) {
     CurrentTXTState_NEW = FONT;
     CurrentKBState = FUNC;
     updateScreen = true;
-  }
-  else {
+  } else {
     // Add char to current word
     lastWord->text += inchar;
 
-    if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
+    if (inchar >= 48 && inchar <= 57) {
+    }  // Only leave FN on if typing numbers
     else if (CurrentKBState != NORMAL) {
       CurrentKBState = NORMAL;
     }
@@ -1239,21 +1341,21 @@ void editAppend(char inchar) {
   }
 
   currentMillis = millis();
-  //Make sure oled only updates at 60fps
-  if (currentMillis - OLEDFPSMillis >= (1000/60)) {
+  // Make sure oled only updates at 60fps
+  if (currentMillis - OLEDFPSMillis >= (1000 / 60)) {
     OLEDFPSMillis = currentMillis;
     // Show line on OLED when not actively scrolling
     if (lastTouch == -1) {
       bool currentlyTyping = (millis() - lastTypeMillis < TYPE_INTERFACE_TIMEOUT);
 
       // Flush KB IC if not in use
-      if (!currentlyTyping) keypad.flush();
+      if (!currentlyTyping)
+        keypad.flush();
 
       int lineWidth = getLineWidth(*lastLine, editingDocLine.style);
 
       oledEditorDisplay(*lastLine, *lastWord, lineWidth, currentlyTyping);
-    }
-    else {
+    } else {
       // Scrolling display function here
       scrollPreview();
     }
@@ -1262,122 +1364,125 @@ void editAppend(char inchar) {
   // Center scroll on typed line if a line update has been registered
   if (moveView) {
     // Update scroll to currently edited line
-    if (editingDocLine.lines.empty()) lineScroll = 0;
-    else lineScroll = editingDocLine.lines.back().index;
+    if (editingDocLine.lines.empty())
+      lineScroll = 0;
+    else
+      lineScroll = editingDocLine.lines.back().index;
   }
 
-  if (SAVE_POWER) setCpuFrequencyMhz(80);
+  if (SAVE_POWER)
+    setCpuFrequencyMhz(80);
 }
 
 // INIT
 void initFonts() {
   // Mono
-  fonts[mono].normal   = &FreeMono9pt7b;
+  fonts[mono].normal = &FreeMono9pt7b;
   fonts[mono].normal_B = &FreeMonoBold9pt7b;
   fonts[mono].normal_I = &FreeMonoOblique9pt7b;
-  fonts[mono].normal_BI= &FreeMonoBoldOblique9pt7b;
+  fonts[mono].normal_BI = &FreeMonoBoldOblique9pt7b;
 
-  fonts[mono].h1       = &FreeMonoBold24pt7b;
-  fonts[mono].h1_B     = &FreeMonoBold24pt7b; // Already bold
-  fonts[mono].h1_I     = &FreeMonoBoldOblique24pt7b;
-  fonts[mono].h1_BI    = &FreeMonoBoldOblique24pt7b;
+  fonts[mono].h1 = &FreeMonoBold24pt7b;
+  fonts[mono].h1_B = &FreeMonoBold24pt7b;  // Already bold
+  fonts[mono].h1_I = &FreeMonoBoldOblique24pt7b;
+  fonts[mono].h1_BI = &FreeMonoBoldOblique24pt7b;
 
-  fonts[mono].h2       = &FreeMonoBold18pt7b;
-  fonts[mono].h2_B     = &FreeMonoBold18pt7b;
-  fonts[mono].h2_I     = &FreeMonoBoldOblique18pt7b;
-  fonts[mono].h2_BI    = &FreeMonoBoldOblique18pt7b;
+  fonts[mono].h2 = &FreeMonoBold18pt7b;
+  fonts[mono].h2_B = &FreeMonoBold18pt7b;
+  fonts[mono].h2_I = &FreeMonoBoldOblique18pt7b;
+  fonts[mono].h2_BI = &FreeMonoBoldOblique18pt7b;
 
-  fonts[mono].h3       = &FreeMonoBold12pt7b;
-  fonts[mono].h3_B     = &FreeMonoBold12pt7b;
-  fonts[mono].h3_I     = &FreeMonoBoldOblique12pt7b;
-  fonts[mono].h3_BI    = &FreeMonoBoldOblique12pt7b;
+  fonts[mono].h3 = &FreeMonoBold12pt7b;
+  fonts[mono].h3_B = &FreeMonoBold12pt7b;
+  fonts[mono].h3_I = &FreeMonoBoldOblique12pt7b;
+  fonts[mono].h3_BI = &FreeMonoBoldOblique12pt7b;
 
-  fonts[mono].code     = &FreeMono9pt7b;
-  fonts[mono].code_B   = &FreeMono9pt7b;
-  fonts[mono].code_I   = &FreeMono9pt7b;
-  fonts[mono].code_BI  = &FreeMono9pt7b;
+  fonts[mono].code = &FreeMono9pt7b;
+  fonts[mono].code_B = &FreeMono9pt7b;
+  fonts[mono].code_I = &FreeMono9pt7b;
+  fonts[mono].code_BI = &FreeMono9pt7b;
 
-  fonts[mono].quote    = &FreeMono9pt7b;
-  fonts[mono].quote_B  = &FreeMonoBold9pt7b;
-  fonts[mono].quote_I  = &FreeMonoOblique9pt7b;
+  fonts[mono].quote = &FreeMono9pt7b;
+  fonts[mono].quote_B = &FreeMonoBold9pt7b;
+  fonts[mono].quote_I = &FreeMonoOblique9pt7b;
   fonts[mono].quote_BI = &FreeMonoBoldOblique9pt7b;
 
-  fonts[mono].list     = &FreeMono9pt7b;
-  fonts[mono].list_B   = &FreeMonoBold9pt7b;
-  fonts[mono].list_I   = &FreeMonoOblique9pt7b;
-  fonts[mono].list_BI  = &FreeMonoBoldOblique9pt7b;
+  fonts[mono].list = &FreeMono9pt7b;
+  fonts[mono].list_B = &FreeMonoBold9pt7b;
+  fonts[mono].list_I = &FreeMonoOblique9pt7b;
+  fonts[mono].list_BI = &FreeMonoBoldOblique9pt7b;
 
   // Serif
-  fonts[serif].normal   = &FreeSerif9pt7b;
+  fonts[serif].normal = &FreeSerif9pt7b;
   fonts[serif].normal_B = &FreeSerifBold9pt7b;
   fonts[serif].normal_I = &FreeSerifItalic9pt7b;
-  fonts[serif].normal_BI= &FreeSerifBoldItalic9pt7b;
+  fonts[serif].normal_BI = &FreeSerifBoldItalic9pt7b;
 
-  fonts[serif].h1       = &FreeSerifBold24pt7b;
-  fonts[serif].h1_B     = &FreeSerifBold24pt7b;
-  fonts[serif].h1_I     = &FreeSerifBoldItalic24pt7b;
-  fonts[serif].h1_BI    = &FreeSerifBoldItalic24pt7b;
+  fonts[serif].h1 = &FreeSerifBold24pt7b;
+  fonts[serif].h1_B = &FreeSerifBold24pt7b;
+  fonts[serif].h1_I = &FreeSerifBoldItalic24pt7b;
+  fonts[serif].h1_BI = &FreeSerifBoldItalic24pt7b;
 
-  fonts[serif].h2       = &FreeSerifBold18pt7b;
-  fonts[serif].h2_B     = &FreeSerifBold18pt7b;
-  fonts[serif].h2_I     = &FreeSerifBoldItalic18pt7b;
-  fonts[serif].h2_BI    = &FreeSerifBoldItalic18pt7b;
+  fonts[serif].h2 = &FreeSerifBold18pt7b;
+  fonts[serif].h2_B = &FreeSerifBold18pt7b;
+  fonts[serif].h2_I = &FreeSerifBoldItalic18pt7b;
+  fonts[serif].h2_BI = &FreeSerifBoldItalic18pt7b;
 
-  fonts[serif].h3       = &FreeSerifBold12pt7b;
-  fonts[serif].h3_B     = &FreeSerifBold12pt7b;
-  fonts[serif].h3_I     = &FreeSerifBoldItalic12pt7b;
-  fonts[serif].h3_BI    = &FreeSerifBoldItalic12pt7b;
+  fonts[serif].h3 = &FreeSerifBold12pt7b;
+  fonts[serif].h3_B = &FreeSerifBold12pt7b;
+  fonts[serif].h3_I = &FreeSerifBoldItalic12pt7b;
+  fonts[serif].h3_BI = &FreeSerifBoldItalic12pt7b;
 
-  fonts[serif].code     = &FreeMono9pt7b;
-  fonts[serif].code_B   = &FreeMono9pt7b;
-  fonts[serif].code_I   = &FreeMono9pt7b;
-  fonts[serif].code_BI  = &FreeMono9pt7b;
+  fonts[serif].code = &FreeMono9pt7b;
+  fonts[serif].code_B = &FreeMono9pt7b;
+  fonts[serif].code_I = &FreeMono9pt7b;
+  fonts[serif].code_BI = &FreeMono9pt7b;
 
-  fonts[serif].quote    = &FreeSerif9pt7b;
-  fonts[serif].quote_B  = &FreeSerifBold9pt7b;
-  fonts[serif].quote_I  = &FreeSerifItalic9pt7b;
+  fonts[serif].quote = &FreeSerif9pt7b;
+  fonts[serif].quote_B = &FreeSerifBold9pt7b;
+  fonts[serif].quote_I = &FreeSerifItalic9pt7b;
   fonts[serif].quote_BI = &FreeSerifBoldItalic9pt7b;
 
-  fonts[serif].list     = &FreeSerif9pt7b;
-  fonts[serif].list_B   = &FreeSerifBold9pt7b;
-  fonts[serif].list_I   = &FreeSerifItalic9pt7b;
-  fonts[serif].list_BI  = &FreeSerifBoldItalic9pt7b;
+  fonts[serif].list = &FreeSerif9pt7b;
+  fonts[serif].list_B = &FreeSerifBold9pt7b;
+  fonts[serif].list_I = &FreeSerifItalic9pt7b;
+  fonts[serif].list_BI = &FreeSerifBoldItalic9pt7b;
 
   // Sans
-  fonts[sans].normal   = &FreeSans9pt7b;
+  fonts[sans].normal = &FreeSans9pt7b;
   fonts[sans].normal_B = &FreeSansBold9pt7b;
   fonts[sans].normal_I = &FreeSansOblique9pt7b;
-  fonts[sans].normal_BI= &FreeSansBoldOblique9pt7b;
+  fonts[sans].normal_BI = &FreeSansBoldOblique9pt7b;
 
-  fonts[sans].h1       = &FreeSansBold24pt7b;
-  fonts[sans].h1_B     = &FreeSansBold24pt7b;
-  fonts[sans].h1_I     = &FreeSansBoldOblique24pt7b;
-  fonts[sans].h1_BI    = &FreeSansBoldOblique24pt7b;
+  fonts[sans].h1 = &FreeSansBold24pt7b;
+  fonts[sans].h1_B = &FreeSansBold24pt7b;
+  fonts[sans].h1_I = &FreeSansBoldOblique24pt7b;
+  fonts[sans].h1_BI = &FreeSansBoldOblique24pt7b;
 
-  fonts[sans].h2       = &FreeSansBold18pt7b;
-  fonts[sans].h2_B     = &FreeSansBold18pt7b;
-  fonts[sans].h2_I     = &FreeSansBoldOblique18pt7b;
-  fonts[sans].h2_BI    = &FreeSansBoldOblique18pt7b;
+  fonts[sans].h2 = &FreeSansBold18pt7b;
+  fonts[sans].h2_B = &FreeSansBold18pt7b;
+  fonts[sans].h2_I = &FreeSansBoldOblique18pt7b;
+  fonts[sans].h2_BI = &FreeSansBoldOblique18pt7b;
 
-  fonts[sans].h3       = &FreeSansBold12pt7b;
-  fonts[sans].h3_B     = &FreeSansBold12pt7b;
-  fonts[sans].h3_I     = &FreeSansBoldOblique12pt7b;
-  fonts[sans].h3_BI    = &FreeSansBoldOblique12pt7b;
+  fonts[sans].h3 = &FreeSansBold12pt7b;
+  fonts[sans].h3_B = &FreeSansBold12pt7b;
+  fonts[sans].h3_I = &FreeSansBoldOblique12pt7b;
+  fonts[sans].h3_BI = &FreeSansBoldOblique12pt7b;
 
-  fonts[sans].code     = &FreeMono9pt7b;
-  fonts[sans].code_B   = &FreeMono9pt7b;
-  fonts[sans].code_I   = &FreeMono9pt7b;
-  fonts[sans].code_BI  = &FreeMono9pt7b;
+  fonts[sans].code = &FreeMono9pt7b;
+  fonts[sans].code_B = &FreeMono9pt7b;
+  fonts[sans].code_I = &FreeMono9pt7b;
+  fonts[sans].code_BI = &FreeMono9pt7b;
 
-  fonts[sans].quote    = &FreeSans9pt7b;
-  fonts[sans].quote_B  = &FreeSansBold9pt7b;
-  fonts[sans].quote_I  = &FreeSansOblique9pt7b;
+  fonts[sans].quote = &FreeSans9pt7b;
+  fonts[sans].quote_B = &FreeSansBold9pt7b;
+  fonts[sans].quote_I = &FreeSansOblique9pt7b;
   fonts[sans].quote_BI = &FreeSansBoldOblique9pt7b;
 
-  fonts[sans].list     = &FreeSans9pt7b;
-  fonts[sans].list_B   = &FreeSansBold9pt7b;
-  fonts[sans].list_I   = &FreeSansOblique9pt7b;
-  fonts[sans].list_BI  = &FreeSansBoldOblique9pt7b;
+  fonts[sans].list = &FreeSans9pt7b;
+  fonts[sans].list_B = &FreeSansBold9pt7b;
+  fonts[sans].list_I = &FreeSansOblique9pt7b;
+  fonts[sans].list_BI = &FreeSansBoldOblique9pt7b;
 }
 
 void TXT_INIT() {
@@ -1414,7 +1519,7 @@ void processKB_TXT_NEW() {
   disableTimeout = false;
 
   unsigned long currentMillis = millis();
-  if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
+  if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {
     char inchar = KB().updateKeypress();
     switch (CurrentTXTState_NEW) {
       case TXT_:

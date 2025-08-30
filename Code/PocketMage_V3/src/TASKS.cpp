@@ -6,9 +6,13 @@
 //      888       .8'     `888.  oo     .d8P  888  `88b.  oo     .d8P //
 //     o888o     o88o     o8888o 8""88888P'  o888o  o888o 8""88888P'  //  
 #include <pocketmage.h>
+#include "esp32-hal-log.h"
+#include "esp_log.h"
 
 enum TasksState { TASKS0, TASKS0_NEWTASK, TASKS1, TASKS1_EDITTASK };
 TasksState CurrentTasksState = TASKS0;
+
+static constexpr const char* TAG = "TASKS";
 
 static String currentWord = "";
 static String currentLine = "";
@@ -65,7 +69,7 @@ void updateTaskArray() {
   delay(50);
   File file = SD_MMC.open("/sys/tasks.txt", "r"); // Open the text file in read mode
   if (!file) {
-    Serial.println("Failed to open file for reading");
+    ESP_LOGE(TAG, "Failed to open file to read: %s", file.path());
     return;
   }
 
@@ -111,7 +115,7 @@ void deleteTask(int index) {
 
 String convertDateFormat(String yyyymmdd) {
   if (yyyymmdd.length() != 8) {
-    Serial.println(("INVALID DATE: " + yyyymmdd).c_str());
+    ESP_LOGE(TAG, "Invalid Date: %s", yyyymmdd.c_str());
     return "Invalid";
   }
 
@@ -329,8 +333,7 @@ void einkHandler_TASKS() {
         sortTasksByDueDate(tasks);
 
         if (!tasks.empty()) {
-          if (DEBUG_VERBOSE) Serial.println("Printing Tasks");
-
+          ESP_LOGV(TAG, "Printing Tasks");
           EINK().drawStatusBar("Select (0-9),New Task (N)");
 
           int loopCount = std::min((int)tasks.size(), MAX_FILES);
@@ -342,7 +345,9 @@ void einkHandler_TASKS() {
             // PRINT TASK DUE DATE
             display.setCursor(231, 54 + (17 * i));
             display.print(convertDateFormat(tasks[i][1]).c_str());
-            Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+
+            // Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+            ESP_LOGI("TASKS", "%s, %s", tasks[i][0].c_str(), convertDateFormat(tasks[i][1]).c_str()); // TODO: Come up with some tag
           }
         }
         else EINK().drawStatusBar("No Tasks! Add New Task (N)");
@@ -365,7 +370,7 @@ void einkHandler_TASKS() {
           sortTasksByDueDate(tasks);
 
           if (!tasks.empty()) {
-            if (DEBUG_VERBOSE) Serial.println("Printing Tasks");
+            ESP_LOGV(TAG, "Printing Tasks");
 
             int loopCount = std::min((int)tasks.size(), MAX_FILES);
             for (int i = 0; i < loopCount; i++) {
@@ -376,7 +381,9 @@ void einkHandler_TASKS() {
               // PRINT TASK DUE DATE
               display.setCursor(231, 54 + (17 * i));
               display.print(convertDateFormat(tasks[i][1]).c_str());
-              Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+
+              // Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+              ESP_LOGI("TASKS", "%s, %s", tasks[i][0].c_str(), convertDateFormat(tasks[i][1]).c_str()); // TODO: Come up with some tag
             }
           }
           switch (newTaskState) {

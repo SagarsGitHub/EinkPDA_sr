@@ -6,11 +6,13 @@
 // Initialization of sd class
 static PocketmageKB kb(keypad);
 
+static constexpr const char* TAG = "KEYBOARD";
+
 void IRAM_ATTR KB_irq_handler() { kb.TCA8418_irq(); }
 // Setup for keyboard class
 void setupKB() {
   if (!keypad.begin(TCA8418_DEFAULT_ADDR, &Wire)) {
-    Serial.println("Error Initializing the Keyboard");
+    ESP_LOGE(TAG, "Error Initializing the Keyboard");
     OLED().oledWord("Keyboard INIT Failed");
     delay(1000);
     while (1);
