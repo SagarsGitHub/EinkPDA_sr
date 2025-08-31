@@ -255,7 +255,6 @@ void processKB_TXT_OLD() {
           int numSelect = (inchar == '0') ? 10 : (inchar - '0');
           //YES (save current file)
           if (numSelect == 1) {
-            Serial.println("YES (save current file)");
             //File to be saved does not exist
             if (prevEditingFile == "" || prevEditingFile == "-") {
               CurrentTXTState = WIZ2;
@@ -284,7 +283,6 @@ void processKB_TXT_OLD() {
           }
           //NO  (don't save current file)
           else if (numSelect == 2) {
-            Serial.println("NO  (don't save current file)");
             //Just load new file
             loadFile();
             //Return to TXT

@@ -6,6 +6,7 @@
 //   888     888  `88b    d88'  8    Y     888   888       o  //
 //  o888o   o888o  `Y8bood8P'  o8o        o888o o888ooooood8  //
 #include <pocketmage.h>
+#include "esp_log.h"
 
 static String currentLine = "";
 
@@ -319,7 +320,7 @@ void einkHandler_HOME() {
         // TASKS/CALENDAR
         //151,68
         if (!tasks.empty()) {
-          if (DEBUG_VERBOSE) Serial.println("Printing Tasks");
+          ESP_LOGV("CALENDAR", "Printing Tasks\n");
 
           int loopCount = std::min((int)tasks.size(), 7);
           for (int i = 0; i < loopCount; i++) {

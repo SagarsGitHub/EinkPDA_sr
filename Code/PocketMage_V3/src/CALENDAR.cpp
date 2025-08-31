@@ -1,5 +1,6 @@
-
 #include <pocketmage.h>
+
+static constexpr const char* TAG = "CALENDAR"; // Tag for all calls to ESP_LOG
 
 enum CalendarState { WEEK, MONTH, NEW_EVENT, VIEW_EVENT, SUN, MON, TUE, WED, THU, FRI, SAT };
 CalendarState CurrentCalendarState = MONTH;
@@ -37,6 +38,7 @@ void CALENDAR_INIT() {
 }
 
 // Event Data Management
+// TODO: Migrate to a better/global file management system
 void updateEventArray() {
   SDActive = true;
   setCpuFrequencyMhz(240);
@@ -44,7 +46,7 @@ void updateEventArray() {
 
   File file = SD_MMC.open("/sys/events.txt", "r"); // Open the text file in read mode
   if (!file) {
-    Serial.println("Failed to open file for reading");
+    ESP_LOGE(TAG, "Failed to open file for reading: %s", file.path());
     return;
   }
 

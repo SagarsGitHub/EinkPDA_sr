@@ -3,6 +3,8 @@
 
 #include <pocketmage.h>
 
+static constexpr const char* TAG = "MAIN"; // TODO: Come up with a better tag
+
 //        .o.       ooooooooo.   ooooooooo.    .oooooo..o  //
 //       .888.      `888   `Y88. `888   `Y88. d8P'    `Y8  //
 //      .8"888.      888   .d88'  888   .d88' Y88bo.       //
@@ -145,7 +147,7 @@ void setup() {
   // setupCAP() to begin here
   // MPR121 / SLIDER
   if (!cap.begin(MPR121_ADDR)) {
-    Serial.println("TouchPad Failed");
+    ESP_LOGE(TAG, "TouchPad Failed");
     OLED().oledWord("TouchPad Failed");
     delay(1000);
   }
@@ -155,8 +157,7 @@ void setup() {
   // RTC SETUP
   pinMode(RTC_INT, INPUT);
   if (!rtc.begin()) {
-    Serial.println("Couldn't find RTC");
-    Serial.flush();
+    ESP_LOGE(TAG, "Couldn't find RTC");
     delay(1000);
   }
   // SET CLOCK IF NEEDED
