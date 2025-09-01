@@ -846,7 +846,7 @@ void scrollPreview() {
 
     // Draw tooltip
     u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("Tab:Edit Inline"),
-                 u8g2.getDisplayHeight(), "Tab: Edit Inline");
+                 u8g2.getDisplayHeight(), "Tab:Edit Inline");
 
     // Draw Seperator
     u8g2.drawVLine(80, 0, u8g2.getDisplayHeight());
