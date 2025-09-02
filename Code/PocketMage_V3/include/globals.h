@@ -113,10 +113,10 @@ extern bool noTimeout;               // Disable timeout
 extern volatile bool OLEDPowerSave;  // OLED power save mode
 extern volatile bool disableTimeout; // Disable timeout globally
 extern volatile int battState;       // Battery state
-extern volatile int prevBattState;   // Previous battery state
+// extern volatile int prevBattState;   // Previous battery state
 extern unsigned int flashMillis;     // Flash timing
 extern int prevTime;                 // Previous time (minutes)
-// extern uint8_t prevSec;              // Previous seconds
+extern uint8_t prevSec;              // Previous seconds
 extern TaskHandle_t einkHandlerTaskHandle; // E-Ink handler task
 
 // ===================== KEYBOARD STATE =====================
