@@ -9,7 +9,7 @@
 #include <GxEPD2_BW.h>
 
 // Initialization of eink display class
-static PocketmageEink eink(display);
+static PocketmageEink pm_eink(display);
 
 // Setup for Eink Class
 void setupEink() {
@@ -32,14 +32,13 @@ void setupEink() {
 
 }
 
-// Wire function  for Eink classa
+// Wire function  for Eink class
 // add any global references here + add set function to class header file
 void wireEink() {
-  eink.setTextBuffer(&allLines);
-  eink.setEditingFilePtr(&editingFile);
-  eink.setDynamicScroll(&dynamicScroll);
+  pm_eink.setTextBuffer(&allLines);
+  pm_eink.setEditingFilePtr(&editingFile);
+  pm_eink.setDynamicScroll(&dynamicScroll);
 }
 
-
 // Access for other apps 
-PocketmageEink& EINK() { return eink; }
+PocketmageEink& EINK() { return pm_eink; }

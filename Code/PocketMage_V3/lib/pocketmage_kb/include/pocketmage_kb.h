@@ -20,13 +20,12 @@ public:
 
   using KbStateFn = std::function<int()>;
 
-  void setTCA8418EventFlag(volatile bool* flag)      { TCA8418_event_ = flag;}
-  void setPrevTimeMillis(volatile int* prevTime)     { prevTimeMillis_ = prevTime;}
+  void setTCA8418EventFlag(volatile bool* flag)          { TCA8418_event_ = flag;}
+  void setPrevTimeMillis(volatile int* prevTime)    { prevTimeMillis_ = prevTime;}
   void setKeyboardState(int* kbState)                       { kbState_ = kbState;}
-  void setKeyboardStateGetter(KbStateFn fn) { kbStateFn_ = std::move(fn);}
+  void setKeyboardStateGetter(KbStateFn fn)         { kbStateFn_ = std::move(fn);}
 
   // Main methods
-  void wireKB(Adafruit_TCA8418* hw);
   void IRAM_ATTR TCA8418_irq();
   char updateKeypress();
 
@@ -38,7 +37,7 @@ private:
   int*                  kbState_        = nullptr;
   KbStateFn             kbStateFn_      = nullptr;
 
-  volatile int*         prevTimeMillis_ =  nullptr;
+  volatile int*         prevTimeMillis_ = nullptr;
 
   int currentKbState() const;
 };
@@ -47,5 +46,4 @@ void wireKB();
 void setupKB();
 // Interrupt handler stored in IRAM for fast interrupt response
 void IRAM_ATTR KB_irq_handler();
-int getKBState();
 PocketmageKB& KB();

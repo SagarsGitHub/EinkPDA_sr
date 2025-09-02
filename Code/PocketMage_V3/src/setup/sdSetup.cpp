@@ -3,7 +3,7 @@
 static constexpr const char* TAG = "SD";
 
 // Initialization of sd class
-static PocketmageSD sd;
+static PocketmageSD pm_sd;
 
 // Setup for SD Class
 // @ dependencies:
@@ -58,21 +58,21 @@ void setupSD() {
     if (f) f.close();
   }
  
-  loadState();
+  pocketmage::power::loadState();
 
 }
 
 // Wire function  for SD class
 // add any global references here + add set function to class header file
 void wireSD() {
-    sd.setFileSys(&SD_MMC);
-    sd.setOled(OLED());
-    sd.setEink(EINK());
-    sd.setEditingFile(&editingFile);
-    sd.setFilesList(filesList);
-    sd.setNoSD(&noSD);
-    sd.setNoTimeout(&noTimeout);
+    pm_sd.setFileSys(&SD_MMC);
+    pm_sd.setOled(OLED());
+    pm_sd.setEink(EINK());
+    pm_sd.setEditingFile(&editingFile);
+    pm_sd.setFilesList(filesList);
+    pm_sd.setNoSD(&noSD);
+    pm_sd.setNoTimeout(&noTimeout);
 }
 
 // Access for other apps
-PocketmageSD& SD() { return sd; }
+PocketmageSD& SD() { return pm_sd; }

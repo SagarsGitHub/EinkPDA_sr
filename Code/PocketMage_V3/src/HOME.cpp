@@ -261,7 +261,7 @@ void processKB_HOME() {
       break;
 
     case NOWLATER:
-      DateTime now = rtc.now();
+      DateTime now = CLOCK().nowDT();
       if (prevTime != now.minute()) {
         prevTime = now.minute();
         newState = true;
@@ -300,7 +300,7 @@ void einkHandler_HOME() {
         uint8_t centerX     = 76;
         uint8_t centerY     = 94;
 
-        DateTime now = rtc.now();
+        DateTime now = CLOCK().nowDT();
 
         // Convert time to proper angles in radians
         float minuteAngle = (now.minute() / 60.0) * 2 * pi;  

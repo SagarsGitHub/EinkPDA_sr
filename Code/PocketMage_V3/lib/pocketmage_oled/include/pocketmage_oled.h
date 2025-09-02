@@ -35,23 +35,23 @@ public:
   using KbStateFn = std::function<int()>;
   using MaxCharsFn = std::function<uint16_t()>;
 
-  void setAllLines(std::vector<String>* lines)              { lines_ = lines;}
-  void setDynamicScroll(volatile long* scroll)              { dynamicScroll_ = scroll;}
-  void setReferenceWidth(uint16_t w)                        { refWidth_ = w;}  // E-ink measurement
+  void setAllLines(std::vector<String>* lines)                        { lines_ = lines;}
+  void setDynamicScroll(volatile long* scroll)               { dynamicScroll_ = scroll;}
+  void setReferenceWidth(uint16_t w)                                   { refWidth_ = w;}  // E-ink measurement
   void setMeasureTextWidth(MeasureTextFn fn)                { measure_ = std::move(fn);}  // function for measuring text width in e-ink pixels
   void setBattery(volatile int* st, const uint8_t* const* icons, int iconCount) {   // Battery icon/state
     battState_ = st;
     battIcons_ = icons;
     battIconCount_ = iconCount;
   }
-  void setKeyboardState(int* kbState)                       { kbState_ = kbState;}  // Keyboard state: 0=NORMAL, 1=SHIFT, 2=FUNC
-  void setKeyboardStateGetter(KbStateFn fn) { kbStateFn_ = std::move(fn);}
-  void setClock(RTC_PCF8563* rtc, bool* systemClock, bool* showYear, const char (*days)[12])   // Clock
-  { rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}
-  void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}  // Flags
-  void setSD(volatile bool* sdActive)                       { sdActive_ = sdActive;}
-  void setScrollBitmap(const uint8_t* bmp128x32)            { scrollBmp_ = bmp128x32;}  // Static assets
-  void setMaxCharsPerLineEinkGetter(MaxCharsFn fn) { maxCharsFn_ = std::move(fn);}
+  void setKeyboardState(int* kbState)                             { kbState_ = kbState;}      // Keyboard state: 0=NORMAL, 1=SHIFT, 2=FUNC
+  void setKeyboardStateGetter(KbStateFn fn)               { kbStateFn_ = std::move(fn);}
+  void setClock(RTC_PCF8563* rtc, bool* systemClock, bool* showYear, const char (*days)[12])   
+  {rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}               // Clock
+  void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}      // Flags
+  void setSD(volatile bool* sdActive)                           { sdActive_ = sdActive;}
+  void setScrollBitmap(const uint8_t* bmp128x32)              { scrollBmp_ = bmp128x32;}
+  void setMaxCharsPerLineEinkGetter(MaxCharsFn fn)       { maxCharsFn_ = std::move(fn);}
   
   // Main methods
   void oledWord(String word, bool allowLarge = false, bool showInfo = true);

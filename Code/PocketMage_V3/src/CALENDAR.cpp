@@ -97,7 +97,7 @@ void updateEventsFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing calendarEvents file first
-  delFile("/sys/events.txt");
+  pocketmage::file::delFile("/sys/events.txt");
 
   // Iterate through the calendarEvents vector and append each task to the file
   for (size_t i = 0; i < calendarEvents.size(); i++) {
@@ -105,7 +105,7 @@ void updateEventsFile() {
     String eventInfo = calendarEvents[i][0] + "|" + calendarEvents[i][1] + "|" + calendarEvents[i][2] + "|" + calendarEvents[i][3]+ "|" + calendarEvents[i][4]+ "|" + calendarEvents[i][5];
     
     // Append the task info to the file
-    appendToFile("/sys/events.txt", eventInfo);
+    pocketmage::file::appendToFile("/sys/events.txt", eventInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
@@ -280,7 +280,7 @@ void commandSelectMonth(String command) {
         newState = true;
 
         // Update monthOffsetCount relative to now
-        DateTime now = rtc.now();
+        DateTime now = CLOCK().nowDT();
         int currentAbsMonth = now.year() * 12 + now.month();
         int targetAbsMonth = currentYear * 12 + currentMonth;
         monthOffsetCount = targetAbsMonth - currentAbsMonth;
@@ -306,7 +306,7 @@ void commandSelectMonth(String command) {
     currentMonth = month;
     currentDate = date;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int currentAbsMonth = now.year() * 12 + now.month();
     int targetAbsMonth = currentYear * 12 + currentMonth;
     monthOffsetCount = targetAbsMonth - currentAbsMonth;
@@ -345,7 +345,7 @@ void commandSelectMonth(String command) {
   // Check if user entered a numeric day (for current month)
   else {
     int intDay = stringToPositiveInt(command);
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     if (intDay == -1 || intDay > daysInMonth(currentMonth, currentYear)) {
       OLED().oledWord("Invalid");
       delay(500);
@@ -411,7 +411,7 @@ void commandSelectWeek(String command) {
   else if (command == "sun" || command == "su") {
     CurrentCalendarState = SUN;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day()); 
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedSunday = currentSunday + TimeSpan(weekOffsetCount * 7, 0, 0, 0);
@@ -427,7 +427,7 @@ void commandSelectWeek(String command) {
   else if (command == "mon" || command == "mo") {
     CurrentCalendarState = MON;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day());
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedMonday = currentSunday + TimeSpan(weekOffsetCount * 7 + 1, 0, 0, 0);
@@ -443,7 +443,7 @@ void commandSelectWeek(String command) {
   else if (command == "tue" || command == "tu") {
     CurrentCalendarState = TUE;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day());
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedTuesday = currentSunday + TimeSpan(weekOffsetCount * 7 + 2, 0, 0, 0);
@@ -459,7 +459,7 @@ void commandSelectWeek(String command) {
   else if (command == "wed" || command == "we") {
     CurrentCalendarState = WED;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day());
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedWednesday = currentSunday + TimeSpan(weekOffsetCount * 7 + 3, 0, 0, 0);
@@ -475,7 +475,7 @@ void commandSelectWeek(String command) {
   else if (command == "thu" || command == "th") {
     CurrentCalendarState = THU;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day());
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedThursday = currentSunday + TimeSpan(weekOffsetCount * 7 + 4, 0, 0, 0);
@@ -491,7 +491,7 @@ void commandSelectWeek(String command) {
   else if (command == "fri" || command == "fr") {
     CurrentCalendarState = FRI;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day());
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedFriday = currentSunday + TimeSpan(weekOffsetCount * 7 + 5, 0, 0, 0);
@@ -507,7 +507,7 @@ void commandSelectWeek(String command) {
   else if (command == "sat" || command == "sa") {
     CurrentCalendarState = SAT;
 
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
     int todayDOW = getDayOfWeek(now.year(), now.month(), now.day());
     DateTime currentSunday = now - TimeSpan(todayDOW, 0, 0, 0);
     DateTime viewedSaturday = currentSunday + TimeSpan(weekOffsetCount * 7 + 6, 0, 0, 0);
@@ -705,7 +705,7 @@ void drawCalendarMonth(int monthOffset) {
   int CELL_W = 44;     // Width of each cell
   int CELL_H = 27;     // Height of each cell
 
-  DateTime now = rtc.now();
+  DateTime now = CLOCK().nowDT();
 
   // Step 1: Calculate target month/year
   int month = now.month() + monthOffset;
@@ -800,7 +800,7 @@ void drawCalendarWeek(int weekOffset) {
   display.drawBitmap(0, 0, calendar_allArray[0], 320, 218, GxEPD_BLACK);
 
   // Get current date
-  DateTime now = rtc.now();
+  DateTime now = CLOCK().nowDT();
   int year = now.year();
   int month = now.month();
   int day = now.day();
@@ -879,7 +879,7 @@ void drawCalendarWeek(int weekOffset) {
 // Loops
 void processKB_CALENDAR() {
   int currentMillis = millis();
-  DateTime now = rtc.now();
+  DateTime now = CLOCK().nowDT();
 
   switch (CurrentCalendarState) {
     case MONTH:

@@ -82,7 +82,7 @@ void PocketmageSD::readFile(fs::FS &fs, const char *path) {
     setCpuFrequencyMhz(240);
     delay(50);
     if (noTimeout_) *noTimeout_ = true;
-    ESP_LOGI(tag, "Reading file %s\r\n" path);
+    ESP_LOGI(tag, "Reading file %s\r\n", path);
 
     File file = fs.open(path);
     if (!file || file.isDirectory()) {
