@@ -8,8 +8,6 @@
 
 #include <pocketmage_eink.h>
 
-PocketmageEink::PocketmageEink(DisplayT& d) : display_(d) {}
-
 // ===================== main functions =====================
 void PocketmageEink::refresh() {
   // USE A SLOW FULL UPDATE EVERY N FAST UPDATES OR WHEN SPECIFIED

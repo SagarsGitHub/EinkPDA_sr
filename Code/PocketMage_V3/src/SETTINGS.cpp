@@ -19,7 +19,7 @@ void settingCommandSelect(String command) {
 
   if (command.startsWith("timeset ")) {
     String timePart = command.substring(8);
-    setTimeFromString(timePart);
+    pocketmage::time::setTimeFromString(timePart);
     return;
   }
   else if (command.startsWith("dateset ")) {
@@ -29,8 +29,8 @@ void settingCommandSelect(String command) {
       int month = datePart.substring(4, 6).toInt();
       int day   = datePart.substring(6, 8).toInt();
 
-      DateTime now = rtc.now();  // Preserve current time
-      rtc.adjust(DateTime(year, month, day, now.hour(), now.minute(), now.second()));
+      DateTime now = CLOCK().nowDT();  // Preserve current time
+      CLOCK().getRTC().adjust(DateTime(year, month, day, now.hour(), now.minute(), now.second()));
     } else {
       OLED().oledWord("Invalid format (use YYYYMMDD)");
       delay(2000);
@@ -290,7 +290,7 @@ void einkHandler_settings() {
     newState = false;
 
     // Load settings
-    loadState(false);
+    pocketmage::power::loadState(false);
     
     // Display Background
     display.fillScreen(GxEPD_WHITE);

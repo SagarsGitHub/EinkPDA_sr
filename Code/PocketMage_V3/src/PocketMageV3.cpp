@@ -50,16 +50,7 @@ void applicationEinkHandler() {
       break;
   }
 }
-// migrated from einkFunc.cpp
-void einkHandler(void* parameter) {
-  vTaskDelay(pdMS_TO_TICKS(250)); 
-  for (;;) {
-    applicationEinkHandler();
 
-    vTaskDelay(pdMS_TO_TICKS(50));
-    yield();
-  }
-}
 // ADD PROCESS/KEYBOARD APP SCRIPTS HERE
 void processKB() {
   switch (CurrentAppState) {
@@ -111,72 +102,28 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(I2C_SDA, I2C_SCL);
   SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
-  // setupSys() to begin here
-  // OLED SETUP
-  setupOled();
 
-  // STARTUP JINGLE
-  setupBZ();
-  
-  // WAKE INTERRUPT SETUP
-  pinMode(KB_IRQ, INPUT);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_8, 0);
-
-  // KEYBOARD SETUP
-  setupKB();
-
-  // EINK HANDLER SETUP
-  setupEink();
-  
-  // SD CARD SETUP
-  setupSD();
-
-
-  
-  // POWER SETUP
-  pinMode(PWR_BTN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(PWR_BTN), PWR_BTN_irq, FALLING);
-  pinMode(CHRG_SENS, INPUT);
-  pinMode(BAT_SENS, INPUT);
-  //WiFi.mode(WIFI_OFF);
-  //btStop();
-
-  // SET CPU CLOCK FOR POWER SAVE MODE
-  if (SAVE_POWER) setCpuFrequencyMhz(40 );
-  else            setCpuFrequencyMhz(240);
-  // setupCAP() to begin here
-  // MPR121 / SLIDER
-  if (!cap.begin(MPR121_ADDR)) {
-    ESP_LOGE(TAG, "TouchPad Failed");
-    OLED().oledWord("TouchPad Failed");
-    delay(1000);
-  }
-  cap.setAutoconfig(true);
-
-  // setupRTC() to begin here
-  // RTC SETUP
-  pinMode(RTC_INT, INPUT);
-  if (!rtc.begin()) {
-    ESP_LOGE(TAG, "Couldn't find RTC");
-    delay(1000);
-  }
-  // SET CLOCK IF NEEDED
-  if (SET_CLOCK_ON_UPLOAD || rtc.lostPower()) rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  rtc.start();
-
-  // Set "random" seed
-  randomSeed(analogRead(BAT_SENS));
-  // end setupSys()
+  setupSystem();
 }
 
 void loop() {
-  if (!noTimeout)  checkTimeout();
-  if (DEBUG_VERBOSE) printDebug();
+  if (!noTimeout)  pocketmage::time::checkTimeout();
+  if (DEBUG_VERBOSE) pocketmage::debug::printDebug();
 
-  updateBattState();
+  pocketmage::power::updateBattState();
   processKB();
 
   // Yield to watchdog
   vTaskDelay(50 / portTICK_PERIOD_MS);
   yield();
+}
+// migrated from einkFunc.cpp
+void einkHandler(void* parameter) {
+  vTaskDelay(pdMS_TO_TICKS(250)); 
+  for (;;) {
+    applicationEinkHandler();
+
+    vTaskDelay(pdMS_TO_TICKS(50));
+    yield();
+  }
 }

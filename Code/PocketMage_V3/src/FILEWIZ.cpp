@@ -131,7 +131,7 @@ void processKB_FILEWIZ() {
         // Y RECIEVED
         else if (inchar == 'y' || inchar == 'Y') {
           // DELETE FILE
-          delFile(workingFile);
+          pocketmage::file::delFile(workingFile);
           
           // RETURN TO FILE WIZ HOME
           CurrentFileWizState = WIZ0_;
@@ -199,7 +199,7 @@ void processKB_FILEWIZ() {
         else if (inchar == 13) {      
           // RENAME FILE                    
           String newName = "/" + currentWord + ".txt";
-          renFile(workingFile, newName);
+          pocketmage::file::renFile(workingFile, newName);
 
           // RETURN TO WIZ0
           CurrentFileWizState = WIZ0_;
@@ -270,7 +270,7 @@ void processKB_FILEWIZ() {
         else if (inchar == 13) {      
           // RENAME FILE                    
           String newName = "/" + currentWord + ".txt";
-          copyFile(workingFile, newName);
+          pocketmage::file::copyFile(workingFile, newName);
 
           // RETURN TO WIZ0
           CurrentFileWizState = WIZ0_;

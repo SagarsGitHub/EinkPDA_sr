@@ -21,7 +21,6 @@
 #include <assets.h>
 #include <config.h>
 
-
 /* // migrated to pocketmage_eink.h
 // FONTS
 // 3x7
@@ -100,7 +99,7 @@ extern int OLED_MAX_FPS;         // OLED max FPS
 
 // ===================== SYSTEM STATE =====================
 // E-Ink refresh control
-extern volatile int einkRefresh;     // Partial/full refresh counter
+// extern volatile int einkRefresh;     // Partial/full refresh counter
 extern int OLEDFPSMillis;            // Last OLED FPS update time
 extern int KBBounceMillis;           // Last keyboard debounce time
 extern volatile int timeoutMillis;   // Timeout tracking
@@ -117,7 +116,7 @@ extern volatile int battState;       // Battery state
 extern volatile int prevBattState;   // Previous battery state
 extern unsigned int flashMillis;     // Flash timing
 extern int prevTime;                 // Previous time (minutes)
-extern uint8_t prevSec;              // Previous seconds
+// extern uint8_t prevSec;              // Previous seconds
 extern TaskHandle_t einkHandlerTaskHandle; // E-Ink handler task
 
 // ===================== KEYBOARD STATE =====================
@@ -161,15 +160,12 @@ extern HOMEState CurrentHOMEState;            // Current home state
 
 // ===================== FUNCTION PROTOTYPES =====================
 // <sysFunc.cpp>
-// SYSTEM
-// migrate to pocketmage_sys (planned)
+/* migrated to pocketmage_sys
 void checkTimeout();
-void PWR_BTN_irq();
-//void TCA8418_irq(); // migrated to pocketmage_keypad.h
-//char updateKeypress(); // migrated to pocketmage_keypad.h
+void  IRAM_ATTR PWR_BTN_irq();
+void TCA8418_irq(); // migrated to pocketmage_keypad.h
+char updateKeypress(); // migrated to pocketmage_keypad.h
 void printDebug();
-String vectorToString();
-void stringToVector(String inputText);
 void saveFile();
 void writeMetadata(const String& path);
 void loadFile(bool showOLED = true);
@@ -179,15 +175,18 @@ void renFile(String oldFile, String newFile);
 void renMetadata(String oldPath, String newPath);
 void copyFile(String oldFile, String newFile);
 void updateBattState();
-String removeChar(String str, char character);
-void appendToFile(String path, String inText);
 void setCpuSpeed(int newFreq);
-//void playJingle(String jingle); // migrated to pocketmage_bz.h
+void playJingle(String jingle); // migrated to pocketmage_bz.h
 void deepSleep(bool alternateScreenSaver = false);
 void loadState(bool changeState = true);
-int stringToInt(String str);
-void updateScrollFromTouch();
+void updateScrollFromTouch(); // migrated to pocketmage_touch.h
 void setTimeFromString(String timeStr);
+*/
+//int stringToInt(String str);
+//String removeChar(String str, char character);
+//void appendToFile(String path, String inText);
+//String vectorToString();
+//void stringToVector(String inputText);
 
 /* //migrated to pocketmage_sd.h
 // microSD

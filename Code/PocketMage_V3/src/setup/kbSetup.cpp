@@ -4,11 +4,12 @@
 
 // Adafruit_TCA8418 keypad;
 // Initialization of sd class
-static PocketmageKB kb(keypad);
+static PocketmageKB pm_kb(keypad);
 
 static constexpr const char* TAG = "KEYBOARD";
 
-void IRAM_ATTR KB_irq_handler() { kb.TCA8418_irq(); }
+void IRAM_ATTR KB_irq_handler() { pm_kb.TCA8418_irq(); }
+
 // Setup for keyboard class
 void setupKB() {
   if (!keypad.begin(TCA8418_DEFAULT_ADDR, &Wire)) {
@@ -27,12 +28,11 @@ void setupKB() {
 // Wire function for keyboard class
 // add any global references here + add set function to class header file
 void wireKB() {
-    kb.setTCA8418EventFlag(&TCA8418_event);
-    kb.setPrevTimeMillis(&prevTimeMillis);
+    pm_kb.setTCA8418EventFlag(&TCA8418_event);
+    pm_kb.setPrevTimeMillis(&prevTimeMillis);
     // lamda to avoid redundant functions To Do: make class interface for each pocketmage component in library
-    kb.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
+    pm_kb.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
 }
 
-
 // Access for other apps
-PocketmageKB& KB() { return kb; }
+PocketmageKB& KB() { return pm_kb; }

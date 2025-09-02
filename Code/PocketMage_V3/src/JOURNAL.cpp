@@ -20,12 +20,12 @@ void JOURNAL_INIT() {
 // File Operations
 void loadJournal() {
   editingFile = currentJournal;
-  loadFile();
+  pocketmage::file::loadFile();
 }
 
 void saveJournal() {
   editingFile = currentJournal;
-  saveFile();
+  pocketmage::file::saveFile();
 }
 
 // Functions
@@ -43,7 +43,7 @@ void drawJMENU() {
   display.drawBitmap(0, 0, _journal, 320, 218, GxEPD_BLACK);
 
   // Update current progress graph
-  DateTime now = rtc.now();
+  DateTime now = CLOCK().nowDT();
   String year = String(now.year());
 
   // Files are in the format "/journal/YYYYMMDD.txt"
@@ -146,7 +146,7 @@ void JMENUCommand(String command) {
   command.toLowerCase();
 
   if (command == "t") {
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
 
     String dayStr = "";
     if (now.day() < 10) dayStr = "0" + String(now.day());
@@ -225,7 +225,7 @@ void JMENUCommand(String command) {
       }
       int month = (monthIndex / 3) + 1;
 
-      String year = String(rtc.now().year());
+      String year = String(CLOCK().nowDT().year());
       String m = (month < 10) ? "0" + String(month) : String(month);
       String d = (day < 10) ? "0" + String(day) : String(day);
       String fileName = "/journal/" + year + m + d + ".txt";
@@ -328,7 +328,7 @@ void processKB_JOURNAL() {
       EINK().setTXTFont(EINK().getCurrentFont());
 
       // UPDATE SCROLLBAR
-      updateScrollFromTouch();
+      TOUCH().updateScrollFromTouch();
 
       // HANDLE INPUTS
       //No char recieved

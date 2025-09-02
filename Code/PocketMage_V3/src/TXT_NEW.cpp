@@ -557,7 +557,7 @@ int displayDocumentPreview(int startX = 0, int startY = 0) {
   // Return total height used
   return cursorY - startY;
 }
-
+/* //migrated to pocketmage_touch.h
 // Scroll
 void updateScroll() {
   const char* tag = "TOUCH";
@@ -616,7 +616,7 @@ void updateScroll() {
     prev_lineScroll = lineScroll;
   }
 }
-
+*/
 bool lineHasText(const LineObject& lineObj) {
   // Check if line has any words
   if (lineObj.words.empty())
@@ -1524,8 +1524,9 @@ void processKB_TXT_NEW() {
     switch (CurrentTXTState_NEW) {
       case TXT_:
         // update scroll
-        updateScroll();
-
+        if (TOUCH().updateScroll(getTotalDisplayLines(), lineScroll)) {
+          updateScreen = true;
+        }
         switch (currentEditMode) {
           case edit_append:
             editAppend(inchar);

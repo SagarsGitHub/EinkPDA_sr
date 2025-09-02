@@ -72,7 +72,7 @@ int OLED_MAX_FPS;         // OLED max FPS
 
 // ===================== SYSTEM STATE =====================
 // E-Ink refresh control
-volatile int einkRefresh = FULL_REFRESH_AFTER; // Partial/full refresh counter
+// volatile int einkRefresh = FULL_REFRESH_AFTER; // Partial/full refresh counter
 int OLEDFPSMillis = 0;            // Last OLED FPS update time
 int KBBounceMillis = 0;           // Last keyboard debounce time
 volatile int timeoutMillis = 0;   // Timeout tracking
@@ -89,7 +89,7 @@ volatile int battState = 0;           // Battery state
 volatile int prevBattState = 0;       // Previous battery state
 unsigned int flashMillis = 0;         // Flash timing
 int prevTime = 0;                     // Previous time (minutes)
-uint8_t prevSec = 0;                  // Previous seconds
+// uint8_t prevSec = 0;                  // Previous seconds
 TaskHandle_t einkHandlerTaskHandle = NULL; // E-Ink handler task
 uint8_t partialCounter = 0;           // Counter for partial refreshes
 volatile bool forceSlowFullUpdate = false; // Force slow full update

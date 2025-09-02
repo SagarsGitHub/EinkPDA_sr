@@ -10,13 +10,10 @@
 #include <GxEPD2_BW.h>
 #include <RTClib.h>
 
-
 // Initialization of oled display class
-static PocketmageOled oled(u8g2);
-
+static PocketmageOled pm_oled(u8g2);
 
 constexpr int kBattIconCount = sizeof(batt_allArray) / sizeof(batt_allArray[0]);
-
 
 // e-ink text width wrapper to work with Eink display
 static uint16_t einkMeasureWidth(const String& s) {
@@ -41,19 +38,19 @@ void setupOled() {
 // Wire function  for Oled class
 // add any global references here + add set function to class header file
 void wireOled() {
-  oled.setAllLines(&allLines);
-  oled.setDynamicScroll(&dynamicScroll);
-  oled.setBattery(&battState, batt_allArray, kBattIconCount);
+  pm_oled.setAllLines(&allLines);
+  pm_oled.setDynamicScroll(&dynamicScroll);
+  pm_oled.setBattery(&battState, batt_allArray, kBattIconCount);
   // lamda to avoid redundant functions To Do: make class interface for each pocketmage component in library
-  oled.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
-  oled.setMSC(&mscEnabled);
-  oled.setSD(&SDActive);
-  oled.setScrollBitmap(scrolloled0);
-  oled.setReferenceWidth(display.width());
-  oled.setMeasureTextWidth(einkMeasureWidth);
-  oled.setMaxCharsPerLineEinkGetter([]{ return EINK().maxCharsPerLine(); });
-  oled.setClock(&rtc, &SYSTEM_CLOCK, &SHOW_YEAR, daysOfTheWeek);
+  pm_oled.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
+  pm_oled.setMSC(&mscEnabled);
+  pm_oled.setSD(&SDActive);
+  pm_oled.setScrollBitmap(scrolloled0);
+  pm_oled.setReferenceWidth(display.width());
+  pm_oled.setMeasureTextWidth(einkMeasureWidth);
+  pm_oled.setMaxCharsPerLineEinkGetter([]{ return EINK().maxCharsPerLine(); });
+  pm_oled.setClock(&CLOCK().getRTC(), &SYSTEM_CLOCK, &SHOW_YEAR, daysOfTheWeek);
 }
 
 // oled object reference for other apps
-PocketmageOled& OLED() { return oled; }
+PocketmageOled& OLED() { return pm_oled; }
