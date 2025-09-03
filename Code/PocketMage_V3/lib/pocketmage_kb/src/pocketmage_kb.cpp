@@ -31,6 +31,7 @@ char keysArrayFN[4][10] = {
 };
 #pragma endregion
 
+
 // ===================== public functions =====================
 char PocketmageKB::updateKeypress() {
   if ((TCA8418_event_) && (*TCA8418_event_ == true)) {
@@ -71,13 +72,6 @@ char PocketmageKB::updateKeypress() {
 
 // ===================== private functions =====================
 int PocketmageKB::currentKbState() const {
-  if (kbStateFn_) return kbStateFn_();
-  if (kbState_)   return *kbState_;
-  return 0;
+  return KB().state();
 }
 
-// ===================== ISR =====================
-// Interrupt handler stored in IRAM for fast interrupt response
-void IRAM_ATTR PocketmageKB::TCA8418_irq() {
-  if (TCA8418_event_) *TCA8418_event_ = true;
-}

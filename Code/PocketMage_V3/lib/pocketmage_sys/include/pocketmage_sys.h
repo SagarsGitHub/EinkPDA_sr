@@ -4,8 +4,10 @@
 
 class String;
 
-namespace pocketmage{
-  namespace file{
+// ===================== Pocketmage CLASS =====================
+class Pocketmage{
+public:
+    // file
     void saveFile();
     void writeMetadata(const String& path);
     void loadFile(bool showOLED = true);
@@ -15,28 +17,30 @@ namespace pocketmage{
     void renMetadata(String oldPath, String newPath);
     void copyFile(String oldFile, String newFile);
     void appendToFile(String path, String inText);
-  }
-
-  namespace time{
+  
+  // time
     void setTimeFromString(String timeStr);
     void checkTimeout();
     void setCpuSpeed(int newFreq);
-  }
-  namespace power{
+  
+  // power
     void deepSleep(bool alternateScreenSaver = false);
-    void IRAM_ATTR PWR_BTN_irq();
+    //void IRAM_ATTR PWR_BTN_irq();
     void updateBattState();
     void loadState(bool changeState = true);
-  }
-  namespace debug{
+  
+  // debug
     void printDebug();
-  }
-}
 
-// ===================== SYSTEM SETUP =====================
+  // text
+  String vectorToString();
+  void stringToVector(String inputText);
+  String removeChar(String str, char character);
+  int stringToInt(String str);  
+
+};
+
+// Interrupt handler stored in IRAM for fast interrupt response
 void setupSystem();
-// ===================== GLOBAL TEXT HELPERS =====================
-String vectorToString();
-void stringToVector(String inputText);
-String removeChar(String str, char character);
-int stringToInt(String str);
+void IRAM_ATTR PWR_BTN_irq_handler();
+Pocketmage& pocketmage();

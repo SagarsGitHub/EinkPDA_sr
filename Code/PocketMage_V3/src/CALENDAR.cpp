@@ -31,7 +31,7 @@ void CALENDAR_INIT() {
   currentLine = "";
   CurrentAppState = CALENDAR;
   CurrentCalendarState = MONTH;
-  CurrentKBState  = NORMAL;
+  KB().setState(NORMAL);
   newState = true;
   monthOffsetCount = 0;
   weekOffsetCount = 0;
@@ -97,7 +97,7 @@ void updateEventsFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing calendarEvents file first
-  pocketmage::file::delFile("/sys/events.txt");
+  pocketmage().delFile("/sys/events.txt");
 
   // Iterate through the calendarEvents vector and append each task to the file
   for (size_t i = 0; i < calendarEvents.size(); i++) {
@@ -105,7 +105,7 @@ void updateEventsFile() {
     String eventInfo = calendarEvents[i][0] + "|" + calendarEvents[i][1] + "|" + calendarEvents[i][2] + "|" + calendarEvents[i][3]+ "|" + calendarEvents[i][4]+ "|" + calendarEvents[i][5];
     
     // Append the task info to the file
-    pocketmage::file::appendToFile("/sys/events.txt", eventInfo);
+    pocketmage().appendToFile("/sys/events.txt", eventInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
@@ -256,7 +256,7 @@ void commandSelectMonth(String command) {
     currentLine     = "";
 
     newState        = true;
-    CurrentKBState  = NORMAL;
+    KB().setState(NORMAL);
     return;
   }
 
@@ -268,7 +268,7 @@ void commandSelectMonth(String command) {
 
     for (int i = 0; i < 12; i++) {
       if (prefix == monthNames[i]) {
-        int yearInt = stringToInt(yearPart);
+        int yearInt = pocketmage().stringToInt(yearPart);
         if (yearInt == -1 || yearInt < 1970 || yearInt > 2200) {
           OLED().oledWord("Invalid");
           delay(500);
@@ -338,7 +338,7 @@ void commandSelectMonth(String command) {
     }
 
     newState        = true;
-    CurrentKBState  = NORMAL;
+    KB().setState(NORMAL);
     return;
   }
 
@@ -381,7 +381,7 @@ void commandSelectMonth(String command) {
       }
 
       newState        = true;
-      CurrentKBState  = NORMAL;
+      KB().setState(NORMAL);
       return;
     }
   }
@@ -404,7 +404,7 @@ void commandSelectWeek(String command) {
     currentLine     = "";
 
     newState        = true;
-    CurrentKBState  = NORMAL;
+    KB().setState(NORMAL);
     return;
   }
   // Commands for each day
@@ -421,7 +421,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedSunday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 
   else if (command == "mon" || command == "mo") {
@@ -437,7 +437,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedMonday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 
   else if (command == "tue" || command == "tu") {
@@ -453,7 +453,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedTuesday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 
   else if (command == "wed" || command == "we") {
@@ -469,7 +469,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedWednesday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 
   else if (command == "thu" || command == "th") {
@@ -485,7 +485,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedThursday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 
   else if (command == "fri" || command == "fr") {
@@ -501,7 +501,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedFriday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 
   else if (command == "sat" || command == "sa") {
@@ -517,7 +517,7 @@ void commandSelectWeek(String command) {
     currentYear  = viewedSaturday.year();
 
     newState = true;
-    CurrentKBState = NORMAL;
+    KB().setState(NORMAL);
   }
 }
 
@@ -538,7 +538,7 @@ void commandSelectDay(String command) {
     currentLine       = "";
 
     newState          = true;
-    CurrentKBState    = NORMAL;
+    KB().setState(NORMAL);
     return;
   }
 
@@ -560,7 +560,7 @@ void commandSelectDay(String command) {
       currentLine       = "";
 
       CurrentCalendarState = VIEW_EVENT;
-      CurrentKBState       = NORMAL;
+      KB().setState(NORMAL);
       newState             = true;
     }
   }
@@ -893,7 +893,7 @@ void processKB_CALENDAR() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }  
         //CR Recieved
         else if (inchar == 13) {                          
@@ -902,13 +902,13 @@ void processKB_CALENDAR() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -933,7 +933,7 @@ void processKB_CALENDAR() {
         // CENTER Recieved
         else if (inchar == 20 || inchar == 7) {
           CurrentCalendarState = WEEK;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
           newState = true;
           delay(200);
           break;
@@ -941,8 +941,8 @@ void processKB_CALENDAR() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -965,7 +965,7 @@ void processKB_CALENDAR() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }  
         //CR Recieved
         else if (inchar == 13) {                          
@@ -975,13 +975,13 @@ void processKB_CALENDAR() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -1006,7 +1006,7 @@ void processKB_CALENDAR() {
         // CENTER Recieved
         else if (inchar == 20 || inchar == 7) {
           CurrentCalendarState = MONTH;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
           newState = true;
           delay(200);
           break;
@@ -1014,8 +1014,8 @@ void processKB_CALENDAR() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -1041,7 +1041,7 @@ void processKB_CALENDAR() {
             CurrentCalendarState = MONTH;
             currentLine     = "";
             newState        = true;
-            CurrentKBState  = NORMAL;
+            KB().setState(NORMAL);
           }
         }  
         //CR Recieved
@@ -1154,19 +1154,19 @@ void processKB_CALENDAR() {
             OLED().oledWord("New Event \"" + newEventName + "\" Created");
             delay(2000);
             CurrentCalendarState = MONTH;
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
           }
           newState = true;
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -1181,8 +1181,8 @@ void processKB_CALENDAR() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -1224,7 +1224,7 @@ void processKB_CALENDAR() {
           CurrentCalendarState = MONTH;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }  
         //CR Recieved
         else if (inchar == 13) {                          
@@ -1256,7 +1256,7 @@ void processKB_CALENDAR() {
                 CurrentCalendarState = MONTH;
                 currentLine     = "";
                 newState        = true;
-                CurrentKBState  = NORMAL;
+                KB().setState(NORMAL);
               }
               else if (currentLine == "s" || currentLine == "S") {
                 updateEventByIndex(editingEventIndex);
@@ -1266,7 +1266,7 @@ void processKB_CALENDAR() {
                 CurrentCalendarState = MONTH;
                 currentLine     = "";
                 newState        = true;
-                CurrentKBState  = NORMAL;
+                KB().setState(NORMAL);
               }
               currentLine = "";
               break;
@@ -1377,19 +1377,19 @@ void processKB_CALENDAR() {
             OLED().oledWord("New Event \"" + newEventName + "\" Created");
             delay(2000);
             CurrentCalendarState = MONTH;
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
           }
           newState = true;
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -1404,8 +1404,8 @@ void processKB_CALENDAR() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -1456,7 +1456,7 @@ void processKB_CALENDAR() {
           CurrentCalendarState = MONTH;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }  
         //CR Recieved
         else if (inchar == 13) {                          
@@ -1465,13 +1465,13 @@ void processKB_CALENDAR() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -1542,7 +1542,7 @@ void processKB_CALENDAR() {
         // CENTER Recieved
         else if (inchar == 20 || inchar == 7) {
           CurrentCalendarState = WEEK;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
           newState = true;
           delay(200);
           break;
@@ -1550,8 +1550,8 @@ void processKB_CALENDAR() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 

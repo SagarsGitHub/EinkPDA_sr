@@ -10,7 +10,7 @@ void SETTINGS_INIT() {
   currentLine = "";
   CurrentAppState = SETTINGS;
   CurrentSettingsState = settings0;
-  CurrentKBState  = NORMAL;
+  KB().setState(NORMAL);
   newState = true;
 }
 
@@ -19,7 +19,7 @@ void settingCommandSelect(String command) {
 
   if (command.startsWith("timeset ")) {
     String timePart = command.substring(8);
-    pocketmage::time::setTimeFromString(timePart);
+    pocketmage().setTimeFromString(timePart);
     return;
   }
   else if (command.startsWith("dateset ")) {
@@ -39,7 +39,7 @@ void settingCommandSelect(String command) {
   }
   else if (command.startsWith("lumina ")) {
     String luminaPart = command.substring(7);
-    int lumina = stringToInt(luminaPart);
+    int lumina = pocketmage().stringToInt(luminaPart);
     if (lumina == -1) {
       OLED().oledWord("Invalid");
       delay(500);
@@ -59,7 +59,7 @@ void settingCommandSelect(String command) {
   }
   else if (command.startsWith("timeout ")) {
     String timeoutPart = command.substring(8);
-    int timeout = stringToInt(timeoutPart);
+    int timeout = pocketmage().stringToInt(timeoutPart);
     if (timeout == -1) return;
     else if (timeout > 3600) timeout = 3600;
     else if (timeout < 15) timeout = 15;
@@ -74,7 +74,7 @@ void settingCommandSelect(String command) {
   }
   else if (command.startsWith("oledfps ")) {
     String oledfpsPart = command.substring(8);
-    int oledfps = stringToInt(oledfpsPart);
+    int oledfps = pocketmage().stringToInt(oledfpsPart);
     if (oledfps == -1) {
       OLED().oledWord("Invalid");
       delay(500);
@@ -234,13 +234,13 @@ void processKB_settings() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -261,13 +261,13 @@ void processKB_settings() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -290,7 +290,7 @@ void einkHandler_settings() {
     newState = false;
 
     // Load settings
-    pocketmage::power::loadState(false);
+    pocketmage().loadState(false);
     
     // Display Background
     display.fillScreen(GxEPD_WHITE);

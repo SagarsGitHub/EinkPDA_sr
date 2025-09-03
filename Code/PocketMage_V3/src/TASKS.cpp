@@ -40,7 +40,7 @@ void updateTasksFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing tasks file first
-  pocketmage::file::delFile("/sys/tasks.txt");
+  pocketmage().delFile("/sys/tasks.txt");
 
   // Iterate through the tasks vector and append each task to the file
   for (size_t i = 0; i < tasks.size(); i++) {
@@ -48,7 +48,7 @@ void updateTasksFile() {
     String taskInfo = tasks[i][0] + "|" + tasks[i][1] + "|" + tasks[i][2] + "|" + tasks[i][3];
     
     // Append the task info to the file
-    pocketmage::file::appendToFile("/sys/tasks.txt", taskInfo);
+    pocketmage().appendToFile("/sys/tasks.txt", taskInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
@@ -137,7 +137,7 @@ void processKB_TASKS() {
 
   switch (CurrentTasksState) {
     case TASKS0:
-      CurrentKBState = FUNC;
+      KB().setState(FUNC);
       //Make keyboard only updates after cooldown
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         inchar = KB().updateKeypress();
@@ -151,7 +151,7 @@ void processKB_TASKS() {
         // NEW TASK
         else if (inchar == '/' || inchar == 'n' || inchar == 'N') {
           CurrentTasksState = TASKS0_NEWTASK;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newTaskState = 0;
           newState = true;
           break;
@@ -180,7 +180,7 @@ void processKB_TASKS() {
       }
       break;
     case TASKS0_NEWTASK:
-      if (newTaskState == 1) CurrentKBState = FUNC;
+      if (newTaskState == 1) KB().setState(FUNC);
 
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         inchar = KB().updateKeypress();
@@ -189,13 +189,13 @@ void processKB_TASKS() {
         if (inchar == 0);                                        
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -251,8 +251,8 @@ void processKB_TASKS() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -267,7 +267,7 @@ void processKB_TASKS() {
     case TASKS1:
       disableTimeout = false;
 
-      CurrentKBState = FUNC;
+      KB().setState(FUNC);
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  

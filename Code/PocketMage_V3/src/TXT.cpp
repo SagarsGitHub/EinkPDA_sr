@@ -17,10 +17,10 @@ static String currentLine = "";
 static volatile bool doFull = false;
 
 void TXT_INIT_OLD() {
-  if (editingFile != "") pocketmage::file::loadFile();
+  if (editingFile != "") pocketmage().loadFile();
   CurrentAppState = TXT;
   CurrentTXTState = TXT_;
-  CurrentKBState  = NORMAL;
+  KB().setState(NORMAL);
   dynamicScroll = 0;
   newLineAdded = true;
 }
@@ -51,7 +51,7 @@ void processKB_TXT_OLD() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }
         //TAB Recieved
         else if (inchar == 9) {                                  
@@ -59,13 +59,13 @@ void processKB_TXT_OLD() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -104,42 +104,42 @@ void processKB_TXT_OLD() {
         else if (inchar == 6) {
           //File exists, save normally
           if (editingFile != "" && editingFile != "-") {
-            pocketmage::file::saveFile();
-            CurrentKBState = NORMAL;
+            pocketmage().saveFile();
+            KB().setState(NORMAL);
             newLineAdded = true;
           }
           //File does not exist, make a new one
           else {
             CurrentTXTState = WIZ3;
             currentLine = "";
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
             doFull = true;
             newState = true;
           }
         }
         //LOAD Recieved
         else if (inchar == 5) {
-          pocketmage::file::loadFile();
-          CurrentKBState = NORMAL;
+          pocketmage().loadFile();
+          KB().setState(NORMAL);
           newLineAdded = true;
         }
         //FILE Recieved
         else if (inchar == 7) {
           CurrentTXTState = WIZ0;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newState = true;
         }
         // Font Switcher 
         else if (inchar == 14) {                                  
           CurrentTXTState = FONT;
-          CurrentKBState = FUNC;
+          KB().setState(FUNC);
           newState = true;
         }
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -194,7 +194,7 @@ void processKB_TXT_OLD() {
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -223,7 +223,7 @@ void processKB_TXT_OLD() {
           }
           //Selected file is current file, return to editor
           else {
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
             CurrentTXTState = TXT_;
             newLineAdded = true;
             currentWord = "";
@@ -246,7 +246,7 @@ void processKB_TXT_OLD() {
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = WIZ0;
-          CurrentKBState = FUNC;
+          KB().setState(FUNC);
           EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
           newState = true;
           display.fillScreen(GxEPD_WHITE);
@@ -259,7 +259,7 @@ void processKB_TXT_OLD() {
             if (prevEditingFile == "" || prevEditingFile == "-") {
               CurrentTXTState = WIZ2;
               currentWord = "";
-              CurrentKBState = NORMAL;
+              KB().setState(NORMAL);
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
               display.fillScreen(GxEPD_WHITE);
@@ -267,14 +267,14 @@ void processKB_TXT_OLD() {
             //File to be saved exists
             else {
               //Save current file
-              pocketmage::file::saveFile();
+              pocketmage().saveFile();
 
               delay(200);
               //Load new file
-              pocketmage::file::loadFile();
+              pocketmage().loadFile();
               //Return to TXT
               CurrentTXTState = TXT_;
-              CurrentKBState = NORMAL;
+              KB().setState(NORMAL);
               newLineAdded = true;
               currentWord = "";
               currentLine = "";
@@ -284,10 +284,10 @@ void processKB_TXT_OLD() {
           //NO  (don't save current file)
           else if (numSelect == 2) {
             //Just load new file
-            pocketmage::file::loadFile();
+            pocketmage().loadFile();
             //Return to TXT
             CurrentTXTState = TXT_;
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
             newLineAdded = true;
             currentWord = "";
             currentLine = "";
@@ -308,14 +308,14 @@ void processKB_TXT_OLD() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
           newState = true;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
           newState = true;
         }
         //Space Recieved
@@ -335,17 +335,17 @@ void processKB_TXT_OLD() {
           prevEditingFile = "/" + currentWord + ".txt";
 
           //Save the file
-          pocketmage::file::saveFile();
+          pocketmage().saveFile();
 
           delay(200);
           //Load new file
-          pocketmage::file::loadFile();
+          pocketmage().loadFile();
 
           keypad.enableInterrupts();
 
           //Return to TXT_
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -355,8 +355,8 @@ void processKB_TXT_OLD() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL){
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL){
+            KB().setState(NORMAL);
           }
         }
 
@@ -372,13 +372,13 @@ void processKB_TXT_OLD() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {}
@@ -397,12 +397,12 @@ void processKB_TXT_OLD() {
           editingFile = "/" + currentWord + ".txt";
 
           //Save the file
-          pocketmage::file::saveFile();
+          pocketmage().saveFile();
           //Ask to save prev file
           
           //Return to TXT_
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -412,8 +412,8 @@ void processKB_TXT_OLD() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL){
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL){
+            KB().setState(NORMAL);
           }
         }
 
@@ -430,7 +430,7 @@ void processKB_TXT_OLD() {
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -468,11 +468,11 @@ void processKB_TXT_OLD() {
           EINK().setTXTFont(EINK().getCurrentFont());
 
           // UPDATE THE ARRAY TO MATCH NEW FONT SIZE
-          String fullTextStr = vectorToString();
-          stringToVector(fullTextStr);
+          String fullTextStr = pocketmage().vectorToString();
+          pocketmage().stringToVector(fullTextStr);
 
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -531,7 +531,7 @@ void einkHandler_TXT_OLD() {
         }
 
         EINK().refresh();
-        CurrentKBState = FUNC;
+        KB().setState(FUNC);
         break;
       case WIZ1:
         display.setFont(&FreeMonoBold9pt7b);
@@ -546,7 +546,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[1],200,218, GxEPD_BLACK);
 
         EINK().refresh();
-        CurrentKBState = FUNC;
+        KB().setState(FUNC);
         break;
       case WIZ2:
         display.setFont(&FreeMonoBold9pt7b);
@@ -561,7 +561,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[2],200,218, GxEPD_BLACK);
 
         EINK().refresh();
-        CurrentKBState = NORMAL;
+        KB().setState(NORMAL);
         break;
       case WIZ3:
         display.setFullWindow();
@@ -578,7 +578,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[3],200,218, GxEPD_BLACK);
 
         EINK().refresh();
-        CurrentKBState = NORMAL;
+        KB().setState(NORMAL);
         break;
       case FONT:
         display.setFullWindow();
@@ -622,7 +622,7 @@ void einkHandler_TXT_OLD() {
         }
 
         EINK().refresh();
-        CurrentKBState = FUNC;
+        KB().setState(FUNC);
         break;
     
     }

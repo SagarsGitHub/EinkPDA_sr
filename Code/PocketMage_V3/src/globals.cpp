@@ -10,30 +10,9 @@ volatile bool GxEPD2_310_GDEQ031T10::useFastFullUpdate = true;
 U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2(U8G2_R2, OLED_CS, OLED_DC, OLED_RST);
 
 // ===================== INPUT DEVICES =====================
-
 // Matrix keypad controller
 Adafruit_TCA8418 keypad;
-// Key layouts
-/* migrated to pocketmage_kb.h
-char keysArray[4][10] = {
-    { 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p' },
-    { 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',   8 },  // 8:BKSP
-    {   9, 'z', 'x', 'c', 'v', 'b', 'n', 'm', '.',  13 },  // 9:TAB, 13:CR
-    {   0,  17,  18, ' ', ' ', ' ',  19,  20,  21,   0 }   // 17:SHFT, 18:FN, 19:<-, 20:SEL, 21:->
-};
-char keysArraySHFT[4][10] = {
-    { 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P' },
-    { 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L',   8 },
-    {   9, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',',  13 },
-    {   0,  17,  18, ' ', ' ', ' ',  28,  29,  30,   0 }
-};
-char keysArrayFN[4][10] = {
-    { '1', '2', '3', '4', '5', '6', '7',  '8',  '9', '0' },
-    { '#', '!', '$', ':', ';', '(', ')', '\'', '\"',   8 },
-    {  14, '%', '_', '&', '+', '-', '/',  '?',  ',',  13 },
-    {   0,  17,  18, ' ', ' ', ' ',  12,    7,    6,   0 }
-};
-*/
+
 // Capacitive touch slider
 Adafruit_MPR121 cap = Adafruit_MPR121();
 volatile long int dynamicScroll = 0;         // Dynamic scroll offset
@@ -48,6 +27,7 @@ Buzzer buzzer(17);
 // ===================== RTC =====================
 // Real-time clock chip
 RTC_PCF8563 rtc;
+
 // Day names
 const char daysOfTheWeek[7][12] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
@@ -71,32 +51,26 @@ int OLED_BRIGHTNESS;      // OLED brightness (0-255)
 int OLED_MAX_FPS;         // OLED max FPS
 
 // ===================== SYSTEM STATE =====================
-// E-Ink refresh control
-// volatile int einkRefresh = FULL_REFRESH_AFTER; // Partial/full refresh counter
+
 int OLEDFPSMillis = 0;            // Last OLED FPS update time
 int KBBounceMillis = 0;           // Last keyboard debounce time
 volatile int timeoutMillis = 0;   // Timeout tracking
 volatile int prevTimeMillis = 0;  // Previous time for timeout
 volatile bool TCA8418_event = false;  // Keypad interrupt event
 volatile bool PWR_BTN_event = false;  // Power button event
-volatile bool SHFT = false;           // Shift key state
-volatile bool FN = false;             // Function key state
 volatile bool newState = false;       // App state changed
 bool noTimeout = false;               // Disable timeout
 volatile bool OLEDPowerSave = false;  // OLED power save mode
 volatile bool disableTimeout = false; // Disable timeout globally
 volatile int battState = 0;           // Battery state
-// volatile int prevBattState = 0;       // Previous battery state
 unsigned int flashMillis = 0;         // Flash timing
 int prevTime = 0;                     // Previous time (minutes)
-uint8_t prevSec = 0;                  // Previous seconds
 TaskHandle_t einkHandlerTaskHandle = NULL; // E-Ink handler task
 uint8_t partialCounter = 0;           // Counter for partial refreshes
 volatile bool forceSlowFullUpdate = false; // Force slow full update
 
 // ===================== KEYBOARD STATE =====================
 // char currentKB[4][10];            // Current keyboard layout
-KBState CurrentKBState = NORMAL;  // Current keyboard state
 
 // ===================== FILES & TEXT =====================
 volatile bool SDCARD_INSERT = false;  // SD card inserted event

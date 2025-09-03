@@ -13,7 +13,7 @@ static String currentLine = "";
 void HOME_INIT() {
   CurrentAppState = HOME;
   currentLine     = "";
-  CurrentKBState  = NORMAL;
+  KB().setState(NORMAL);
   CurrentHOMEState = HOME_HOME;
   newState = true;
 }
@@ -23,8 +23,8 @@ void commandSelect(String command) {
 
   // OPEN IN FILE WIZARD
   if (command.startsWith("-")) {
-    command = removeChar(command, ' ');
-    command = removeChar(command, '-');
+    command = pocketmage().removeChar(command, ' ');
+    command = pocketmage().removeChar(command, '-');
     keypad.disableInterrupts();
     SD().listDir(SD_MMC, "/");
     keypad.enableInterrupts();
@@ -42,8 +42,8 @@ void commandSelect(String command) {
 
   // OPEN IN TXT EDITOR
   if (command.startsWith("/")) {
-    command = removeChar(command, ' ');
-    command = removeChar(command, '/');
+    command = pocketmage().removeChar(command, ' ');
+    command = pocketmage().removeChar(command, '/');
     keypad.disableInterrupts();
     SD().listDir(SD_MMC, "/");
     keypad.enableInterrupts();
@@ -77,7 +77,7 @@ void commandSelect(String command) {
       else if (roll == 1) OLED().oledWord("D" + String(sides) + ": " + String(roll) + " :(");
       else                OLED().oledWord("D" + String(sides) + ": " + String(roll));
       delay(3000);
-      CurrentKBState = NORMAL;
+      KB().setState(NORMAL);
     }
   }
 
@@ -214,13 +214,13 @@ void processKB_HOME() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -231,7 +231,7 @@ void processKB_HOME() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }
         //ESC / CLEAR Recieved
         else if (inchar == 20) {                                  
@@ -246,8 +246,8 @@ void processKB_HOME() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 

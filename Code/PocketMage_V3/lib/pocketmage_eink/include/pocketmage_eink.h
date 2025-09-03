@@ -38,36 +38,35 @@ class PocketmageEink {
 public:
   explicit PocketmageEink(DisplayT& display) : display_(display) {}
 
-  // Wire up external buffers/state used to read from globals
-  void setTextBuffer(std::vector<String>* lines)                            { lines_ = lines; };               // reference to allLines
-  void setEditingFilePtr(String* editingFile)                   { editingFile_ = editingFile; };               // reference to editingFile string
-  void setDynamicScroll(volatile long* dynamicScroll)       { dynamicScroll_ = dynamicScroll; };     // reference to dynamicScroll
-  void setLineSpacing(uint8_t lineSpacing)                      { lineSpacing_ = lineSpacing; };                                 // reference to lineSpacing (default 6)
-  void setFullRefreshAfter(uint8_t fullRefreshAfter)  { fullRefreshAfter_ = fullRefreshAfter; };                              // reference to FULL_REFRESH_AFTER (default 5)
-  void setCurrentFont(const GFXfont* font){
-  if (currentFont_ == font) return; 
-    currentFont_ = font;
-  };                       // reference to currentFont
-  
-  // Main display functions
+  // Main display methods
   void refresh();
   void multiPassRefresh(int passes);
   void setFastFullRefresh(bool setting);
   void statusBar(const String& input, bool fullWindow=false);
   void drawStatusBar(const String& input);
-  void computeFontMetrics_();
   void setTXTFont(const GFXfont* font);
   void einkTextDynamic(bool doFull, bool noRefresh=false);
   int  countLines(const String& input, size_t maxLineLength = 29);
 
+  // Wire up external buffers/state used to read from globals
+  void setTextBuffer(std::vector<String>* lines)                            { lines_ = lines; };    // reference to allLines
+  void setEditingFilePtr(String* editingFile)                   { editingFile_ = editingFile; };    // reference to editingFile string
+  void setDynamicScroll(volatile long* dynamicScroll)       { dynamicScroll_ = dynamicScroll; };    // reference to dynamicScroll
+  void setLineSpacing(uint8_t lineSpacing)                      { lineSpacing_ = lineSpacing; };    // reference to lineSpacing (default 6)
+  void setFullRefreshAfter(uint8_t fullRefreshAfter)  { fullRefreshAfter_ = fullRefreshAfter; };    // reference to FULL_REFRESH_AFTER (default 5)
+  void setCurrentFont(const GFXfont* font){
+  if (currentFont_ == font) return; 
+    currentFont_ = font;
+  };   // reference to currentFont
+  
+  // Internal methods
+  void computeFontMetrics_();
   // getters 
   uint8_t maxCharsPerLine() const;
   uint8_t maxLines() const;
   const GFXfont* getCurrentFont();
   
   void forceSlowFullUpdate(bool force);
-
-
 
 private:
   DisplayT&             display_; // class reference to hardware display object

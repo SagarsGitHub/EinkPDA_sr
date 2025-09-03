@@ -99,18 +99,14 @@ void processKB() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////|
 // SETUP
 void setup() {
-  Serial.begin(115200);
-  Wire.begin(I2C_SDA, I2C_SCL);
-  SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
-
   setupSystem();
 }
 
 void loop() {
-  if (!noTimeout)  pocketmage::time::checkTimeout();
-  if (DEBUG_VERBOSE) pocketmage::debug::printDebug();
+  if (!noTimeout)  pocketmage().checkTimeout();
+  if (DEBUG_VERBOSE) pocketmage().printDebug();
 
-  pocketmage::power::updateBattState();
+  pocketmage().updateBattState();
   processKB();
 
   // Yield to watchdog
