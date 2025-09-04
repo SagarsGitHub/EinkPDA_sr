@@ -113,6 +113,7 @@ void loop() {
   vTaskDelay(50 / portTICK_PERIOD_MS);
   yield();
 }
+
 // migrated from einkFunc.cpp
 void einkHandler(void* parameter) {
   vTaskDelay(pdMS_TO_TICKS(250)); 

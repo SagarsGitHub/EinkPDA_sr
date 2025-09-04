@@ -95,7 +95,7 @@ extern String filesList[MAX_FILES];  // List of files
 enum KBState { NORMAL, SHIFT, FUNC };    // Keyboard state
 enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON };
 extern const String appStateNames[];     // App state names
-extern const unsigned char *appIcons[9]; // App icons
+extern const unsigned char *appIcons[11]; // App icons
 extern AppState CurrentAppState;         // Current app state
 
 // ===================== TXT APP =====================

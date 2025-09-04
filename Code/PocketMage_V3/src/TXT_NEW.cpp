@@ -202,6 +202,7 @@ struct DocLine {
   String line;                    // Raw line content
   std::vector<wordObject> words;  // Parsed words with formatting
   std::vector<LineObject> lines;  // split into line objects
+  ulong orderedListNumber;
 
   // Parse the line into wordObjects
   void parseWords() {
@@ -244,8 +245,11 @@ struct DocLine {
   void splitToLines() {
     uint16_t textWidth = display.width() - DISPLAY_WIDTH_BUFFER;
 
-    if (style == '>' || style == '-' || style == 'L' || style == 'C') {
+    if (style == '>' || style == 'C') {
       textWidth -= SPECIAL_PADDING;
+    }
+    else if (style == '-' || style == 'L') {
+      textWidth -= 2*SPECIAL_PADDING;
     }
 
     lines.clear();
@@ -295,22 +299,42 @@ struct DocLine {
 
     int cursorY = startY;
 
+    // Entire block is offscreen, do not render.
+    if (!lines.empty() && lines.back().index < offsetLineScroll) {
+      return 0;
+    }
+
+    // ---------- Non-Text Rendered Items ---------- //
+
+    // Horizontal Rules just print a line
+    if (style == 'H') {
+      display.drawFastHLine(0, cursorY + 3, display.width(), GxEPD_BLACK);
+      display.drawFastHLine(0, cursorY + 4, display.width(), GxEPD_BLACK);
+      return 8;
+    }
+    // Blank lines just take up space
+    else if (style == 'B') {
+      return 12;
+    }
+
+
+    // ---------- Add Padding If Needed ---------- //
+
     // Lists and Blockquotes are padded on the left
-    if (style == '>' || style == '-' || style == 'L')
+    if (style == '>')
       startX += SPECIAL_PADDING;
+    else if (style == '-' || style == 'L')
+      startX += 2*SPECIAL_PADDING;
+    // Code blocks are padded on both sides
     else if (style == 'C')
       startX += (SPECIAL_PADDING / 2);
+
+    
+    // ---------- Render Text ---------- //
 
     for (auto& ln : lines) {
       if (ln.index < offsetLineScroll)
         continue;  // skip lines above scroll
-
-      // Horizontal Rules just print a line
-      if (style == 'H' && (cursorY + 4) > 0 && (cursorY + 3) < display.height()) {
-        display.drawFastHLine(0, cursorY + 3, display.width(), GxEPD_BLACK);
-        display.drawFastHLine(0, cursorY + 4, display.width(), GxEPD_BLACK);
-        return 8;
-      }
 
       int cursorX = startX;
 
@@ -360,6 +384,8 @@ struct DocLine {
       cursorY += max_hpx + padding;
     }
 
+    // ---------- Post-Render Formatting ---------- //
+
     // Blockquotes get a vertical line on the left
     if (style == '>') {
       display.drawFastVLine(SPECIAL_PADDING / 2, startY, (cursorY - startY), GxEPD_BLACK);
@@ -377,10 +403,26 @@ struct DocLine {
     }
 
     // Headings get a horizontal line below them
-    else if ((style == '1' || style == '2' || style == '3') && (cursorY - 2) > 0 &&
-             (cursorY - 3) < display.height()) {
+    else if ((style == '1' || style == '2' || style == '3')) {
       display.drawFastHLine(0, cursorY - 2, display.width(), GxEPD_BLACK);
       display.drawFastHLine(0, cursorY - 3, display.width(), GxEPD_BLACK);
+    }
+
+    // Unordered Lists get a '●'
+    else if (style == '-') {
+      display.fillCircle(startX - 8, startY + 8, 3, GxEPD_BLACK);
+    }
+    // Ordered Lists get their #
+    else if (style == 'L') {
+      String number = String(orderedListNumber) + ". ";
+      const GFXfont* font = pickFont('T', false, false);
+      display.setFont(font);
+      int16_t x1, y1;
+      uint16_t wpx, hpx;
+      display.getTextBounds(number.c_str(), 0, 0, &x1, &y1, &wpx, &hpx);
+
+      display.setCursor(startX - wpx - 5, startY + hpx);
+      display.print(number.c_str());
     }
 
     return cursorY - startY;
@@ -394,10 +436,19 @@ struct DocLine {
 
     int cursorY = startY;
 
+    // Entire block is offscreen, do not render.
+    if (!lines.empty() && lines.back().index < lineScroll) {
+      return 0;
+    }
+
     // Horizontal Rules just print a line
     if (style == 'H' && cursorY > 0) {
       u8g2.drawHLine(startX, cursorY, 80);
       return 2;
+    }
+    // Blank Lines just take up space
+    else if (style == 'B') {
+      return 3;
     }
 
     // Lists and Blockquotes are padded on the left
@@ -473,19 +524,29 @@ struct DocLine {
 
     // Blockquotes get a vertical line on the left
     if (style == '>' && (cursorY - 1) > 0) {
-      u8g2.drawVLine((specialPadding / 2), startY, (cursorY - startY) - 1);
+      u8g2.drawVLine((specialPadding / 2), startY, (cursorY - startY));
     }
 
     // Code Blocks get a vertical line on each side
     else if (style == 'C' && (cursorY - 1) > 0) {
-      u8g2.drawVLine(SPECIAL_PADDING / 4 - 3, startY, (cursorY - startY) - 1);
-      u8g2.drawVLine(80 - (SPECIAL_PADDING / 4) + 3, startY, (cursorY - startY) - 1);
+      u8g2.drawVLine(SPECIAL_PADDING / 4 - 3, startY, (cursorY - startY));
+      u8g2.drawVLine(76 - (SPECIAL_PADDING / 4) + 3, startY, (cursorY - startY));
     }
 
     // Headings get a horizontal line below them
     else if ((style == '1' || style == '2' || style == '3') && (cursorY - 2) > 0) {
       u8g2.drawHLine(0, cursorY - 2, 80);
     }
+
+    // Ordered lists get a glyph
+    else if (style == 'L' && (startY+1) > 0) {
+      //u8g2.drawBox(startX - 3, startY, 2, 2);
+      u8g2.drawVLine(startX-3, startY, 2);
+      u8g2.drawPixel(startX-1, startY+1);
+    }
+    // Unordered lists get a '-'
+    else if (style == '-' && (startY) > 0)
+      u8g2.drawHLine(startX-3, startY, 2);
 
     return cursorY - startY;
   }
@@ -680,6 +741,9 @@ void toolBar(wordObject& wordObj) {
     case 'H':
       lineTypeLabel = "H RULE";
       break;
+    case 'B':
+      lineTypeLabel = "BLANK LINE";
+      break;
     default:
       lineTypeLabel = "";
       break;  // fallback if none match
@@ -834,6 +898,9 @@ void scrollPreview() {
       case 'H':
         lineTypeLabel = "HORIZ RULE";
         break;
+      case 'B':
+        lineTypeLabel = "BLANK LINE";
+        break;
       default:
         lineTypeLabel = "?";
         break;
@@ -846,7 +913,7 @@ void scrollPreview() {
 
     // Draw tooltip
     u8g2.drawStr(u8g2.getDisplayWidth() - u8g2.getStrWidth("Tab:Edit Inline"),
-                 u8g2.getDisplayHeight(), "Tab: Edit Inline");
+                 u8g2.getDisplayHeight(), "Tab:Edit Inline");
 
     // Draw Seperator
     u8g2.drawVLine(80, 0, u8g2.getDisplayHeight());
@@ -980,13 +1047,33 @@ void populateLines(std::vector<DocLine>& docLines) {
   }
 }
 
+void refreshOrderedListIndexes() {
+  int currentNumber = 0;
+  bool prevWasList = false;
+
+  for (auto& dl : docLines) {
+    if (dl.style == 'L') {
+      currentNumber = prevWasList ? currentNumber + 1 : 1;
+      dl.orderedListNumber = currentNumber;
+      prevWasList = true;
+    } else {
+      dl.orderedListNumber = -1;
+      prevWasList = false;
+    }
+  }
+}
+
 void refreshAllLineIndexes() {
+  // Refresh line indexes
   indexCounter = 0;                     // reset counter if you want indexes to start from 0
   for (auto& docLine : docLines) {      // iterate through all DocLines
     for (auto& line : docLine.lines) {  // iterate through each LineObject
       line.index = indexCounter++;
     }
   }
+
+  // Update list indexes
+  refreshOrderedListIndexes();
 }
 
 // Load File
@@ -1016,36 +1103,38 @@ void loadMarkdownFile(const String& path) {
     char style = 'T';
     String content = line;  // default is full line
 
-    if (line.startsWith("### ")) {
-      style = '3';
+    if (line.length() == 0) {
+      style = 'B'; // Blank line
+      content = "";
+    } else if (line.startsWith("### ")) {
+      style = '3'; // Heading 3
       content = line.substring(4);  // remove "### "
     } else if (line.startsWith("## ")) {
-      style = '2';
+      style = '2'; // Heading 2
       content = line.substring(3);  // remove "## "
     } else if (line.startsWith("# ")) {
-      style = '1';
+      style = '1'; // Heading 1
       content = line.substring(2);  // remove "# "
     } else if (line.startsWith("> ")) {
-      style = '>';
+      style = '>'; // Quote Block
       content = line.substring(2);  // remove "> "
     } else if (line.startsWith("- ")) {
-      style = '-';
-      // content = line.substring(2); // remove "- "
+      style = '-'; // Unordered List
+      content = line.substring(2); // remove "- "
     } else if (line == "---") {
-      style = 'H';
+      style = 'H'; // Horizontal Rule
       content = "---";  // horizontal line has no content
     } else if ((line.startsWith("'''")) || (line.startsWith("'") && line.endsWith("'"))) {
-      if (line.startsWith("'''")) {
+      if (line.startsWith("'''"))
         content = line.substring(3);
-      } else {
+      else
         content = line.substring(1, line.length() - 1);
-      }
 
-      style = 'C';
+      style = 'C'; // Code Block
     } else if (line.length() > 2 && isDigit(line.charAt(0)) && line.charAt(1) == '.' &&
                line.charAt(2) == ' ') {
-      style = 'L';
-      // content = line.substring(3); // remove "1. ", "2. ", etc.
+      style = 'L'; // Ordered List
+      content = line.substring(3); // remove "1. ", "2. ", etc.
     }
 
     docLines.push_back({style, content, {}});
@@ -1062,6 +1151,9 @@ void loadMarkdownFile(const String& path) {
 
   // Populate all the lines
   populateLines(docLines);
+
+  // Update indexes
+  refreshAllLineIndexes();
 
   if (SAVE_POWER)
     setCpuFrequencyMhz(80);
@@ -1187,6 +1279,33 @@ void editAppend(char inchar) {
   }
   // ENTER Received
   else if (inchar == 13) {
+    // Horizontal Rule
+    if (editingDocLine.style == 'H') {
+      editingDocLine.line = "---";
+      editingDocLine.words.clear();
+      editingDocLine.parseWords();
+      editingDocLine.splitToLines();
+    }
+    // Blank Line
+    bool currentLineEmpty = true;
+    for (auto& ln : editingDocLine.lines) {
+      if (lineHasText(ln)) {
+        currentLineEmpty = false;
+        break;
+      }
+    }
+    if (currentLineEmpty) {
+      editingDocLine.style = 'B';
+    }
+
+    // Retain style on next line for certain styles
+    char nextLineStyle = editingDocLine.style;
+    if (nextLineStyle == 'C' || nextLineStyle == '>' || nextLineStyle == '-' || nextLineStyle == 'L') {
+        // keep same style
+    } else {
+        nextLineStyle = 'T'; // fallback to body text
+    }
+
     // Wrap current word if it doesn't fit
     if (getLineWidth(*lastLine, editingDocLine.style) > display.width() - DISPLAY_WIDTH_BUFFER) {
       wordObject movedWord = std::move(*lastWord);
@@ -1202,7 +1321,7 @@ void editAppend(char inchar) {
 
     // Finish current DocLine and create a new one
     DocLine newDocLine;
-    newDocLine.style = 'T';
+    newDocLine.style = nextLineStyle;
 
     // Add one line and one empty word
     LineObject newLine;
