@@ -113,7 +113,7 @@ String filesList[MAX_FILES];          // List of files
 
 // ===================== APP STATES =====================
 const String appStateNames[] = { "txt", "filewiz", "usb", "bt", "settings", "tasks", "calendar", "journal", "lexicon", "script" , "loader" }; // App state names
-const unsigned char *appIcons[12] = { _homeIcons2, _homeIcons3, _homeIcons4, _homeIcons5, _homeIcons6, taskIconTasks0, _homeIcons7, _homeIcons8, _homeIcons9, _homeIcons11, _homeIcons10}; // App icons
+const unsigned char *appIcons[11] = { _homeIcons2, _homeIcons3, _homeIcons4, _homeIcons5, _homeIcons6, taskIconTasks0, _homeIcons7, _homeIcons8, _homeIcons9, _homeIcons11, _homeIcons10}; // App icons
 AppState CurrentAppState;             // Current app state
 
 // ===================== TXT APP =====================
