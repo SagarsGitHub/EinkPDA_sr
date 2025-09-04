@@ -172,6 +172,7 @@ void drawHome() {
     
     int xPos = startX + (spacingX * col);
     int yPos = startY + (spacingY * row);
+    if (row == 2) yPos += 10;
 
     display.drawBitmap(xPos, yPos, appIcons[i], iconSize, iconSize, GxEPD_BLACK);
     display.getTextBounds(appStateNames[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
@@ -180,6 +181,11 @@ void drawHome() {
   }
   display.setFont(&FreeMonoBold9pt7b);
 
+  // Draw sideload app rounded rect
+  display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (5*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
+  display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (1*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
+
+  // Draw status bar
   EINK().drawStatusBar("Type a Command:");
 }
 

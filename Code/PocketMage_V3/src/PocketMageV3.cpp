@@ -99,10 +99,6 @@ void processKB() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////|
 // SETUP
 void setup() {
-  Serial.begin(115200);
-  Wire.begin(I2C_SDA, I2C_SCL);
-  SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
-
   setupSystem();
 }
 
@@ -117,6 +113,7 @@ void loop() {
   vTaskDelay(50 / portTICK_PERIOD_MS);
   yield();
 }
+
 // migrated from einkFunc.cpp
 void einkHandler(void* parameter) {
   vTaskDelay(pdMS_TO_TICKS(250)); 

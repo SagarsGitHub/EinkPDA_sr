@@ -426,8 +426,8 @@ namespace pocketmage::time{
                 display.fillRect(0, display.height() - 26, display.width(), 26, GxEPD_WHITE);
                 display.drawRect(0, display.height() - 20, display.width(), 20, GxEPD_BLACK);
                 display.setCursor(4, display.height() - 6);
-                display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
-                                20, GxEPD_BLACK);
+                //display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
+                //                20, GxEPD_BLACK);
                 EINK().statusBar(editingFile, true);
 
                 display.fillRect(320 - 86, 240 - 52, 87, 52, GxEPD_WHITE);
@@ -499,8 +499,8 @@ namespace pocketmage::time{
                 display.fillRect(0, display.height() - 26, display.width(), 26, GxEPD_WHITE);
                 display.drawRect(0, display.height() - 20, display.width(), 20, GxEPD_BLACK);
                 display.setCursor(4, display.height() - 6);
-                display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
-                                20, GxEPD_BLACK);
+                //display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
+                //                20, GxEPD_BLACK);
                 EINK().statusBar(editingFile, true);
 
                 display.fillRect(320 - 86, 240 - 52, 87, 52, GxEPD_WHITE);
