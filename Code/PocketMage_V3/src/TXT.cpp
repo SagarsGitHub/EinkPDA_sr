@@ -497,9 +497,7 @@ void einkHandler_TXT_OLD() {
     switch (CurrentTXTState) {
       case TXT_:
         if (newState && doFull) {
-          display.setRotation(3);
-          display.setFullWindow();
-          display.fillScreen(GxEPD_WHITE);
+          EINK().resetScreen();
           EINK().refresh();
         }
         if (newLineAdded && !newState) {
@@ -510,7 +508,7 @@ void einkHandler_TXT_OLD() {
       case WIZ0:
         display.setFullWindow();
         EINK().einkTextDynamic(true, true);      
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
@@ -522,7 +520,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[0],200,218, GxEPD_BLACK);
 
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir("/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
@@ -534,7 +532,7 @@ void einkHandler_TXT_OLD() {
         KB().setState(FUNC);
         break;
       case WIZ1:
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
@@ -549,7 +547,7 @@ void einkHandler_TXT_OLD() {
         KB().setState(FUNC);
         break;
       case WIZ2:
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
@@ -566,7 +564,7 @@ void einkHandler_TXT_OLD() {
       case WIZ3:
         display.setFullWindow();
         EINK().einkTextDynamic(true, true);      
-        display.setFont(&FreeMonoBold9pt7b);
+        EINK().setTXTFont(&FreeMonoBold9pt7b);
         
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
@@ -590,32 +588,32 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fontfont0,200,218, GxEPD_BLACK);
 
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir("/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < 7; i++) {
           display.setCursor(88, 54+(17*i));
           switch (i) {
             case 0:
-              display.setFont(&FreeMonoBold9pt7b);
+              EINK().setTXTFont(&FreeMonoBold9pt7b);
               break;
             case 1:
-              display.setFont(&FreeSans9pt7b);
+              EINK().setTXTFont(&FreeSans9pt7b);
               break;
             case 2:
-              display.setFont(&FreeSerif9pt7b);
+              EINK().setTXTFont(&FreeSerif9pt7b);
               break;
             case 3:
-              display.setFont(&FreeSerifBold9pt7b);
+              EINK().setTXTFont(&FreeSerifBold9pt7b);
               break;
             case 4:
-              display.setFont(&FreeMono12pt7b);
+              EINK().setTXTFont(&FreeMono12pt7b);
               break;
             case 5:
-              display.setFont(&FreeSans12pt7b);
+              EINK().setTXTFont(&FreeSans12pt7b);
               break;
             case 6:
-              display.setFont(&FreeSerif12pt7b);
+              EINK().setTXTFont(&FreeSerif12pt7b);
               break;
           }
           display.print("Font Number " + String(i+1));

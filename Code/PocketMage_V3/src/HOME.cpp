@@ -26,7 +26,7 @@ void commandSelect(String command) {
     command = pocketmage().removeChar(command, ' ');
     command = pocketmage().removeChar(command, '-');
     keypad.disableInterrupts();
-    SD().listDir(SD_MMC, "/");
+    SD().listDir("/");
     keypad.enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
@@ -45,7 +45,7 @@ void commandSelect(String command) {
     command = pocketmage().removeChar(command, ' ');
     command = pocketmage().removeChar(command, '/');
     keypad.disableInterrupts();
-    SD().listDir(SD_MMC, "/");
+    SD().listDir("/");
     keypad.enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
@@ -165,7 +165,7 @@ void drawHome() {
   uint8_t startX = 20;    // Initial X position
   uint8_t startY = 20;    // Initial Y position
 
-  display.setFont(&FreeSerif9pt7b);
+  EINK().setTXTFont(&FreeSerif9pt7b);
   for (int i = 0; i < sizeof(appIcons) / sizeof(appIcons[0]); i++) {
     int row = i / appsPerRow;
     int col = i % appsPerRow;
@@ -178,7 +178,7 @@ void drawHome() {
     display.setCursor(xPos + (iconSize / 2) - (charWidth / 2), yPos + iconSize + 13);
     display.print(appStateNames[i]);
   }
-  display.setFont(&FreeMonoBold9pt7b);
+  EINK().setTXTFont(&FreeMonoBold9pt7b);
 
   EINK().drawStatusBar("Type a Command:");
 }
@@ -324,7 +324,7 @@ void einkHandler_HOME() {
 
           int loopCount = std::min((int)tasks.size(), 7);
           for (int i = 0; i < loopCount; i++) {
-            display.setFont(&FreeSerif9pt7b);
+            EINK().setTXTFont(&FreeSerif9pt7b);
             // PRINT TASK NAME
             display.setCursor(151, 68 + (25 * i));
             display.print(tasks[i][0].c_str());

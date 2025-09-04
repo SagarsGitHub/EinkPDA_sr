@@ -306,9 +306,7 @@ void einkHandler_FILEWIZ() {
     case WIZ0_:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         EINK().drawStatusBar("Select a File (0-9)");
@@ -316,7 +314,7 @@ void einkHandler_FILEWIZ() {
 
         // DRAW FILE LIST
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir("/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
@@ -330,9 +328,7 @@ void einkHandler_FILEWIZ() {
     case WIZ1_:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         EINK().drawStatusBar("- " + workingFile);
@@ -344,9 +340,7 @@ void einkHandler_FILEWIZ() {
     case WIZ1_YN:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         EINK().drawStatusBar("DEL:" + workingFile + "?(Y/N)");
@@ -358,9 +352,7 @@ void einkHandler_FILEWIZ() {
     case WIZ2_R:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         EINK().drawStatusBar("Enter New Filename:");
@@ -372,9 +364,7 @@ void einkHandler_FILEWIZ() {
     case WIZ2_C:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         EINK().drawStatusBar("Enter Name For Copy:");

@@ -758,9 +758,9 @@ void drawCalendarMonth(int monthOffset) {
 
     // Current day
     if (dayNum == now.day() && monthOffset == 0) {
-      display.setFont(&FreeSerifBold9pt7b);
+      EINK().setTXTFont(&FreeSerifBold9pt7b);
     }
-    else display.setFont(&FreeSerif9pt7b);
+    else EINK().setTXTFont(&FreeSerif9pt7b);
     
     display.setTextColor(GxEPD_BLACK);
     display.setCursor(x + 6, y + 15); 
@@ -780,7 +780,7 @@ void drawCalendarMonth(int monthOffset) {
 
     // Events found
     if (numEvents > 2) {
-      display.setFont(&Font5x7Fixed);
+      EINK().setTXTFont(&Font5x7Fixed);
       display.setCursor(x + 32, y + 16);
       display.print(String(numEvents));
     }
@@ -843,7 +843,7 @@ void drawCalendarWeek(int weekOffset) {
                       (d < 10 ? "0" : "") + String(d);*/
 
     // Draw date
-    display.setFont(&FreeSerif9pt7b);
+    EINK().setTXTFont(&FreeSerif9pt7b);
     display.setTextColor(GxEPD_BLACK);
     display.setCursor(9 + (i * 44), 62);
     String dateStr = String(m) + "/" + String(d);
@@ -863,13 +863,13 @@ void drawCalendarWeek(int weekOffset) {
       String eventName = dayEvents[j][0].substring(0, 6);
 
       // Print Start Time
-      display.setFont(&Font3x7FixedNum);
+      EINK().setTXTFont(&Font3x7FixedNum);
       display.setTextColor(GxEPD_BLACK);
       display.setCursor(12 + (i * 44), 80 + (j * 23));
       display.print(startTime);
 
       // Print Event Name
-      display.setFont(&Font5x7Fixed);
+      EINK().setTXTFont(&Font5x7Fixed);
       display.setCursor(12 + (i * 44), 89 + (j * 23));
       display.print(eventName);
     }
@@ -1572,9 +1572,7 @@ void einkHandler_CALENDAR() {
     case WEEK:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         drawCalendarWeek(weekOffsetCount);
@@ -1587,9 +1585,7 @@ void einkHandler_CALENDAR() {
     case MONTH:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         drawCalendarMonth(monthOffsetCount);
@@ -1602,13 +1598,11 @@ void einkHandler_CALENDAR() {
     case NEW_EVENT:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         display.drawBitmap(0, 0, calendar_allArray[2], 320, 218, GxEPD_BLACK);
 
-        display.setFont(&FreeSerif9pt7b);
+        EINK().setTXTFont(&FreeSerif9pt7b);
 
         display.setCursor(106, 68);
         display.print(newEventName);
@@ -1635,9 +1629,7 @@ void einkHandler_CALENDAR() {
     case VIEW_EVENT:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         switch(newEventState) {
           case -1:
@@ -1649,7 +1641,7 @@ void einkHandler_CALENDAR() {
         }
         display.drawBitmap(0, 0, calendar_allArray[3], 320, 218, GxEPD_BLACK);
 
-        display.setFont(&FreeSerif9pt7b);
+        EINK().setTXTFont(&FreeSerif9pt7b);
 
         display.setCursor(106, 68);
         display.print(newEventName);
@@ -1683,9 +1675,7 @@ void einkHandler_CALENDAR() {
     case SAT:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // Draw background
         // CurrentCalendarState enumerations somehow line up with calendar app bitmaps?
@@ -1694,7 +1684,7 @@ void einkHandler_CALENDAR() {
         display.drawBitmap(0, 0, calendar_allArray[CurrentCalendarState], 320, 218, GxEPD_BLACK);
 
         // Draw Date
-        display.setFont(&FreeSerif9pt7b);
+        EINK().setTXTFont(&FreeSerif9pt7b);
         display.setTextColor(GxEPD_BLACK);
         // Set cursor based on the day of the week
         display.setCursor(9 + (44*(CurrentCalendarState - 4)), 59);
@@ -1717,12 +1707,12 @@ void einkHandler_CALENDAR() {
           String bottomInfo = "Starts: " + startTime + ", Dur: " + duration + ", Rep: " + repeatCode;
 
           // Print event name
-          display.setFont(&Font5x7Fixed);
+          EINK().setTXTFont(&Font5x7Fixed);
           display.setCursor(48, 74 + (j * 19));
           display.print(name);
 
           // Print bottom info
-          display.setFont(&Font5x7Fixed);
+          EINK().setTXTFont(&Font5x7Fixed);
           display.setCursor(48, 82 + (j * 19));
           display.print(bottomInfo);
         }

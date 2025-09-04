@@ -321,9 +321,7 @@ void einkHandler_TASKS() {
     case TASKS0:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         display.drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
@@ -338,7 +336,7 @@ void einkHandler_TASKS() {
 
           int loopCount = std::min((int)tasks.size(), MAX_FILES);
           for (int i = 0; i < loopCount; i++) {
-            display.setFont(&FreeSerif9pt7b);
+            EINK().setTXTFont(&FreeSerif9pt7b);
             // PRINT TASK NAME
             display.setCursor(29, 54 + (17 * i));
             display.print(tasks[i][0].c_str());
@@ -358,9 +356,7 @@ void einkHandler_TASKS() {
       case TASKS0_NEWTASK:
         if (newState) {
           newState = false;
-          display.setRotation(3);
-          display.setFullWindow();
-          display.fillScreen(GxEPD_WHITE);
+          EINK().resetScreen();
 
           // DRAW APP
           display.drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
@@ -374,7 +370,7 @@ void einkHandler_TASKS() {
 
             int loopCount = std::min((int)tasks.size(), MAX_FILES);
             for (int i = 0; i < loopCount; i++) {
-              display.setFont(&FreeSerif9pt7b);
+              EINK().setTXTFont(&FreeSerif9pt7b);
               // PRINT TASK NAME
               display.setCursor(29, 54 + (17 * i));
               display.print(tasks[i][0].c_str());
@@ -401,9 +397,7 @@ void einkHandler_TASKS() {
     case TASKS1:
       if (newState) {
         newState = false;
-        display.setRotation(3);
-        display.setFullWindow();
-        display.fillScreen(GxEPD_WHITE);
+        EINK().resetScreen();
 
         // DRAW APP
         EINK().drawStatusBar("T:" + tasks[selectedTask][0]);

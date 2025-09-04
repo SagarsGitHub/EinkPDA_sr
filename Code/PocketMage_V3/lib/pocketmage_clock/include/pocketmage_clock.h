@@ -12,7 +12,6 @@ public:
   DateTime nowDT()                                         { return rtc_.now(); }
 
   bool begin();
-  bool isValid();
 
   // Getters
   RTC_PCF8563& getRTC()                                          { return rtc_; }

@@ -9,7 +9,6 @@
 #include <Adafruit_TCA8418.h>
 #pragma region keymaps
 // ===================== Keymaps =====================
-char currentKB[4][10];            // Current keyboard layout
 
 char keysArray[4][10] = {
     { 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p' },
@@ -52,7 +51,7 @@ char PocketmageKB::updateKeypress() {
         if (prevTimeMillis_) *prevTimeMillis_ = millis();
 
         //Return Key
-        switch (currentKbState()) {
+        switch (kbStateInternal_) {
           case 0:
             return keysArray[k/10][k%10];
           case 1:
@@ -69,9 +68,3 @@ char PocketmageKB::updateKeypress() {
   return 0;
 
 }
-
-// ===================== private functions =====================
-int PocketmageKB::currentKbState() const {
-  return KB().state();
-}
-

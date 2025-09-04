@@ -254,7 +254,7 @@ struct DocLine {
 
     for (auto& w : words) {
       const GFXfont* font = pickFont(style, w.bold, w.italic);
-      display.setFont(font);
+      EINK().setTXTFont(font);
 
       int16_t x1, y1;
       uint16_t wpx, hpx;
@@ -318,7 +318,7 @@ struct DocLine {
       uint16_t max_hpx = 0;
       for (auto& w : ln.words) {
         const GFXfont* font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
         int16_t x1, y1;
         uint16_t wpx, hpx;
         display.getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
@@ -333,7 +333,7 @@ struct DocLine {
       // 2. Draw all words at the same baseline
       for (auto& w : ln.words) {
         const GFXfont* font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
 
         int16_t x1, y1;
         uint16_t wpx, hpx;
@@ -450,7 +450,7 @@ struct DocLine {
       // 2. Draw all words at the same baseline
       for (auto& w : ln.words) {
         const GFXfont* font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
 
         int16_t x1, y1;
         uint16_t wpx, hpx;
@@ -1073,7 +1073,7 @@ int getLineWidth(const LineObject& lineObj, char style) {
   int lineWidth = 0;
   for (const auto& w : lineObj.words) {
     const GFXfont* font = pickFont(style, w.bold, w.italic);
-    display.setFont(font);
+    EINK().setTXTFont(font);
 
     int16_t x1, y1;
     uint16_t wpx, hpx;

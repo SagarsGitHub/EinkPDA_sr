@@ -42,6 +42,7 @@ public:
   void refresh();
   void multiPassRefresh(int passes);
   void setFastFullRefresh(bool setting);
+  void resetScreen();
   void statusBar(const String& input, bool fullWindow=false);
   void drawStatusBar(const String& input);
   void setTXTFont(const GFXfont* font);

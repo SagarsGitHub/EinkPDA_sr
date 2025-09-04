@@ -25,7 +25,6 @@ public:
   
   // power
     void deepSleep(bool alternateScreenSaver = false);
-    //void IRAM_ATTR PWR_BTN_irq();
     void updateBattState();
     void loadState(bool changeState = true);
   
@@ -42,5 +41,4 @@ public:
 
 // Interrupt handler stored in IRAM for fast interrupt response
 void setupSystem();
-void IRAM_ATTR PWR_BTN_irq_handler();
 Pocketmage& pocketmage();

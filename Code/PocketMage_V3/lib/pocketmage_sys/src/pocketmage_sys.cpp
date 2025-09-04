@@ -49,7 +49,7 @@ static int countVisibleChars(String input) {
         if (!editingFile.startsWith("/"))
         editingFile = "/" + editingFile;
         // OLED().oledWord("Saving File: "+ editingFile);
-        SD().writeFile(SD_MMC, (editingFile).c_str(), textToSave.c_str());
+        SD().writeFile((editingFile).c_str(), textToSave.c_str());
         // OLED().oledWord("Saved: "+ editingFile);
 
         // Write MetaData
@@ -78,7 +78,7 @@ static int countVisibleChars(String input) {
     String fileSizeStr = String(fileSizeBytes) + " Bytes";
 
     // Get line and char counts
-    int charCount = countVisibleChars(SD().readFileToString(SD_MMC, path.c_str()));
+    int charCount = countVisibleChars(SD().readFileToString(path.c_str()));
 
     String charStr = String(charCount) + " Char";
 
@@ -142,7 +142,7 @@ static int countVisibleChars(String input) {
         OLED().oledWord("Loading File");
         if (!editingFile.startsWith("/"))
         editingFile = "/" + editingFile;
-        String textToLoad = SD().readFileToString(SD_MMC, (editingFile).c_str());
+        String textToLoad = SD().readFileToString((editingFile).c_str());
         ESP_LOGV(TAG, "Text to load: %s", textToLoad.c_str());
 
         pocketmage().stringToVector(textToLoad);
@@ -171,7 +171,7 @@ static int countVisibleChars(String input) {
         // OLED().oledWord("Deleting File: "+ fileName);
         if (!fileName.startsWith("/"))
         fileName = "/" + fileName;
-        SD().deleteFile(SD_MMC, fileName.c_str());
+        SD().deleteFile(fileName.c_str());
         // OLED().oledWord("Deleted: "+ fileName);
 
         // Delete MetaData
@@ -239,7 +239,7 @@ static int countVisibleChars(String input) {
         oldFile = "/" + oldFile;
         if (!newFile.startsWith("/"))
         newFile = "/" + newFile;
-        SD().renameFile(SD_MMC, oldFile.c_str(), newFile.c_str());
+        SD().renameFile(oldFile.c_str(), newFile.c_str());
         OLED().oledWord(oldFile + " -> " + newFile);
         delay(1000);
 
@@ -322,8 +322,8 @@ static int countVisibleChars(String input) {
         oldFile = "/" + oldFile;
         if (!newFile.startsWith("/"))
         newFile = "/" + newFile;
-        String textToLoad = SD().readFileToString(SD_MMC, (oldFile).c_str());
-        SD().writeFile(SD_MMC, (newFile).c_str(), textToLoad.c_str());
+        String textToLoad = SD().readFileToString((oldFile).c_str());
+        SD().writeFile((newFile).c_str(), textToLoad.c_str());
         OLED().oledWord("Saved: " + newFile);
 
         // Write MetaData
@@ -349,7 +349,7 @@ static int countVisibleChars(String input) {
         delay(50);
 
         keypad.disableInterrupts();
-        SD().appendFile(SD_MMC, path.c_str(), inText.c_str());
+        SD().appendFile(path.c_str(), inText.c_str());
 
         // Write MetaData
         pocketmage().writeMetadata(path);
@@ -419,7 +419,7 @@ static int countVisibleChars(String input) {
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
 
-                display.setFont(&FreeMonoBold9pt7b);
+                EINK().setTXTFont(&FreeMonoBold9pt7b);
 
                 display.fillRect(0, display.height() - 26, display.width(), 26, GxEPD_WHITE);
                 display.drawRect(0, display.height() - 20, display.width(), 20, GxEPD_BLACK);
@@ -492,7 +492,7 @@ static int countVisibleChars(String input) {
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
-                display.setFont(&FreeMonoBold9pt7b);
+                EINK().setTXTFont(&FreeMonoBold9pt7b);
 
                 display.fillRect(0, display.height() - 26, display.width(), 26, GxEPD_WHITE);
                 display.drawRect(0, display.height() - 20, display.width(), 20, GxEPD_BLACK);

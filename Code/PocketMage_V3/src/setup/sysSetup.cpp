@@ -302,8 +302,6 @@ inline PocketmageOled& OLED() {
 // ===================== SETUP =====================
 #pragma region SETUP
 
-
-
 void setupSystem(){
   Serial.begin(115200);
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -348,8 +346,6 @@ void setupSystem(){
   // Set "random" seed
   randomSeed(analogRead(BAT_SENS));
 }
-
-
 // Access for other apps
 Pocketmage& pocketmage() { 
   static Pocketmage pm;

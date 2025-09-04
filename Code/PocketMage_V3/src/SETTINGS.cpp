@@ -296,7 +296,7 @@ void einkHandler_settings() {
     display.fillScreen(GxEPD_WHITE);
     display.drawBitmap(0, 0, _settings, 320, 218, GxEPD_BLACK);
 
-    display.setFont(&FreeSerif9pt7b);
+    EINK().setTXTFont(&FreeSerif9pt7b);
     // First column of settings
     // OLED_BRIGHTNESS
     display.setCursor(8, 42);

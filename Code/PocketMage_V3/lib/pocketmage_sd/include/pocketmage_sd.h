@@ -16,16 +16,15 @@ class PocketmageEink;
 // ===================== SD CLASS =====================
 class PocketmageSD {
 public:
-  explicit PocketmageSD() {}
 
-  // Main methods  To Do: remove arguments for fs::FS &fs and reference internal fs::FS* instead
-  void listDir(fs::FS &fs, const char *dirname);
-  void readFile(fs::FS &fs, const char *path);
-  String readFileToString(fs::FS &fs, const char *path);
-  void writeFile(fs::FS &fs, const char *path, const char *message);
-  void appendFile(fs::FS &fs, const char *path, const char *message);
-  void renameFile(fs::FS &fs, const char *path1, const char *path2);
-  void deleteFile(fs::FS &fs, const char *path);
+  // Main methods
+  void listDir(const char *dirname);
+  void readFile(const char *path);
+  String readFileToString(const char *path);
+  void writeFile(const char *path, const char *message);
+  void appendFile(const char *path, const char *message);
+  void renameFile(const char *path1, const char *path2);
+  void deleteFile(const char *path);
 
   // Wire up external buffers/state used to read from globals
   void setFileSys(fs::FS* fileSys)                 { fileSys_ = fileSys;}  // reference to fs::FS*

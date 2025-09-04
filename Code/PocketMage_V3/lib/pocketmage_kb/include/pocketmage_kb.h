@@ -26,7 +26,7 @@ public:
   void setNormal()                                    { kbStateInternal_ = 0; }
   void toggleShift()    { kbStateInternal_ = (kbStateInternal_ == 1) ? 0 : 1; }
   void toggleFunc()     { kbStateInternal_ = (kbStateInternal_ == 2) ? 0 : 2; }
-  
+
   // Wire up external buffers/state used to read from globals
   void setTCA8418EventFlag(volatile bool* TCA8418_event)          { TCA8418_event_ = TCA8418_event;}
   void setPrevTimeMillis(volatile int* prevTimeMillis)          { prevTimeMillis_ = prevTimeMillis;}
@@ -41,12 +41,8 @@ private:
 
   // Internal fallback/owned state
   int                   kbStateInternal_ = 0; // default NORMAL
-
-  int currentKbState() const;
 };
 
 void wireKB();
 void setupKB();
-// Interrupt handler stored in IRAM for fast interrupt response
-void IRAM_ATTR KB_irq_handler();
 PocketmageKB& KB();

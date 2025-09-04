@@ -69,9 +69,6 @@ TaskHandle_t einkHandlerTaskHandle = NULL; // E-Ink handler task
 uint8_t partialCounter = 0;           // Counter for partial refreshes
 volatile bool forceSlowFullUpdate = false; // Force slow full update
 
-// ===================== KEYBOARD STATE =====================
-// char currentKB[4][10];            // Current keyboard layout
-
 // ===================== FILES & TEXT =====================
 volatile bool SDCARD_INSERT = false;  // SD card inserted event
 bool noSD = false;                    // No SD card present

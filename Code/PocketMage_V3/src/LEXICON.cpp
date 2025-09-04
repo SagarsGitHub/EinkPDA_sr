@@ -246,12 +246,12 @@ void einkHandler_LEXICON() {
         display.setTextColor(GxEPD_BLACK);
 
         // Draw Word
-        display.setFont(&FreeSerif12pt7b);
+        EINK().setTXTFont(&FreeSerif12pt7b);
         display.setCursor(12, 50);
         display.print(defList[definitionIndex].first);
 
         // Draw Definition
-        display.setFont(&FreeSerif9pt7b);
+        EINK().setTXTFont(&FreeSerif9pt7b);
         display.setCursor(8, 87);
         // ADD WORD WRAP
         display.print(defList[definitionIndex].second);
