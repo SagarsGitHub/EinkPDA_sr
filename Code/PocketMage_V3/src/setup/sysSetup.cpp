@@ -1,6 +1,11 @@
 #include <pocketmage.h>
 
 void setupSystem(){
+  // Serial, I2C, SPI
+  Serial.begin(115200);
+  Wire.begin(I2C_SDA, I2C_SCL);
+  SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
+
   // OLED SETUP
   setupOled();
 
