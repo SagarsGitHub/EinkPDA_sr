@@ -103,10 +103,10 @@ void setup() {
 }
 
 void loop() {
-  if (!noTimeout)  pocketmage().checkTimeout();
-  if (DEBUG_VERBOSE) pocketmage().printDebug();
+  if (!noTimeout)  pocketmage::time::checkTimeout();
+  if (DEBUG_VERBOSE) pocketmage::debug::printDebug();
 
-  pocketmage().updateBattState();
+  pocketmage::power::updateBattState();
   processKB();
 
   // Yield to watchdog

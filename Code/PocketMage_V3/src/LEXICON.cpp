@@ -14,7 +14,7 @@ void LEXICON_INIT() {
   currentLine = "";
   CurrentAppState = LEXICON;
   CurrentLexState = MENU;
-  KB().setState(NORMAL);
+  CurrentKBState  = NORMAL;
   newState = true;
   definitionIndex = 0;
 }
@@ -76,7 +76,7 @@ void loadDefinitions(String word) {
   }
   else {
     CurrentLexState = DEF;
-    KB().setState(NORMAL);
+    CurrentKBState  = NORMAL;
     definitionIndex = 0;
     newState = true;
   }
@@ -102,13 +102,13 @@ void processKB_LEXICON() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (KB().state() == SHIFT) KB().setState(NORMAL);
-          else KB().setState(SHIFT);
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (KB().state() == FUNC) KB().setState(NORMAL);
-          else KB().setState(FUNC);
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -129,13 +129,13 @@ void processKB_LEXICON() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          KB().setState(NORMAL);
+          CurrentKBState  = NORMAL;
         }
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (KB().state() != NORMAL) {
-            KB().setState(NORMAL);
+          else if (CurrentKBState != NORMAL) {
+            CurrentKBState = NORMAL;
           }
         }
 
@@ -161,13 +161,13 @@ void processKB_LEXICON() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (KB().state() == SHIFT) KB().setState(NORMAL);
-          else KB().setState(SHIFT);
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (KB().state() == FUNC) KB().setState(NORMAL);
-          else KB().setState(FUNC);
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -188,7 +188,7 @@ void processKB_LEXICON() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          KB().setState(NORMAL);
+          CurrentKBState  = NORMAL;
         }
 
         // LEFT Recieved
@@ -207,8 +207,8 @@ void processKB_LEXICON() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (KB().state() != NORMAL) {
-            KB().setState(NORMAL);
+          else if (CurrentKBState != NORMAL) {
+            CurrentKBState = NORMAL;
           }
         }
 
@@ -246,12 +246,12 @@ void einkHandler_LEXICON() {
         display.setTextColor(GxEPD_BLACK);
 
         // Draw Word
-        EINK().setTXTFont(&FreeSerif12pt7b);
+        display.setFont(&FreeSerif12pt7b);
         display.setCursor(12, 50);
         display.print(defList[definitionIndex].first);
 
         // Draw Definition
-        EINK().setTXTFont(&FreeSerif9pt7b);
+        display.setFont(&FreeSerif9pt7b);
         display.setCursor(8, 87);
         // ADD WORD WRAP
         display.print(defList[definitionIndex].second);

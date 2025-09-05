@@ -7,7 +7,6 @@
 //   `Y8bood8P'  o888ooooood8 o888ooooood8 o888bood8P'    //
 
 #include <pocketmage_oled.h>
-#include <pocketmage_kb.h>
 
 // ===================== public functions =====================
 void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
@@ -253,4 +252,8 @@ uint16_t PocketmageOled::strWidth(const String& s) const {
   return (uint16_t)(u8g2_.getStrWidth(s.c_str()) * scale);
 }
 // REFERENCE CURRENT KEYBOARD STATE
-int PocketmageOled::currentKbState() const { return KB().state(); }
+int PocketmageOled::currentKbState() const {
+  if (kbStateFn_) return kbStateFn_();
+  if (kbState_)   return *kbState_;
+  return 0;
+}

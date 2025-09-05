@@ -48,11 +48,6 @@ void PocketmageEink::setFastFullRefresh(bool setting) {
     PanelT::useFastFullUpdate = setting;
   }*/
 }
-void PocketmageEink::resetScreen() {
-  display_.setRotation(3);
-  display_.setFullWindow();
-  display_.fillScreen(GxEPD_WHITE);
-}
 void PocketmageEink::statusBar(const String& input, bool fullWindow) {
   setTXTFont(&FreeMonoBold9pt7b);
   if (!fullWindow){

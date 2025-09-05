@@ -16,7 +16,7 @@ static String currentLine = "";
 
 void FILEWIZ_INIT() {
   CurrentAppState = FILEWIZ;
-  KB().setState(FUNC);
+  CurrentKBState  = FUNC;
   EINK().forceSlowFullUpdate(true);
   newState = true;
 }
@@ -32,7 +32,7 @@ void processKB_FILEWIZ() {
     case WIZ0_:
       disableTimeout = false;
 
-      KB().setState(FUNC);
+      CurrentKBState = FUNC;
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -69,7 +69,7 @@ void processKB_FILEWIZ() {
     case WIZ1_:
       disableTimeout = false;
 
-      KB().setState(FUNC);
+      CurrentKBState = FUNC;
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -115,7 +115,7 @@ void processKB_FILEWIZ() {
     case WIZ1_YN:
       disableTimeout = false;
 
-      KB().setState(NORMAL);
+      CurrentKBState = NORMAL;
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -131,7 +131,7 @@ void processKB_FILEWIZ() {
         // Y RECIEVED
         else if (inchar == 'y' || inchar == 'Y') {
           // DELETE FILE
-          pocketmage().delFile(workingFile);
+          pocketmage::file::delFile(workingFile);
           
           // RETURN TO FILE WIZ HOME
           CurrentFileWizState = WIZ0_;
@@ -158,7 +158,7 @@ void processKB_FILEWIZ() {
     case WIZ2_R:
       disableTimeout = false;
 
-      //KB().setState(NORMAL);
+      //CurrentKBState = NORMAL;
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -167,13 +167,13 @@ void processKB_FILEWIZ() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (KB().state() == SHIFT) KB().setState(NORMAL);
-          else KB().setState(SHIFT);
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (KB().state() == FUNC) KB().setState(NORMAL);
-          else KB().setState(FUNC);
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
         }
         //Space Recieved
         else if (inchar == 32) {}
@@ -189,7 +189,7 @@ void processKB_FILEWIZ() {
         }
         else if (inchar == 12) {
           CurrentFileWizState = WIZ1_;
-          KB().setState(NORMAL);
+          CurrentKBState = NORMAL;
           currentWord = "";
           currentLine = "";
           newState = true;
@@ -199,11 +199,11 @@ void processKB_FILEWIZ() {
         else if (inchar == 13) {      
           // RENAME FILE                    
           String newName = "/" + currentWord + ".txt";
-          pocketmage().renFile(workingFile, newName);
+          pocketmage::file::renFile(workingFile, newName);
 
           // RETURN TO WIZ0
           CurrentFileWizState = WIZ0_;
-          KB().setState(NORMAL);
+          CurrentKBState = NORMAL;
           newState = true;
           currentWord = "";
           currentLine = "";
@@ -213,8 +213,8 @@ void processKB_FILEWIZ() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (KB().state() != NORMAL){
-            KB().setState(NORMAL);
+          else if (CurrentKBState != NORMAL){
+            CurrentKBState = NORMAL;
           }
         }
 
@@ -229,7 +229,7 @@ void processKB_FILEWIZ() {
     case WIZ2_C:
       disableTimeout = false;
 
-      //KB().setState(NORMAL);
+      //CurrentKBState = NORMAL;
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -238,13 +238,13 @@ void processKB_FILEWIZ() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (KB().state() == SHIFT) KB().setState(NORMAL);
-          else KB().setState(SHIFT);
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (KB().state() == FUNC) KB().setState(NORMAL);
-          else KB().setState(FUNC);
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
         }
         //Space Recieved
         else if (inchar == 32) {}
@@ -260,7 +260,7 @@ void processKB_FILEWIZ() {
         }
         else if (inchar == 12) {
           CurrentFileWizState = WIZ1_;
-          KB().setState(NORMAL);
+          CurrentKBState = NORMAL;
           currentWord = "";
           currentLine = "";
           newState = true;
@@ -270,11 +270,11 @@ void processKB_FILEWIZ() {
         else if (inchar == 13) {      
           // RENAME FILE                    
           String newName = "/" + currentWord + ".txt";
-          pocketmage().copyFile(workingFile, newName);
+          pocketmage::file::copyFile(workingFile, newName);
 
           // RETURN TO WIZ0
           CurrentFileWizState = WIZ0_;
-          KB().setState(NORMAL);
+          CurrentKBState = NORMAL;
           newState = true;
           currentWord = "";
           currentLine = "";
@@ -284,8 +284,8 @@ void processKB_FILEWIZ() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (KB().state() != NORMAL){
-            KB().setState(NORMAL);
+          else if (CurrentKBState != NORMAL){
+            CurrentKBState = NORMAL;
           }
         }
 
@@ -306,7 +306,9 @@ void einkHandler_FILEWIZ() {
     case WIZ0_:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("Select a File (0-9)");
@@ -314,7 +316,7 @@ void einkHandler_FILEWIZ() {
 
         // DRAW FILE LIST
         keypad.disableInterrupts();
-        SD().listDir("/");
+        SD().listDir(SD_MMC, "/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
@@ -328,7 +330,9 @@ void einkHandler_FILEWIZ() {
     case WIZ1_:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("- " + workingFile);
@@ -340,7 +344,9 @@ void einkHandler_FILEWIZ() {
     case WIZ1_YN:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("DEL:" + workingFile + "?(Y/N)");
@@ -352,7 +358,9 @@ void einkHandler_FILEWIZ() {
     case WIZ2_R:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("Enter New Filename:");
@@ -364,7 +372,9 @@ void einkHandler_FILEWIZ() {
     case WIZ2_C:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("Enter Name For Copy:");
