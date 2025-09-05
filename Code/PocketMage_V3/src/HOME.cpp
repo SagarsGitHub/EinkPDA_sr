@@ -97,6 +97,9 @@ void commandSelect(String command) {
   else if (command == "back up" || command == "export" || command == "transfer" || command == "usb transfer" || command == "usb" || command == "3") {
     USB_INIT();
   }
+  else if (command == "app loader" || command == "app" || command == "loader" || command == "load") {
+    APPLOADER_INIT();
+  }
   /////////////////////////////
   else if (command == "tasks" || command == "task" || command == "6") {
     TASKS_INIT();
@@ -106,7 +109,7 @@ void commandSelect(String command) {
     // OPEN BLUETOOTH
   }
   /////////////////////////////
-  else if (command == "preferences" || command == "setting" || command == "settings" || command == "5") {
+  else if (command == "preferences" || command == "setting" || command == "settings" || command == "set" || command == "5") {
     SETTINGS_INIT();
   }
   else if (command == "cal" || command == "calendar" || command == "7") {

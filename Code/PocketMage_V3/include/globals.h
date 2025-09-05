@@ -142,7 +142,7 @@ extern KBState CurrentKBState;           // Current keyboard state
 // extern uint8_t partialCounter;           // E-Ink partial refresh counter
 // extern volatile bool forceSlowFullUpdate;// Force slow full update
 
-enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON };
+enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON, APPLOADER };
 extern const String appStateNames[];     // App state names
 extern const unsigned char *appIcons[11]; // App icons
 extern AppState CurrentAppState;         // Current app state
@@ -267,6 +267,11 @@ void einkHandler_LEXICON();
 void JOURNAL_INIT();
 void processKB_JOURNAL();
 void einkHandler_JOURNAL();
+
+// <APPLOADER.cpp>
+void APPLOADER_INIT();
+void processKB_APPLOADER();
+void einkHandler_APPLOADER();
 
 // <PocketMage>
 void einkHandler(void *parameter); // moved from EinkFunc.cpp

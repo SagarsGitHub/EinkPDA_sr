@@ -38,13 +38,12 @@ void setupSD() {
 
   setCpuFrequencyMhz(240);
   // Create folders and files if needed
-  if (!SD_MMC.exists("/sys"))     SD_MMC.mkdir("/sys");
-  if (!SD_MMC.exists("/journal")) SD_MMC.mkdir("/journal");
-  if (!SD_MMC.exists("/dict")) SD_MMC.mkdir("/dict");
-  if (!SD_MMC.exists("/sys/events.txt")) {
-    File f = SD_MMC.open("/sys/events.txt", FILE_WRITE);
-    if (f) f.close();
-  }
+  if (!SD_MMC.exists("/sys"))       SD_MMC.mkdir( "/sys"     );
+  if (!SD_MMC.exists("/notes"))     SD_MMC.mkdir( "/notes"   );
+  if (!SD_MMC.exists("/journal"))   SD_MMC.mkdir( "/journal" );
+  if (!SD_MMC.exists("/dict"))      SD_MMC.mkdir( "/dict"    );
+  if (!SD_MMC.exists("/apps"))      SD_MMC.mkdir( "/apps"    );
+  
   if (!SD_MMC.exists("/sys/events.txt")) {
     File f = SD_MMC.open("/sys/events.txt", FILE_WRITE);
     if (f) f.close();

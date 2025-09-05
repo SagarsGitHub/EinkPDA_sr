@@ -10,7 +10,6 @@ std::vector<std::pair<String, String>> defList;
 int definitionIndex = 0;
 
 void LEXICON_INIT() {
-  // OPEN SETTINGS
   currentLine = "";
   CurrentAppState = LEXICON;
   CurrentLexState = MENU;
@@ -126,10 +125,7 @@ void processKB_LEXICON() {
         }
         // Home recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }
         else {
           currentLine += inchar;
@@ -185,10 +181,7 @@ void processKB_LEXICON() {
         }
         // Home recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }
 
         // LEFT Recieved

@@ -37,6 +37,8 @@ extern const unsigned char _homeIcons10 [] PROGMEM;
 extern const unsigned char _homeIcons11 [] PROGMEM;
 extern const unsigned char* homeIconsAllArray[10];
 
+extern const unsigned char _noIconFound [] PROGMEM;
+
 //
 extern const unsigned char fileWizardfileWiz0 [] PROGMEM;
 extern const unsigned char fileWizardfileWiz1 [] PROGMEM;
@@ -145,7 +147,8 @@ extern const unsigned char _eventMarker1 [] PROGMEM;
 //
 extern const unsigned char _journal [] PROGMEM;
 
-
+//
+extern const unsigned char _appLoader [] PROGMEM;
 
 
 #endif
