@@ -9,10 +9,10 @@
 #include <pocketmage_oled.h> 
 #include <pocketmage_eink.h> 
 #include <config.h> // for FULL_REFRESH_AFTER
+#include <esp_log.h>
 
 // ===================== main functions =====================
-// Low-Level SDMMC Operations switch to using internal fs::FS*
-void PocketmageSD::listDir(fs::FS &fs, const char *dirname) {
+void PocketmageSD::listDir(const char *dirname) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -24,15 +24,15 @@ void PocketmageSD::listDir(fs::FS &fs, const char *dirname) {
     if (noTimeout_) *noTimeout_ = true;
     ESP_LOGI(tag, "Listing directory %s\r\n", dirname);
 
-    File root = fs.open(dirname);
+    File root = fileSys_->open(dirname);
     if (!root) {
       if (noTimeout_) *noTimeout_ = false;
-      ESP_LOGE(tag, "Failed to open directory: %s", root.path());
+      ESP_LOGE(tag, "Failed to open directory: %s", dirname);
       return;
     }
     if (!root.isDirectory()) {
       if (noTimeout_) *noTimeout_ = false;
-      ESP_LOGE(tag, "Not a directory: %s", root.path());
+      ESP_LOGE(tag, "Not a directory: %s", dirname);
       
       return;
     }
@@ -72,7 +72,7 @@ void PocketmageSD::listDir(fs::FS &fs, const char *dirname) {
     //if (SAVE_POWER) setCpuFrequencyMhz(40);
   }
 }
-void PocketmageSD::readFile(fs::FS &fs, const char *path) {
+void PocketmageSD::readFile(const char *path) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -84,10 +84,10 @@ void PocketmageSD::readFile(fs::FS &fs, const char *path) {
     if (noTimeout_) *noTimeout_ = true;
     ESP_LOGI(tag, "Reading file %s\r\n", path);
 
-    File file = fs.open(path);
+    File file = fileSys_->open(path);
     if (!file || file.isDirectory()) {
       if (noTimeout_) *noTimeout_ = false;
-      ESP_LOGE(tag, "Failed to open file for reading: %s", file.path());
+      ESP_LOGE(tag, "Failed to open file for reading: %s", path);
       return;
     }
 
@@ -96,7 +96,7 @@ void PocketmageSD::readFile(fs::FS &fs, const char *path) {
     //if (SAVE_POWER) setCpuFrequencyMhz(40);
   }
 }
-String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
+String PocketmageSD::readFileToString(const char *path) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -109,7 +109,7 @@ String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
     if (noTimeout_) *noTimeout_ = true;
     ESP_LOGI(tag, "Reading file: %s\r\n", path);
 
-    File file = fs.open(path);
+    File file = fileSys_->open(path);
     if (!file || file.isDirectory()) {
       if (noTimeout_) *noTimeout_ = false;
       ESP_LOGE(tag, "Failed to open file for reading: %s", path);
@@ -129,7 +129,7 @@ String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
     return content;  // Return the complete String
   }
 }
-void PocketmageSD::writeFile(fs::FS &fs, const char *path, const char *message) {
+void PocketmageSD::writeFile(const char *path, const char *message) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -142,7 +142,7 @@ void PocketmageSD::writeFile(fs::FS &fs, const char *path, const char *message) 
     ESP_LOGI(tag, "Writing file: %s\r\n", path);
     delay(200);
 
-    File file = fs.open(path, FILE_WRITE);
+    File file = fileSys_->open(path, FILE_WRITE);
     if (!file) {
       if (noTimeout_) *noTimeout_ = false;
       ESP_LOGE(tag, "Failed to open %s for writing", path);
@@ -159,7 +159,7 @@ void PocketmageSD::writeFile(fs::FS &fs, const char *path, const char *message) 
     //if (SAVE_POWER) setCpuFrequencyMhz(40);
   }
 }
-void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message) {
+void PocketmageSD::appendFile(const char *path, const char *message) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -171,7 +171,7 @@ void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message)
     if (noTimeout_) *noTimeout_ = true;
     ESP_LOGI(tag, "Appending to file: %s\r\n", path);
 
-    File file = fs.open(path, FILE_APPEND);
+    File file = fileSys_->open(path, FILE_APPEND);
     if (!file) {
       if (noTimeout_) *noTimeout_ = false;
       ESP_LOGE(tag, "Failed to open for appending: %s", path);
@@ -188,7 +188,7 @@ void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message)
     //if (SAVE_POWER) setCpuFrequencyMhz(40);
   }
 }
-void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) {
+void PocketmageSD::renameFile(const char *path1, const char *path2) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -200,7 +200,7 @@ void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) 
     if (noTimeout_) *noTimeout_ = true;
     ESP_LOGI(tag, "Renaming file %s to %s\r\n", path1, path2);
 
-    if (fs.rename(path1, path2)) {
+    if (fileSys_->rename(path1, path2)) {
       ESP_LOGV(tag, "Renamed %s to %s\r\n", path1, path2);
     } 
     else {
@@ -210,7 +210,7 @@ void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) 
     //if (SAVE_POWER) setCpuFrequencyMhz(40);
   }
 }
-void PocketmageSD::deleteFile(fs::FS &fs, const char *path) {
+void PocketmageSD::deleteFile(const char *path) {
   if (noSD_ && *noSD_) {
     if (oled_) oled_->oledWord("OP FAILED - No SD!");
     delay(5000);
@@ -221,7 +221,7 @@ void PocketmageSD::deleteFile(fs::FS &fs, const char *path) {
     delay(50);
     if (noTimeout_) *noTimeout_ = true;
     ESP_LOGI(tag, "Deleting file: %s\r\n", path);
-    if (fs.remove(path)) {
+    if (fileSys_->remove(path)) {
       ESP_LOGV(tag, "File deleted: %s", path);
     } 
     else {

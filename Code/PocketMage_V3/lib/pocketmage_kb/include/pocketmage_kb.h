@@ -7,7 +7,6 @@
 
 #pragma once
 #include <Arduino.h>
-#include <functional>
 #include <utility>
 
 // forward-declaration to avoid including Adafruit_TCA8418.h
@@ -18,32 +17,32 @@ class PocketmageKB {
 public:
   explicit PocketmageKB(Adafruit_TCA8418 &kp) : keypad_(kp) {}
 
-  using KbStateFn = std::function<int()>;
-
-  void setTCA8418EventFlag(volatile bool* flag)          { TCA8418_event_ = flag;}
-  void setPrevTimeMillis(volatile int* prevTime)    { prevTimeMillis_ = prevTime;}
-  void setKeyboardState(int* kbState)                       { kbState_ = kbState;}
-  void setKeyboardStateGetter(KbStateFn fn)         { kbStateFn_ = std::move(fn);}
-
   // Main methods
-  void IRAM_ATTR TCA8418_irq();
   char updateKeypress();
+
+  // keyboard state (0=NORMAL,1=SHIFT,2=FUNC)
+  int  state() const                               { return kbStateInternal_; }
+  void setState(int kbState)                    { kbStateInternal_ = kbState; }
+  void setNormal()                                    { kbStateInternal_ = 0; }
+  void toggleShift()    { kbStateInternal_ = (kbStateInternal_ == 1) ? 0 : 1; }
+  void toggleFunc()     { kbStateInternal_ = (kbStateInternal_ == 2) ? 0 : 2; }
+
+  // Wire up external buffers/state used to read from globals
+  void setTCA8418EventFlag(volatile bool* TCA8418_event)          { TCA8418_event_ = TCA8418_event;}
+  void setPrevTimeMillis(volatile int* prevTimeMillis)          { prevTimeMillis_ = prevTimeMillis;}
 
 
 private:
   Adafruit_TCA8418      &keypad_; // class reference to hardware keypad object
 
   volatile bool*        TCA8418_event_  = nullptr;
-  int*                  kbState_        = nullptr;
-  KbStateFn             kbStateFn_      = nullptr;
 
   volatile int*         prevTimeMillis_ = nullptr;
 
-  int currentKbState() const;
+  // Internal fallback/owned state
+  int                   kbStateInternal_ = 0; // default NORMAL
 };
 
 void wireKB();
 void setupKB();
-// Interrupt handler stored in IRAM for fast interrupt response
-void IRAM_ATTR KB_irq_handler();
 PocketmageKB& KB();

@@ -2,7 +2,7 @@
 #include <pocketmage_eink.h> 
 #include <Adafruit_MPR121.h>
 #include <config.h> // for TOUCH_TIMEOUT_MS
-
+// GENERAL SCROLL
 void PocketmageTOUCH::updateScrollFromTouch() {
   uint16_t touched = cap_.touched();
   int newTouch = -1;
@@ -32,7 +32,7 @@ void PocketmageTOUCH::updateScrollFromTouch() {
       *newLineAdded_ = true;
   }
 }
-
+// SCROLL FOR TXT_NEW
 bool PocketmageTOUCH::updateScroll(int maxScroll,ulong& lineScroll) {
   const char* tag = "TOUCH";
   static int lastTouchPos = -1;

@@ -13,7 +13,7 @@ static String currentLine = "";
 void HOME_INIT() {
   CurrentAppState = HOME;
   currentLine     = "";
-  CurrentKBState  = NORMAL;
+  KB().setState(NORMAL);
   CurrentHOMEState = HOME_HOME;
   newState = true;
 }
@@ -23,10 +23,10 @@ void commandSelect(String command) {
 
   // OPEN IN FILE WIZARD
   if (command.startsWith("-")) {
-    command = removeChar(command, ' ');
-    command = removeChar(command, '-');
+    command = pocketmage().removeChar(command, ' ');
+    command = pocketmage().removeChar(command, '-');
     keypad.disableInterrupts();
-    SD().listDir(SD_MMC, "/");
+    SD().listDir("/");
     keypad.enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
@@ -42,10 +42,10 @@ void commandSelect(String command) {
 
   // OPEN IN TXT EDITOR
   if (command.startsWith("/")) {
-    command = removeChar(command, ' ');
-    command = removeChar(command, '/');
+    command = pocketmage().removeChar(command, ' ');
+    command = pocketmage().removeChar(command, '/');
     keypad.disableInterrupts();
-    SD().listDir(SD_MMC, "/");
+    SD().listDir("/");
     keypad.enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
@@ -77,7 +77,7 @@ void commandSelect(String command) {
       else if (roll == 1) OLED().oledWord("D" + String(sides) + ": " + String(roll) + " :(");
       else                OLED().oledWord("D" + String(sides) + ": " + String(roll));
       delay(3000);
-      CurrentKBState = NORMAL;
+      KB().setState(NORMAL);
     }
   }
 
@@ -165,7 +165,7 @@ void drawHome() {
   uint8_t startX = 20;    // Initial X position
   uint8_t startY = 20;    // Initial Y position
 
-  display.setFont(&FreeSerif9pt7b);
+  EINK().setTXTFont(&FreeSerif9pt7b);
   for (int i = 0; i < sizeof(appIcons) / sizeof(appIcons[0]); i++) {
     int row = i / appsPerRow;
     int col = i % appsPerRow;
@@ -179,7 +179,7 @@ void drawHome() {
     display.setCursor(xPos + (iconSize / 2) - (charWidth / 2), yPos + iconSize + 13);
     display.print(appStateNames[i]);
   }
-  display.setFont(&FreeMonoBold9pt7b);
+  EINK().setTXTFont(&FreeMonoBold9pt7b);
 
   // Draw sideload app rounded rect
   display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (5*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
@@ -220,13 +220,13 @@ void processKB_HOME() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().state() == SHIFT) KB().setState(NORMAL);
+          else KB().setState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().state() == FUNC) KB().setState(NORMAL);
+          else KB().setState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -237,7 +237,7 @@ void processKB_HOME() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setState(NORMAL);
         }
         //ESC / CLEAR Recieved
         else if (inchar == 20) {                                  
@@ -252,8 +252,8 @@ void processKB_HOME() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().state() != NORMAL) {
+            KB().setState(NORMAL);
           }
         }
 
@@ -330,7 +330,7 @@ void einkHandler_HOME() {
 
           int loopCount = std::min((int)tasks.size(), 7);
           for (int i = 0; i < loopCount; i++) {
-            display.setFont(&FreeSerif9pt7b);
+            EINK().setTXTFont(&FreeSerif9pt7b);
             // PRINT TASK NAME
             display.setCursor(151, 68 + (25 * i));
             display.print(tasks[i][0].c_str());

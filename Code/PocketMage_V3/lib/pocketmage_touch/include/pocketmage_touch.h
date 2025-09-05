@@ -11,6 +11,10 @@ class PocketmageTOUCH {
 public:
   explicit PocketmageTOUCH(Adafruit_MPR121 &cap) : cap_(cap) {}
 
+  // Main methods
+  void updateScrollFromTouch();
+  bool updateScroll(int maxScroll, ulong& lineScroll);
+
   // Wire up external buffers/state used to read from globals
   void setAllLines(std::vector<String>* allLines)                                           {allLines_ = allLines;}
   void setEink(PocketmageEink* eink)                                                               { eink_ = eink;}                // reference to pocketmage eink object
@@ -20,11 +24,7 @@ public:
   void setPrevDynamicScroll(volatile long int* prev_dynamicScroll)     { prev_dynamicScroll_ = prev_dynamicScroll;}
   void setLastTouch(int* lastTouch)                                                      { lastTouch_ = lastTouch;}
   void setLastTouchTime(unsigned long* lastTouchTime)                             {lastTouchTime_ = lastTouchTime;}
-  // Main methods
-  void updateScrollFromTouch();
-  bool updateScroll(int maxScroll, ulong& lineScroll);
-  // getters 
-  
+
 private:
   Adafruit_MPR121      &cap_;                          // class reference to hardware touch object
   PocketmageEink*      eink_               = nullptr;

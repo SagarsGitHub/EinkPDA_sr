@@ -30,11 +30,15 @@ class PocketmageOled {
 public:
   explicit PocketmageOled(U8G2 &u8) : u8g2_(u8) {}
 
+  // Main methods
+  void oledWord(String word, bool allowLarge = false, bool showInfo = true);
+  void oledLine(String line, bool doProgressBar = true, String bottomMsg = "");
+  void oledScroll();
+  void infoBar();
+
  // Wire up external buffers/state used to read from globals
   using MeasureTextFn = std::function<uint16_t(const String&)>; // returns text width in e-ink pixels
-  using KbStateFn = std::function<int()>;
   using MaxCharsFn = std::function<uint16_t()>;
-
   void setAllLines(std::vector<String>* lines)                        { lines_ = lines;}
   void setDynamicScroll(volatile long* scroll)               { dynamicScroll_ = scroll;}
   void setReferenceWidth(uint16_t w)                                   { refWidth_ = w;}  // E-ink measurement
@@ -44,20 +48,14 @@ public:
     battIcons_ = icons;
     battIconCount_ = iconCount;
   }
-  void setKeyboardState(int* kbState)                             { kbState_ = kbState;}      // Keyboard state: 0=NORMAL, 1=SHIFT, 2=FUNC
-  void setKeyboardStateGetter(KbStateFn fn)               { kbStateFn_ = std::move(fn);}
   void setClock(RTC_PCF8563* rtc, bool* systemClock, bool* showYear, const char (*days)[12])   
-  {rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}               // Clock
-  void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}      // Flags
+  {rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}   // Clock
+  void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}  // Flags
   void setSD(volatile bool* sdActive)                           { sdActive_ = sdActive;}
   void setScrollBitmap(const uint8_t* bmp128x32)              { scrollBmp_ = bmp128x32;}
   void setMaxCharsPerLineEinkGetter(MaxCharsFn fn)       { maxCharsFn_ = std::move(fn);}
   
-  // Main methods
-  void oledWord(String word, bool allowLarge = false, bool showInfo = true);
-  void oledLine(String line, bool doProgressBar = true, String bottomMsg = "");
-  void oledScroll();
-  void infoBar();
+
 
 private:
   U8G2                  &u8g2_;        // class reference to hardware oled object
@@ -69,8 +67,7 @@ private:
   const uint8_t* const* battIcons_     = nullptr;
   int                   battIconCount_ = 0;
 
-  int*                  kbState_       = nullptr;
-  KbStateFn             kbStateFn_;
+  // No direct kb state pointers; uses KB() at runtime
 
   RTC_PCF8563*          rtc_           = nullptr;
   bool*                 systemClock_   = nullptr;

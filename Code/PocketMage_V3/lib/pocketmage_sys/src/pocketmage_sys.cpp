@@ -29,9 +29,8 @@ static int countVisibleChars(String input) {
   return count;
 }
 
-namespace pocketmage::file{
-    
-    void saveFile() {
+// ===================== FILE =====================
+    void Pocketmage::saveFile() {
     if (noSD) {
         OLED().oledWord("SAVE FAILED - No SD!");
         delay(5000);
@@ -41,7 +40,7 @@ namespace pocketmage::file{
         setCpuFrequencyMhz(240);
         delay(50);
 
-        String textToSave = vectorToString();
+        String textToSave = pocketmage().vectorToString();
         ESP_LOGV(TAG, "Text to save: %s", textToSave.c_str());
 
         if (editingFile == "" || editingFile == "-")
@@ -50,11 +49,11 @@ namespace pocketmage::file{
         if (!editingFile.startsWith("/"))
         editingFile = "/" + editingFile;
         // OLED().oledWord("Saving File: "+ editingFile);
-        SD().writeFile(SD_MMC, (editingFile).c_str(), textToSave.c_str());
+        SD().writeFile((editingFile).c_str(), textToSave.c_str());
         // OLED().oledWord("Saved: "+ editingFile);
 
         // Write MetaData
-        pocketmage::file::writeMetadata(editingFile);
+        pocketmage().writeMetadata(editingFile);
 
         // delay(1000);
         keypad.enableInterrupts();
@@ -64,10 +63,10 @@ namespace pocketmage::file{
     }
     }
     
-    void writeMetadata(const String& path) {
+    void Pocketmage::writeMetadata(const String& path) {
     File file = SD_MMC.open(path);
     if (!file || file.isDirectory()) {
-        ESP_LOGE(TAG, "Invalid file for metadata: %s", file.path());
+        ESP_LOGE(TAG, "Invalid file for metadata: %s", path);
         return;
     }
 
@@ -79,7 +78,7 @@ namespace pocketmage::file{
     String fileSizeStr = String(fileSizeBytes) + " Bytes";
 
     // Get line and char counts
-    int charCount = countVisibleChars(SD().readFileToString(SD_MMC, path.c_str()));
+    int charCount = countVisibleChars(SD().readFileToString(path.c_str()));
 
     String charStr = String(charCount) + " Char";
 
@@ -128,7 +127,7 @@ namespace pocketmage::file{
     ESP_LOGI(TAG, "Metadata updated");
     }
     
-    void loadFile(bool showOLED) {
+    void Pocketmage::loadFile(bool showOLED) {
     if (noSD) {
         OLED().oledWord("LOAD FAILED - No SD!");
         delay(5000);
@@ -143,10 +142,10 @@ namespace pocketmage::file{
         OLED().oledWord("Loading File");
         if (!editingFile.startsWith("/"))
         editingFile = "/" + editingFile;
-        String textToLoad = SD().readFileToString(SD_MMC, (editingFile).c_str());
+        String textToLoad = SD().readFileToString((editingFile).c_str());
         ESP_LOGV(TAG, "Text to load: %s", textToLoad.c_str());
 
-        stringToVector(textToLoad);
+        pocketmage().stringToVector(textToLoad);
         keypad.enableInterrupts();
         if (showOLED) {
         OLED().oledWord("File Loaded");
@@ -158,7 +157,7 @@ namespace pocketmage::file{
     }
     }
     
-    void delFile(String fileName) {
+    void Pocketmage::delFile(String fileName) {
     if (noSD) {
         OLED().oledWord("DELETE FAILED - No SD!");
         delay(5000);
@@ -172,11 +171,11 @@ namespace pocketmage::file{
         // OLED().oledWord("Deleting File: "+ fileName);
         if (!fileName.startsWith("/"))
         fileName = "/" + fileName;
-        SD().deleteFile(SD_MMC, fileName.c_str());
+        SD().deleteFile(fileName.c_str());
         // OLED().oledWord("Deleted: "+ fileName);
 
         // Delete MetaData
-        pocketmage::file::deleteMetadata(fileName);
+        pocketmage().deleteMetadata(fileName);
 
         delay(1000);
         keypad.enableInterrupts();
@@ -186,7 +185,7 @@ namespace pocketmage::file{
     }
     }
     
-    void deleteMetadata(String path) {
+    void Pocketmage::deleteMetadata(String path) {
     const char* metaPath = SYS_METADATA_FILE;
 
     // Open metadata file for reading
@@ -212,7 +211,7 @@ namespace pocketmage::file{
     // Recreate the file and write back the kept lines
     File writeFile = SD_MMC.open(metaPath, FILE_WRITE);
     if (!writeFile) {
-        ESP_LOGE(TAG, "Failed to recreate metadata file. %s", writeFile.path());
+        ESP_LOGE(TAG, "Failed to recreate metadata file. %s", metaPath);
         return;
     }
 
@@ -224,7 +223,7 @@ namespace pocketmage::file{
     ESP_LOGI(TAG, "Metadata entry deleted (if it existed).");
     }
     
-    void renFile(String oldFile, String newFile) {
+    void Pocketmage::renFile(String oldFile, String newFile) {
     if (noSD) {
         OLED().oledWord("RENAME FAILED - No SD!");
         delay(5000);
@@ -240,12 +239,12 @@ namespace pocketmage::file{
         oldFile = "/" + oldFile;
         if (!newFile.startsWith("/"))
         newFile = "/" + newFile;
-        SD().renameFile(SD_MMC, oldFile.c_str(), newFile.c_str());
+        SD().renameFile(oldFile.c_str(), newFile.c_str());
         OLED().oledWord(oldFile + " -> " + newFile);
         delay(1000);
 
         // Update MetaData
-        pocketmage::file::renMetadata(oldFile, newFile);
+        pocketmage().renMetadata(oldFile, newFile);
 
         keypad.enableInterrupts();
         if (SAVE_POWER)
@@ -254,7 +253,7 @@ namespace pocketmage::file{
     }
     }
     
-    void renMetadata(String oldPath, String newPath) {
+    void Pocketmage::renMetadata(String oldPath, String newPath) {
     setCpuFrequencyMhz(240);
     const char* metaPath = SYS_METADATA_FILE;
 
@@ -292,7 +291,7 @@ namespace pocketmage::file{
     // Recreate file and write updated lines
     File writeFile = SD_MMC.open(metaPath, FILE_WRITE);
     if (!writeFile) {
-        ESP_LOGE(TAG, "Failed to recreate metadata file. %s", writeFile.path());
+        ESP_LOGE(TAG, "Failed to recreate metadata file. %s", metaPath);
         return;
     }
 
@@ -307,7 +306,7 @@ namespace pocketmage::file{
         setCpuFrequencyMhz(40);
     }
     
-    void copyFile(String oldFile, String newFile) {
+    void Pocketmage::copyFile(String oldFile, String newFile) {
     if (noSD) {
         OLED().oledWord("COPY FAILED - No SD!");
         delay(5000);
@@ -323,12 +322,12 @@ namespace pocketmage::file{
         oldFile = "/" + oldFile;
         if (!newFile.startsWith("/"))
         newFile = "/" + newFile;
-        String textToLoad = SD().readFileToString(SD_MMC, (oldFile).c_str());
-        SD().writeFile(SD_MMC, (newFile).c_str(), textToLoad.c_str());
+        String textToLoad = SD().readFileToString((oldFile).c_str());
+        SD().writeFile((newFile).c_str(), textToLoad.c_str());
         OLED().oledWord("Saved: " + newFile);
 
         // Write MetaData
-        pocketmage::file::writeMetadata(newFile);
+        pocketmage().writeMetadata(newFile);
 
         delay(1000);
         keypad.enableInterrupts();
@@ -339,7 +338,7 @@ namespace pocketmage::file{
     }
     }
     
-    void appendToFile(String path, String inText) {
+    void Pocketmage::appendToFile(String path, String inText) {
     if (noSD) {
         OLED().oledWord("OP FAILED - No SD!");
         delay(5000);
@@ -350,10 +349,10 @@ namespace pocketmage::file{
         delay(50);
 
         keypad.disableInterrupts();
-        SD().appendFile(SD_MMC, path.c_str(), inText.c_str());
+        SD().appendFile(path.c_str(), inText.c_str());
 
         // Write MetaData
-        pocketmage::file::writeMetadata(path);
+        pocketmage().writeMetadata(path);
 
         keypad.enableInterrupts();
 
@@ -362,11 +361,10 @@ namespace pocketmage::file{
         SDActive = false;
     }
     }
-}   // namespace pocketmage::file
 
-namespace pocketmage::time{
-    
-    void setTimeFromString(String timeStr) {
+
+// ===================== TIME =====================
+    void Pocketmage::setTimeFromString(String timeStr) {
     if (timeStr.length() != 5 || timeStr[2] != ':') {
         ESP_LOGE(TAG, "Invalid format! Use HH:MM. Provided str: %s", timeStr.c_str());
         return;
@@ -387,7 +385,7 @@ namespace pocketmage::time{
     ESP_LOGI(TAG, "Time updated!");
     }
     
-    void checkTimeout() {
+    void Pocketmage::checkTimeout() {
     int randomScreenSaver = 0;
     timeoutMillis = millis();
 
@@ -412,7 +410,7 @@ namespace pocketmage::time{
         }
 
         // Save current work:
-        pocketmage::file::saveFile();
+        pocketmage().saveFile();
 
         switch (CurrentAppState) {
             case TXT:
@@ -421,7 +419,7 @@ namespace pocketmage::time{
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
 
-                display.setFont(&FreeMonoBold9pt7b);
+                EINK().setTXTFont(&FreeMonoBold9pt7b);
 
                 display.fillRect(0, display.height() - 26, display.width(), 26, GxEPD_WHITE);
                 display.drawRect(0, display.height() - 20, display.width(), 20, GxEPD_BLACK);
@@ -434,13 +432,13 @@ namespace pocketmage::time{
                 display.drawBitmap(320 - 86, 240 - 52, sleep1, 87, 52, GxEPD_BLACK);
 
                 // Put device to sleep with alternate sleep screen
-                pocketmage::power::deepSleep(true);
+                pocketmage().deepSleep(true);
             } else
-                pocketmage::power::deepSleep();
+                pocketmage().deepSleep();
             break;
 
             default:
-            pocketmage::power::deepSleep();
+            pocketmage().deepSleep();
             break;
         }
 
@@ -461,7 +459,7 @@ namespace pocketmage::time{
 
         // Save current work:
         OLED().oledWord("Saving Work");
-        pocketmage::file::saveFile();
+        pocketmage().saveFile();
 
         if (digitalRead(CHRG_SENS) == HIGH) {
         // Save last state
@@ -494,7 +492,7 @@ namespace pocketmage::time{
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
-                display.setFont(&FreeMonoBold9pt7b);
+                EINK().setTXTFont(&FreeMonoBold9pt7b);
 
                 display.fillRect(0, display.height() - 26, display.width(), 26, GxEPD_WHITE);
                 display.drawRect(0, display.height() - 20, display.width(), 20, GxEPD_BLACK);
@@ -506,14 +504,14 @@ namespace pocketmage::time{
                 display.fillRect(320 - 86, 240 - 52, 87, 52, GxEPD_WHITE);
                 display.drawBitmap(320 - 86, 240 - 52, sleep1, 87, 52, GxEPD_BLACK);
 
-                pocketmage::power::deepSleep(true);
+                pocketmage().deepSleep(true);
             }
             // Sleep device normally
             else
-                pocketmage::power::deepSleep();
+                pocketmage().deepSleep();
             break;
             default:
-            pocketmage::power::deepSleep();
+            pocketmage().deepSleep();
             break;
         }
         }
@@ -525,7 +523,7 @@ namespace pocketmage::time{
         if (HOME_ON_BOOT) CurrentAppState = HOME;
         else CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
         prefs.end();*/
-        pocketmage::power::loadState();
+        pocketmage().loadState();
         keypad.flush();
 
         CurrentHOMEState = HOME_HOME;
@@ -546,7 +544,7 @@ namespace pocketmage::time{
     }
     }
     
-    void setCpuSpeed(int newFreq) {
+    void Pocketmage::setCpuSpeed(int newFreq) {
     // Return early if the frequency is already set
     if (getCpuFrequencyMhz() == newFreq)
         return;
@@ -566,11 +564,9 @@ namespace pocketmage::time{
         ESP_LOGI(TAG, "CPU Speed changed to: %d MHz", newFreq);
     }
     }
-}    // namespace pocketmage::time
 
-namespace pocketmage::power{
-    
-    void deepSleep(bool alternateScreenSaver) {
+// ===================== POWER =====================
+    void Pocketmage::deepSleep(bool alternateScreenSaver) {
     // Put OLED to sleep
     u8g2.setPowerSave(1);
 
@@ -611,11 +607,7 @@ namespace pocketmage::power{
     esp_deep_sleep_start();
     }
     
-    void IRAM_ATTR PWR_BTN_irq() {
-    PWR_BTN_event = true;
-    }
-    
-    void updateBattState() {
+    void Pocketmage::updateBattState() {
     // Read and scale voltage (add calibration offset if needed)
     float rawVoltage = (analogRead(BAT_SENS) * (3.3 / 4095.0) * 2) + 0.2;
 
@@ -657,7 +649,7 @@ namespace pocketmage::power{
     prevVoltage = filteredVoltage;
     }
     
-    void loadState(bool changeState) {
+    void Pocketmage::loadState(bool changeState) {
     // LOAD PREFERENCES
     prefs.begin("PocketMage", true);  // Read-Only
     // Misc
@@ -690,11 +682,11 @@ namespace pocketmage::power{
             break;
         case TXT:
             if (editingFile != "")
-            pocketmage::file::loadFile(false);
+            pocketmage().loadFile(false);
             else {
-            stringToVector("");
+            pocketmage().stringToVector("");
             }
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
             dynamicScroll = 0;
             newLineAdded = true;
             newState = false;
@@ -707,7 +699,7 @@ namespace pocketmage::power{
             break;
         case USB_APP:
             CurrentAppState = HOME;
-            CurrentKBState = NORMAL;
+            KB().setState(NORMAL);
             newState = true;
             break;
         case CALENDAR:
@@ -724,11 +716,10 @@ namespace pocketmage::power{
 
     prefs.end();
     }
-}    // namespace pocketmage::power
 
-namespace pocketmage::debug{
-
-    void printDebug() {
+// ===================== DEBUG =====================
+    void Pocketmage::printDebug() {
+    static uint8_t prevSec = 255;
     DateTime now = CLOCK().nowDT();
     if (now.second() != prevSec) {
     prevSec = now.second();
@@ -745,94 +736,93 @@ namespace pocketmage::debug{
         daysOfTheWeek[now.dayOfTheWeek()], now.hour(), now.minute(), now.second());
     }
 }
-}    // namespace pocketmage::debug
 
 // ===================== GLOBAL TEXT HELPERS =====================
-String vectorToString() {
-String result;
-EINK().setTXTFont(EINK().getCurrentFont());
+    String Pocketmage::vectorToString() {
+    String result;
+    EINK().setTXTFont(EINK().getCurrentFont());
 
-for (size_t i = 0; i < allLines.size(); i++) {
-    result += allLines[i];
+    for (size_t i = 0; i < allLines.size(); i++) {
+        result += allLines[i];
 
-    int16_t x1, y1;
-    uint16_t charWidth, charHeight;
-    display.getTextBounds(allLines[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
+        int16_t x1, y1;
+        uint16_t charWidth, charHeight;
+        display.getTextBounds(allLines[i], 0, 0, &x1, &y1, &charWidth, &charHeight);
 
-    // Add newline only if the line doesn't fully use the available space
-    if (charWidth < display.width() && i < allLines.size() - 1) {
-    result += '\n';
-    }
-}
-
-return result;
-}
-
-void stringToVector(String inputText) {
-EINK().setTXTFont(EINK().getCurrentFont());
-allLines.clear();
-String currentLine_;
-
-for (size_t i = 0; i < inputText.length(); i++) {
-    char c = inputText[i];
-
-    int16_t x1, y1;
-    uint16_t charWidth, charHeight;
-    display.getTextBounds(currentLine_, 0, 0, &x1, &y1, &charWidth, &charHeight);
-
-    // Check if new line needed
-    if ((c == '\n' || charWidth >= display.width() - 5) && !currentLine_.isEmpty()) {
-    if (currentLine_.endsWith(" ")) {
-        allLines.push_back(currentLine_);
-        currentLine_ = "";
-    } else {
-        int lastSpace = currentLine_.lastIndexOf(' ');
-        if (lastSpace != -1) {
-        // Split line at last space
-        String partialWord = currentLine_.substring(lastSpace + 1);
-        currentLine_ = currentLine_.substring(0, lastSpace);
-        allLines.push_back(currentLine_);
-        currentLine_ = partialWord;  // Start new line with partial word
-        } else {
-        // No spaces, whole line is a single word
-        allLines.push_back(currentLine_);
-        currentLine_ = "";
+        // Add newline only if the line doesn't fully use the available space
+        if (charWidth < display.width() && i < allLines.size() - 1) {
+        result += '\n';
         }
     }
+
+    return result;
     }
 
-    if (c != '\n') {
-    currentLine_ += c;
+    void Pocketmage::stringToVector(String inputText) {
+    EINK().setTXTFont(EINK().getCurrentFont());
+    allLines.clear();
+    String currentLine_;
+
+    for (size_t i = 0; i < inputText.length(); i++) {
+        char c = inputText[i];
+
+        int16_t x1, y1;
+        uint16_t charWidth, charHeight;
+        display.getTextBounds(currentLine_, 0, 0, &x1, &y1, &charWidth, &charHeight);
+
+        // Check if new line needed
+        if ((c == '\n' || charWidth >= display.width() - 5) && !currentLine_.isEmpty()) {
+        if (currentLine_.endsWith(" ")) {
+            allLines.push_back(currentLine_);
+            currentLine_ = "";
+        } else {
+            int lastSpace = currentLine_.lastIndexOf(' ');
+            if (lastSpace != -1) {
+            // Split line at last space
+            String partialWord = currentLine_.substring(lastSpace + 1);
+            currentLine_ = currentLine_.substring(0, lastSpace);
+            allLines.push_back(currentLine_);
+            currentLine_ = partialWord;  // Start new line with partial word
+            } else {
+            // No spaces, whole line is a single word
+            allLines.push_back(currentLine_);
+            currentLine_ = "";
+            }
+        }
+        }
+
+        if (c != '\n') {
+        currentLine_ += c;
+        }
     }
-}
 
-// Push last line if not empty
-if (!currentLine_.isEmpty()) {
-    allLines.push_back(currentLine_);
-}
-}
-
-String removeChar(String str, char character) {
-String result = "";
-for (size_t i = 0; i < str.length(); i++) {
-    if (str[i] != character) {
-    result += str[i];
+    // Push last line if not empty
+    if (!currentLine_.isEmpty()) {
+        allLines.push_back(currentLine_);
     }
-}
-return result;
-}
-
-int stringToInt(String str) {
-str.trim();  // Remove leading/trailing whitespace
-
-if (str.length() == 0)
-    return -1;
-
-for (int i = 0; i < str.length(); i++) {
-    if (!isDigit(str.charAt(i))) {
-    return -1;  // Invalid character found
     }
-}
 
-return str.toInt();  // Safe to convert
-}
+    String Pocketmage::removeChar(String str, char character) {
+    String result = "";
+    for (size_t i = 0; i < str.length(); i++) {
+        if (str[i] != character) {
+        result += str[i];
+        }
+    }
+    return result;
+    }
+
+    int Pocketmage::stringToInt(String str) {
+    str.trim();  // Remove leading/trailing whitespace
+
+    if (str.length() == 0)
+        return -1;
+
+    for (int i = 0; i < str.length(); i++) {
+        if (!isDigit(str.charAt(i))) {
+        return -1;  // Invalid character found
+        }
+    }
+
+    return str.toInt();  // Safe to convert
+    }

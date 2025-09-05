@@ -258,7 +258,7 @@ struct DocLine {
 
     for (auto& w : words) {
       const GFXfont* font = pickFont(style, w.bold, w.italic);
-      display.setFont(font);
+      EINK().setTXTFont(font);
 
       int16_t x1, y1;
       uint16_t wpx, hpx;
@@ -342,7 +342,7 @@ struct DocLine {
       uint16_t max_hpx = 0;
       for (auto& w : ln.words) {
         const GFXfont* font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
         int16_t x1, y1;
         uint16_t wpx, hpx;
         display.getTextBounds(w.text.c_str(), cursorX, cursorY, &x1, &y1, &wpx, &hpx);
@@ -357,7 +357,7 @@ struct DocLine {
       // 2. Draw all words at the same baseline
       for (auto& w : ln.words) {
         const GFXfont* font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
 
         int16_t x1, y1;
         uint16_t wpx, hpx;
@@ -501,7 +501,7 @@ struct DocLine {
       // 2. Draw all words at the same baseline
       for (auto& w : ln.words) {
         const GFXfont* font = pickFont(style, w.bold, w.italic);
-        display.setFont(font);
+        EINK().setTXTFont(font);
 
         int16_t x1, y1;
         uint16_t wpx, hpx;
@@ -696,7 +696,7 @@ void toolBar(wordObject& wordObj) {
   // FN/SHIFT indicator centered
   u8g2.setFont(u8g2_font_5x7_tf);
 
-  switch (CurrentKBState) {
+  switch (KB().state()) {
     case 1:
       u8g2.drawStr((u8g2.getDisplayWidth() - u8g2.getStrWidth("SHIFT")) / 2,
                    u8g2.getDisplayHeight(), "SHIFT");
@@ -1165,7 +1165,7 @@ int getLineWidth(const LineObject& lineObj, char style) {
   int lineWidth = 0;
   for (const auto& w : lineObj.words) {
     const GFXfont* font = pickFont(style, w.bold, w.italic);
-    display.setFont(font);
+    EINK().setTXTFont(font);
 
     int16_t x1, y1;
     uint16_t wpx, hpx;
@@ -1232,17 +1232,17 @@ void editAppend(char inchar) {
   }
   // SHIFT Recieved
   else if (inchar == 17) {
-    if (CurrentKBState == SHIFT)
-      CurrentKBState = NORMAL;
+    if (KB().state() == SHIFT)
+      KB().setState(NORMAL);
     else
-      CurrentKBState = SHIFT;
+      KB().setState(SHIFT);
   }
   // FN Recieved
   else if (inchar == 18) {
-    if (CurrentKBState == FUNC)
-      CurrentKBState = NORMAL;
+    if (KB().state() == FUNC)
+      KB().setState(NORMAL);
     else
-      CurrentKBState = FUNC;
+      KB().setState(FUNC);
   }
   // Space Recieved
   else if (inchar == 32) {
@@ -1441,7 +1441,7 @@ void editAppend(char inchar) {
   // Font Switcher
   else if (inchar == 14) {
     CurrentTXTState_NEW = FONT;
-    CurrentKBState = FUNC;
+    KB().setState(FUNC);
     updateScreen = true;
   } else {
     // Add char to current word
@@ -1449,8 +1449,8 @@ void editAppend(char inchar) {
 
     if (inchar >= 48 && inchar <= 57) {
     }  // Only leave FN on if typing numbers
-    else if (CurrentKBState != NORMAL) {
-      CurrentKBState = NORMAL;
+    else if (KB().state() != NORMAL) {
+      KB().setState(NORMAL);
     }
   }
 
