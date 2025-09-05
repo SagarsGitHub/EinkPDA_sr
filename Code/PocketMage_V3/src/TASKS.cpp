@@ -40,7 +40,7 @@ void updateTasksFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing tasks file first
-  pocketmage().delFile("/sys/tasks.txt");
+  pocketmage::file::delFile("/sys/tasks.txt");
 
   // Iterate through the tasks vector and append each task to the file
   for (size_t i = 0; i < tasks.size(); i++) {
@@ -48,7 +48,7 @@ void updateTasksFile() {
     String taskInfo = tasks[i][0] + "|" + tasks[i][1] + "|" + tasks[i][2] + "|" + tasks[i][3];
     
     // Append the task info to the file
-    pocketmage().appendToFile("/sys/tasks.txt", taskInfo);
+    pocketmage::file::appendToFile("/sys/tasks.txt", taskInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
@@ -137,7 +137,7 @@ void processKB_TASKS() {
 
   switch (CurrentTasksState) {
     case TASKS0:
-      KB().setState(FUNC);
+      CurrentKBState = FUNC;
       //Make keyboard only updates after cooldown
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         inchar = KB().updateKeypress();
@@ -151,7 +151,7 @@ void processKB_TASKS() {
         // NEW TASK
         else if (inchar == '/' || inchar == 'n' || inchar == 'N') {
           CurrentTasksState = TASKS0_NEWTASK;
-          KB().setState(NORMAL);
+          CurrentKBState = NORMAL;
           newTaskState = 0;
           newState = true;
           break;
@@ -180,7 +180,7 @@ void processKB_TASKS() {
       }
       break;
     case TASKS0_NEWTASK:
-      if (newTaskState == 1) KB().setState(FUNC);
+      if (newTaskState == 1) CurrentKBState = FUNC;
 
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         inchar = KB().updateKeypress();
@@ -189,13 +189,13 @@ void processKB_TASKS() {
         if (inchar == 0);                                        
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (KB().state() == SHIFT) KB().setState(NORMAL);
-          else KB().setState(SHIFT);
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (KB().state() == FUNC) KB().setState(NORMAL);
-          else KB().setState(FUNC);
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -251,8 +251,8 @@ void processKB_TASKS() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (KB().state() != NORMAL) {
-            KB().setState(NORMAL);
+          else if (CurrentKBState != NORMAL) {
+            CurrentKBState = NORMAL;
           }
         }
 
@@ -267,7 +267,7 @@ void processKB_TASKS() {
     case TASKS1:
       disableTimeout = false;
 
-      KB().setState(FUNC);
+      CurrentKBState = FUNC;
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -321,7 +321,9 @@ void einkHandler_TASKS() {
     case TASKS0:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         display.drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
@@ -336,7 +338,7 @@ void einkHandler_TASKS() {
 
           int loopCount = std::min((int)tasks.size(), MAX_FILES);
           for (int i = 0; i < loopCount; i++) {
-            EINK().setTXTFont(&FreeSerif9pt7b);
+            display.setFont(&FreeSerif9pt7b);
             // PRINT TASK NAME
             display.setCursor(29, 54 + (17 * i));
             display.print(tasks[i][0].c_str());
@@ -356,7 +358,9 @@ void einkHandler_TASKS() {
       case TASKS0_NEWTASK:
         if (newState) {
           newState = false;
-          EINK().resetScreen();
+          display.setRotation(3);
+          display.setFullWindow();
+          display.fillScreen(GxEPD_WHITE);
 
           // DRAW APP
           display.drawBitmap(0, 0, tasksApp0, 320, 218, GxEPD_BLACK);
@@ -370,7 +374,7 @@ void einkHandler_TASKS() {
 
             int loopCount = std::min((int)tasks.size(), MAX_FILES);
             for (int i = 0; i < loopCount; i++) {
-              EINK().setTXTFont(&FreeSerif9pt7b);
+              display.setFont(&FreeSerif9pt7b);
               // PRINT TASK NAME
               display.setCursor(29, 54 + (17 * i));
               display.print(tasks[i][0].c_str());
@@ -397,7 +401,9 @@ void einkHandler_TASKS() {
     case TASKS1:
       if (newState) {
         newState = false;
-        EINK().resetScreen();
+        display.setRotation(3);
+        display.setFullWindow();
+        display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
         EINK().drawStatusBar("T:" + tasks[selectedTask][0]);

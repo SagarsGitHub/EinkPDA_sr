@@ -9,6 +9,7 @@
 #include <Adafruit_TCA8418.h>
 #pragma region keymaps
 // ===================== Keymaps =====================
+char currentKB[4][10];            // Current keyboard layout
 
 char keysArray[4][10] = {
     { 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p' },
@@ -30,7 +31,6 @@ char keysArrayFN[4][10] = {
 };
 #pragma endregion
 
-
 // ===================== public functions =====================
 char PocketmageKB::updateKeypress() {
   if ((TCA8418_event_) && (*TCA8418_event_ == true)) {
@@ -51,7 +51,7 @@ char PocketmageKB::updateKeypress() {
         if (prevTimeMillis_) *prevTimeMillis_ = millis();
 
         //Return Key
-        switch (kbStateInternal_) {
+        switch (currentKbState()) {
           case 0:
             return keysArray[k/10][k%10];
           case 1:
@@ -67,4 +67,17 @@ char PocketmageKB::updateKeypress() {
 
   return 0;
 
+}
+
+// ===================== private functions =====================
+int PocketmageKB::currentKbState() const {
+  if (kbStateFn_) return kbStateFn_();
+  if (kbState_)   return *kbState_;
+  return 0;
+}
+
+// ===================== ISR =====================
+// Interrupt handler stored in IRAM for fast interrupt response
+void IRAM_ATTR PocketmageKB::TCA8418_irq() {
+  if (TCA8418_event_) *TCA8418_event_ = true;
 }
