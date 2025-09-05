@@ -183,7 +183,7 @@ void USB_INIT() {
 
   // INIT App
   CurrentAppState = USB_APP;
-  KB().setState(NORMAL);
+  CurrentKBState  = NORMAL;
   newState = true;
 }
 
@@ -206,7 +206,7 @@ void processKB_USB() {
       CurrentAppState = HOME;
       currentLine     = "";
       newState        = true;
-      KB().setState(NORMAL);
+      CurrentKBState  = NORMAL;
     }
   }
 }

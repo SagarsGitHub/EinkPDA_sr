@@ -13,19 +13,19 @@ void JOURNAL_INIT() {
   CurrentJournalState = J_MENU;
   EINK().forceSlowFullUpdate(true);
   newState = true;
-  KB().setState(NORMAL);
+  CurrentKBState = NORMAL;
   bufferEditingFile = editingFile;
 }
 
 // File Operations
 void loadJournal() {
   editingFile = currentJournal;
-  pocketmage().loadFile();
+  pocketmage::file::loadFile();
 }
 
 void saveJournal() {
   editingFile = currentJournal;
-  pocketmage().saveFile();
+  pocketmage::file::saveFile();
 }
 
 // Functions
@@ -274,13 +274,13 @@ void processKB_JOURNAL() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (KB().state() == SHIFT) KB().setState(NORMAL);
-          else KB().setState(SHIFT);
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (KB().state() == FUNC) KB().setState(NORMAL);
-          else KB().setState(FUNC);
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -302,13 +302,13 @@ void processKB_JOURNAL() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          KB().setState(NORMAL);
+          CurrentKBState  = NORMAL;
         }
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (KB().state() != NORMAL) {
-            KB().setState(NORMAL);
+          else if (CurrentKBState != NORMAL) {
+            CurrentKBState = NORMAL;
           }
         }
 
@@ -342,13 +342,13 @@ void processKB_JOURNAL() {
       }                                      
       //SHIFT Recieved
       else if (inchar == 17) {                                  
-        if (KB().state() == SHIFT) KB().setState(NORMAL);
-        else KB().setState(SHIFT);
+        if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+        else CurrentKBState = SHIFT;
       }
       //FN Recieved
       else if (inchar == 18) {                                  
-        if (KB().state() == FUNC) KB().setState(NORMAL);
-        else KB().setState(FUNC);
+        if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+        else CurrentKBState = FUNC;
       }
       //Space Recieved
       else if (inchar == 32) {                                  
@@ -386,20 +386,20 @@ void processKB_JOURNAL() {
       //SAVE Recieved
       else if (inchar == 6) { 
         saveJournal();
-        KB().setState(NORMAL);
+        CurrentKBState = NORMAL;
         newLineAdded = true;
       }
       //LOAD Recieved
       else if (inchar == 5) {
         loadJournal();
-        KB().setState(NORMAL);
+        CurrentKBState = NORMAL;
         newLineAdded = true;
       }
       else {
         currentLine += inchar;
         if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-        else if (KB().state() != NORMAL) {
-          KB().setState(NORMAL);
+        else if (CurrentKBState != NORMAL) {
+          CurrentKBState = NORMAL;
         }
       }
 

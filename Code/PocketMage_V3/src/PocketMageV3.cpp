@@ -44,6 +44,9 @@ void applicationEinkHandler() {
     case JOURNAL:
       einkHandler_JOURNAL();
       break;
+    case APPLOADER:
+      einkHandler_APPLOADER();
+      break;
     // ADD APP CASES HERE
     default:
       einkHandler_HOME();
@@ -81,6 +84,9 @@ void processKB() {
     case JOURNAL:
       processKB_JOURNAL();
       break;
+    case APPLOADER:
+      processKB_APPLOADER();
+      break;
     // ADD APP CASES HERE
     default:
       processKB_HOME();
@@ -103,10 +109,10 @@ void setup() {
 }
 
 void loop() {
-  if (!noTimeout)  pocketmage().checkTimeout();
-  if (DEBUG_VERBOSE) pocketmage().printDebug();
+  if (!noTimeout)  pocketmage::time::checkTimeout();
+  if (DEBUG_VERBOSE) pocketmage::debug::printDebug();
 
-  pocketmage().updateBattState();
+  pocketmage::power::updateBattState();
   processKB();
 
   // Yield to watchdog
