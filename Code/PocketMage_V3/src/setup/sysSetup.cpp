@@ -58,7 +58,7 @@ void setupSystem(){
 
   // POWER SETUP
   pinMode(PWR_BTN, INPUT_PULLUP);
-  // Wire system component and attach ISR similar to KB handler pattern
+  // SYSTEM SETUP
   wirePocketmage();
   attachInterrupt(digitalPinToInterrupt(PWR_BTN), PWR_BTN_irq_handler, FALLING);
   pinMode(CHRG_SENS, INPUT);

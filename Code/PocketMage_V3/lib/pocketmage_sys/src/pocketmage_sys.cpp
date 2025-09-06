@@ -12,6 +12,7 @@
 #include <SD_MMC.h>
 #include <Preferences.h>
 #include <esp_log.h>
+
 static constexpr const char* TAG = "SYSTEM";
 
 static int countVisibleChars(String input) {
@@ -363,7 +364,7 @@ void Pocketmage::appendToFile(String path, String inText) {
     }
 }
 
-// --------- time/power helpers ---------
+// --------- time helpers ---------
 void Pocketmage::setTimeFromString(String timeStr) {
     if (timeStr.length() != 5 || timeStr[2] != ':') {
         ESP_LOGE(TAG, "Invalid format! Use HH:MM. Provided str: %s", timeStr.c_str());

@@ -31,7 +31,8 @@ public:
   void setPrevSec(uint8_t* prevSec)                                                           { prevSec_ = prevSec; }
   void setEinkTaskHandle(TaskHandle_t* einkHandlerTaskHandle)     { einkHandlerTaskHandle_ = einkHandlerTaskHandle; }
 
-  // File helpers
+  // Main methods
+  // File
   void saveFile();
   void writeMetadata(const String& path);
   void loadFile(bool showOLED = true);
@@ -42,7 +43,7 @@ public:
   void copyFile(String oldFile, String newFile);
   void appendToFile(String path, String inText);
 
-  // Time/Power helpers
+  // Time
   void setTimeFromString(String timeStr);
   void checkTimeout();
   void setCpuSpeed(int newFreq);
@@ -57,7 +58,6 @@ public:
   void printDebug();
 
 private:
-  // Event flags / globals (wired)
   volatile bool* pwrBtnEvent_           = nullptr;
   bool*          noSD_                  = nullptr;
   volatile bool* SDActive_              = nullptr;
@@ -86,6 +86,7 @@ void IRAM_ATTR PWR_BTN_irq_handler();
 
 // ===================== SYSTEM SETUP =====================
 void setupSystem();
+
 // ===================== GLOBAL TEXT HELPERS =====================
 String vectorToString();
 void stringToVector(String inputText);
