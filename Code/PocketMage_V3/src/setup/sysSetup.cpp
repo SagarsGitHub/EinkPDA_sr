@@ -49,13 +49,16 @@ void setupSystem(){
 
   // KEYBOARD SETUP
   setupKB();
-
+  OLED().oledWord("Keyboard setup");
+  delay(500);
   // EINK HANDLER SETUP
   setupEink();
-  
+  OLED().oledWord("Eink setup");
+  delay(500);
   // SD CARD SETUP
   setupSD();
-
+  OLED().oledWord("SD setup");
+  delay(500);
   // POWER SETUP
   pinMode(PWR_BTN, INPUT_PULLUP);
   // SYSTEM SETUP
@@ -65,17 +68,26 @@ void setupSystem(){
   pinMode(BAT_SENS, INPUT);
   //WiFi.mode(WIFI_OFF);
   //btStop();
-
+  OLED().oledWord("sys setup");
+  delay(500);
   // SET CPU CLOCK FOR POWER SAVE MODE
   if (SAVE_POWER) setCpuFrequencyMhz(40 );
   else            setCpuFrequencyMhz(240);
   
   // CAPACATIVE TOUCH SETUP
   setupTouch();
-
+  OLED().oledWord("touch setup");
+  delay(500);
   // RTC SETUP
   setupClock();
+  OLED().oledWord("clock setup");
+  delay(500);
 
+
+  OLED().oledWord("loaded state");
+  delay(500);
+
+  pocketmage().loadState();
   // Set "random" seed
   randomSeed(analogRead(BAT_SENS));
 }
