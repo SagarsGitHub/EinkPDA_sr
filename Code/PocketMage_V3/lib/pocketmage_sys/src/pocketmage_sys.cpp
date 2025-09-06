@@ -12,7 +12,6 @@
 #include <SD_MMC.h>
 #include <Preferences.h>
 #include <esp_log.h>
-
 static constexpr const char* TAG = "SYSTEM";
 
 static int countVisibleChars(String input) {
@@ -29,42 +28,43 @@ static int countVisibleChars(String input) {
   return count;
 }
 
-namespace pocketmage::file{
-    
-    void saveFile() {
-    if (noSD) {
+// ===================== Pocketmage methods =====================
+
+// --------- file helpers ---------
+void Pocketmage::saveFile() {
+    if (noSD_ && *noSD_) {
         OLED().oledWord("SAVE FAILED - No SD!");
         delay(5000);
         return;
     } else {
-        SDActive = true;
+        if (SDActive_) *SDActive_ = true;
         setCpuFrequencyMhz(240);
         delay(50);
 
         String textToSave = vectorToString();
         ESP_LOGV(TAG, "Text to save: %s", textToSave.c_str());
 
-        if (editingFile == "" || editingFile == "-")
-        editingFile = "/temp.txt";
-        keypad.disableInterrupts();
-        if (!editingFile.startsWith("/"))
-        editingFile = "/" + editingFile;
+        if (editingFile_ && (*editingFile_ == "" || *editingFile_ == "-"))
+        *editingFile_ = "/temp.txt";
+        if (keypad_) keypad_->disableInterrupts();
+        if (editingFile_ && !editingFile_->startsWith("/"))
+        *editingFile_ = "/" + *editingFile_;
         // OLED().oledWord("Saving File: "+ editingFile);
-        SD().writeFile(SD_MMC, (editingFile).c_str(), textToSave.c_str());
+        SD().writeFile(SD_MMC, (editingFile_ ? editingFile_->c_str() : "/temp.txt"), textToSave.c_str());
         // OLED().oledWord("Saved: "+ editingFile);
 
         // Write MetaData
-        pocketmage::file::writeMetadata(editingFile);
+        if (editingFile_) writeMetadata(*editingFile_);
 
         // delay(1000);
-        keypad.enableInterrupts();
+        if (keypad_) keypad_->enableInterrupts();
         if (SAVE_POWER)
         setCpuFrequencyMhz(POWER_SAVE_FREQ);
-        SDActive = false;
+        if (SDActive_) *SDActive_ = false;
     }
-    }
-    
-    void writeMetadata(const String& path) {
+}
+
+void Pocketmage::writeMetadata(const String& path) {
     File file = SD_MMC.open(path);
     if (!file || file.isDirectory()) {
         ESP_LOGE(TAG, "Invalid file for metadata: %s", file.path());
@@ -126,49 +126,49 @@ namespace pocketmage::file{
     metaFile.close();
 
     ESP_LOGI(TAG, "Metadata updated");
-    }
-    
-    void loadFile(bool showOLED) {
-    if (noSD) {
+}
+
+void Pocketmage::loadFile(bool showOLED) {
+    if (noSD_ && *noSD_) {
         OLED().oledWord("LOAD FAILED - No SD!");
         delay(5000);
         return;
     } else {
-        SDActive = true;
+        if (SDActive_) *SDActive_ = true;
         setCpuFrequencyMhz(240);
         delay(50);
 
-        keypad.disableInterrupts();
+        if (keypad_) keypad_->disableInterrupts();
         if (showOLED)
         OLED().oledWord("Loading File");
-        if (!editingFile.startsWith("/"))
-        editingFile = "/" + editingFile;
-        String textToLoad = SD().readFileToString(SD_MMC, (editingFile).c_str());
+        if (editingFile_ && !editingFile_->startsWith("/"))
+        *editingFile_ = "/" + *editingFile_;
+        String textToLoad = SD().readFileToString(SD_MMC, (editingFile_ ? editingFile_->c_str() : "/temp.txt"));
         ESP_LOGV(TAG, "Text to load: %s", textToLoad.c_str());
 
         stringToVector(textToLoad);
-        keypad.enableInterrupts();
+        if (keypad_) keypad_->enableInterrupts();
         if (showOLED) {
         OLED().oledWord("File Loaded");
         delay(200);
         }
         if (SAVE_POWER)
         setCpuFrequencyMhz(POWER_SAVE_FREQ);
-        SDActive = false;
+        if (SDActive_) *SDActive_ = false;
     }
-    }
-    
-    void delFile(String fileName) {
-    if (noSD) {
+}
+
+void Pocketmage::delFile(String fileName) {
+    if (noSD_ && *noSD_) {
         OLED().oledWord("DELETE FAILED - No SD!");
         delay(5000);
         return;
     } else {
-        SDActive = true;
+        if (SDActive_) *SDActive_ = true;
         setCpuFrequencyMhz(240);
         delay(50);
 
-        keypad.disableInterrupts();
+        if (keypad_) keypad_->disableInterrupts();
         // OLED().oledWord("Deleting File: "+ fileName);
         if (!fileName.startsWith("/"))
         fileName = "/" + fileName;
@@ -176,17 +176,17 @@ namespace pocketmage::file{
         // OLED().oledWord("Deleted: "+ fileName);
 
         // Delete MetaData
-        pocketmage::file::deleteMetadata(fileName);
+        deleteMetadata(fileName);
 
         delay(1000);
-        keypad.enableInterrupts();
+        if (keypad_) keypad_->enableInterrupts();
         if (SAVE_POWER)
         setCpuFrequencyMhz(POWER_SAVE_FREQ);
-        SDActive = false;
+        if (SDActive_) *SDActive_ = false;
     }
-    }
-    
-    void deleteMetadata(String path) {
+}
+
+void Pocketmage::deleteMetadata(String path) {
     const char* metaPath = SYS_METADATA_FILE;
 
     // Open metadata file for reading
@@ -222,19 +222,19 @@ namespace pocketmage::file{
 
     writeFile.close();
     ESP_LOGI(TAG, "Metadata entry deleted (if it existed).");
-    }
-    
-    void renFile(String oldFile, String newFile) {
-    if (noSD) {
+}
+
+void Pocketmage::renFile(String oldFile, String newFile) {
+    if (noSD_ && *noSD_) {
         OLED().oledWord("RENAME FAILED - No SD!");
         delay(5000);
         return;
     } else {
-        SDActive = true;
+        if (SDActive_) *SDActive_ = true;
         setCpuFrequencyMhz(240);
         delay(50);
 
-        keypad.disableInterrupts();
+        if (keypad_) keypad_->disableInterrupts();
         // OLED().oledWord("Renaming "+ oldFile + " to " + newFile);
         if (!oldFile.startsWith("/"))
         oldFile = "/" + oldFile;
@@ -245,16 +245,16 @@ namespace pocketmage::file{
         delay(1000);
 
         // Update MetaData
-        pocketmage::file::renMetadata(oldFile, newFile);
+        renMetadata(oldFile, newFile);
 
-        keypad.enableInterrupts();
+        if (keypad_) keypad_->enableInterrupts();
         if (SAVE_POWER)
         setCpuFrequencyMhz(POWER_SAVE_FREQ);
-        SDActive = false;
+        if (SDActive_) *SDActive_ = false;
     }
-    }
-    
-    void renMetadata(String oldPath, String newPath) {
+}
+
+void Pocketmage::renMetadata(String oldPath, String newPath) {
     setCpuFrequencyMhz(240);
     const char* metaPath = SYS_METADATA_FILE;
 
@@ -305,19 +305,19 @@ namespace pocketmage::file{
 
     if (SAVE_POWER)
         setCpuFrequencyMhz(40);
-    }
-    
-    void copyFile(String oldFile, String newFile) {
-    if (noSD) {
+}
+
+void Pocketmage::copyFile(String oldFile, String newFile) {
+    if (noSD_ && *noSD_) {
         OLED().oledWord("COPY FAILED - No SD!");
         delay(5000);
         return;
     } else {
-        SDActive = true;
+        if (SDActive_) *SDActive_ = true;
         setCpuFrequencyMhz(240);
         delay(50);
 
-        keypad.disableInterrupts();
+        if (keypad_) keypad_->disableInterrupts();
         OLED().oledWord("Loading File");
         if (!oldFile.startsWith("/"))
         oldFile = "/" + oldFile;
@@ -328,45 +328,43 @@ namespace pocketmage::file{
         OLED().oledWord("Saved: " + newFile);
 
         // Write MetaData
-        pocketmage::file::writeMetadata(newFile);
+        writeMetadata(newFile);
 
         delay(1000);
-        keypad.enableInterrupts();
+        if (keypad_) keypad_->enableInterrupts();
 
         if (SAVE_POWER)
         setCpuFrequencyMhz(POWER_SAVE_FREQ);
-        SDActive = false;
+        if (SDActive_) *SDActive_ = false;
     }
-    }
-    
-    void appendToFile(String path, String inText) {
-    if (noSD) {
+}
+
+void Pocketmage::appendToFile(String path, String inText) {
+    if (noSD_ && *noSD_) {
         OLED().oledWord("OP FAILED - No SD!");
         delay(5000);
         return;
     } else {
-        SDActive = true;
+        if (SDActive_) *SDActive_ = true;
         setCpuFrequencyMhz(240);
         delay(50);
 
-        keypad.disableInterrupts();
+        if (keypad_) keypad_->disableInterrupts();
         SD().appendFile(SD_MMC, path.c_str(), inText.c_str());
 
         // Write MetaData
-        pocketmage::file::writeMetadata(path);
+        writeMetadata(path);
 
-        keypad.enableInterrupts();
+        if (keypad_) keypad_->enableInterrupts();
 
         if (SAVE_POWER)
         setCpuFrequencyMhz(POWER_SAVE_FREQ);
-        SDActive = false;
+        if (SDActive_) *SDActive_ = false;
     }
-    }
-}   // namespace pocketmage::file
+}
 
-namespace pocketmage::time{
-    
-    void setTimeFromString(String timeStr) {
+// --------- time/power helpers ---------
+void Pocketmage::setTimeFromString(String timeStr) {
     if (timeStr.length() != 5 || timeStr[2] != ':') {
         ESP_LOGE(TAG, "Invalid format! Use HH:MM. Provided str: %s", timeStr.c_str());
         return;
@@ -385,15 +383,15 @@ namespace pocketmage::time{
     CLOCK().getRTC().adjust(DateTime(now.year(), now.month(), now.day(), hours, minutes, 0));
 
     ESP_LOGI(TAG, "Time updated!");
-    }
-    
-    void checkTimeout() {
+}
+
+void Pocketmage::checkTimeout() {
     int randomScreenSaver = 0;
-    timeoutMillis = millis();
+    if (timeoutMillis_) *timeoutMillis_ = millis();
 
     // Trigger timeout deep sleep
-    if (!disableTimeout) {
-        if (timeoutMillis - prevTimeMillis >= TIMEOUT * 1000) {
+    if (!(disableTimeout_ && *disableTimeout_)) {
+        if ((timeoutMillis_ && prevTimeMillis_ && TIMEOUT) && ((*timeoutMillis_ - *prevTimeMillis_) >= (TIMEOUT * 1000))) {
         ESP_LOGW(TAG, "Device idle... Deep sleeping");
 
         // Give a chance to keep device awake
@@ -405,18 +403,18 @@ namespace pocketmage::time{
             if (digitalRead(KB_IRQ) == 0) {
             OLED().oledWord("Good Save!");
             delay(500);
-            prevTimeMillis = millis();
-            keypad.flush();
+            if (prevTimeMillis_) *prevTimeMillis_ = millis();
+            if (keypad_) keypad_->flush();
             return;
             }
         }
 
         // Save current work:
-        pocketmage::file::saveFile();
+        saveFile();
 
-        switch (CurrentAppState) {
+        switch (CurrentAppState_ ? *CurrentAppState_ : HOME) {
             case TXT:
-            if (SLEEPMODE == "TEXT" && editingFile != "") {
+            if (SLEEPMODE == "TEXT" && editingFile_ && *editingFile_ != "") {
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
@@ -428,19 +426,19 @@ namespace pocketmage::time{
                 display.setCursor(4, display.height() - 6);
                 //display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
                 //                20, GxEPD_BLACK);
-                EINK().statusBar(editingFile, true);
+                EINK().statusBar(editingFile_ ? *editingFile_ : String(""), true);
 
                 display.fillRect(320 - 86, 240 - 52, 87, 52, GxEPD_WHITE);
                 display.drawBitmap(320 - 86, 240 - 52, sleep1, 87, 52, GxEPD_BLACK);
 
                 // Put device to sleep with alternate sleep screen
-                pocketmage::power::deepSleep(true);
-            } else
-                pocketmage::power::deepSleep();
+            deepSleep(true);
+        } else
+                deepSleep();
             break;
 
             default:
-            pocketmage::power::deepSleep();
+            deepSleep();
             break;
         }
 
@@ -452,33 +450,35 @@ namespace pocketmage::time{
         esp_deep_sleep_start();
         }
     } else {
-        prevTimeMillis = millis();
+        if (prevTimeMillis_) *prevTimeMillis_ = millis();
     }
 
     // Power Button Event sleep
-    if (PWR_BTN_event && CurrentHOMEState != NOWLATER) {
-        PWR_BTN_event = false;
+    if (pwrBtnEvent_ && *pwrBtnEvent_ && CurrentHOMEState_ && (*CurrentHOMEState_ != NOWLATER)) {
+        *pwrBtnEvent_ = false;
 
         // Save current work:
         OLED().oledWord("Saving Work");
-        pocketmage::file::saveFile();
+        saveFile();
 
         if (digitalRead(CHRG_SENS) == HIGH) {
         // Save last state
-        prefs.begin("PocketMage", false);
-        prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
-        prefs.putString("editingFile", editingFile);
-        prefs.end();
+        if (prefs_) {
+          prefs_->begin("PocketMage", false);
+          if (CurrentAppState_) prefs_->putInt("CurrentAppState", static_cast<int>(*CurrentAppState_));
+          if (editingFile_)     prefs_->putString("editingFile", *editingFile_);
+          prefs_->end();
+        }
 
-        CurrentAppState = HOME;
-        CurrentHOMEState = NOWLATER;
+        if (CurrentAppState_) *CurrentAppState_ = HOME;
+        if (CurrentHOMEState_) *CurrentHOMEState_ = NOWLATER;
         updateTaskArray();
         sortTasksByDueDate(tasks);
 
         u8g2.setPowerSave(1);
-        OLEDPowerSave = true;
-        disableTimeout = true;
-        newState = true;
+        if (OLEDPowerSave_)  *OLEDPowerSave_ = true;
+        if (disableTimeout_) *disableTimeout_ = true;
+        if (newState_)       *newState_ = true;
 
         // Shutdown Jingle
         BZ().playJingle(Jingles::Shutdown);
@@ -488,9 +488,9 @@ namespace pocketmage::time{
         display.fillScreen(GxEPD_WHITE);
 
         } else {
-        switch (CurrentAppState) {
+        switch (CurrentAppState_ ? *CurrentAppState_ : HOME) {
             case TXT:
-            if (SLEEPMODE == "TEXT" && editingFile != "") {
+            if (SLEEPMODE == "TEXT" && editingFile_ && *editingFile_ != "") {
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
@@ -501,38 +501,38 @@ namespace pocketmage::time{
                 display.setCursor(4, display.height() - 6);
                 //display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
                 //                20, GxEPD_BLACK);
-                EINK().statusBar(editingFile, true);
+                EINK().statusBar(editingFile_ ? *editingFile_ : String(""), true);
 
                 display.fillRect(320 - 86, 240 - 52, 87, 52, GxEPD_WHITE);
                 display.drawBitmap(320 - 86, 240 - 52, sleep1, 87, 52, GxEPD_BLACK);
 
-                pocketmage::power::deepSleep(true);
+                deepSleep(true);
             }
             // Sleep device normally
             else
-                pocketmage::power::deepSleep();
+                deepSleep();
             break;
             default:
-            pocketmage::power::deepSleep();
+            deepSleep();
             break;
         }
         }
 
-    } else if (PWR_BTN_event && CurrentHOMEState == NOWLATER) {
+    } else if (pwrBtnEvent_ && *pwrBtnEvent_ && CurrentHOMEState_ && (*CurrentHOMEState_ == NOWLATER)) {
         // Load last state
         /*prefs.begin("PocketMage", true);
         editingFile = prefs.getString("editingFile", "");
         if (HOME_ON_BOOT) CurrentAppState = HOME;
         else CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
         prefs.end();*/
-        pocketmage::power::loadState();
-        keypad.flush();
+        loadState();
+        if (keypad_) keypad_->flush();
 
-        CurrentHOMEState = HOME_HOME;
-        PWR_BTN_event = false;
-        if (OLEDPowerSave) {
+        if (CurrentHOMEState_) *CurrentHOMEState_ = HOME_HOME;
+        if (pwrBtnEvent_) *pwrBtnEvent_ = false;
+        if (OLEDPowerSave_ && *OLEDPowerSave_) {
         u8g2.setPowerSave(0);
-        OLEDPowerSave = false;
+        *OLEDPowerSave_ = false;
         }
         display.fillScreen(GxEPD_WHITE);
         EINK().forceSlowFullUpdate(true);
@@ -542,11 +542,11 @@ namespace pocketmage::time{
 
         EINK().refresh();
         delay(200);
-        newState = true;
+        if (newState_) *newState_ = true;
     }
     }
-    
-    void setCpuSpeed(int newFreq) {
+
+void Pocketmage::setCpuSpeed(int newFreq) {
     // Return early if the frequency is already set
     if (getCpuFrequencyMhz() == newFreq)
         return;
@@ -565,19 +565,17 @@ namespace pocketmage::time{
         setCpuFrequencyMhz(newFreq);
         ESP_LOGI(TAG, "CPU Speed changed to: %d MHz", newFreq);
     }
-    }
-}    // namespace pocketmage::time
+}
 
-namespace pocketmage::power{
-    
-    void deepSleep(bool alternateScreenSaver) {
+// --------- power helpers ---------
+void Pocketmage::deepSleep(bool alternateScreenSaver) {
     // Put OLED to sleep
     u8g2.setPowerSave(1);
 
     // Stop the einkHandler task
-    if (einkHandlerTaskHandle != NULL) {
-        vTaskDelete(einkHandlerTaskHandle);
-        einkHandlerTaskHandle = NULL;
+    if (einkHandlerTaskHandle_ && *einkHandlerTaskHandle_ != NULL) {
+        vTaskDelete(*einkHandlerTaskHandle_);
+        *einkHandlerTaskHandle_ = NULL;
     }
 
     // Shutdown Jingle
@@ -602,20 +600,22 @@ namespace pocketmage::power{
     display.hibernate();
 
     // Save last state
-    prefs.begin("PocketMage", false);
-    prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
-    prefs.putString("editingFile", editingFile);
-    prefs.end();
+    if (prefs_) {
+      prefs_->begin("PocketMage", false);
+      if (CurrentAppState_) prefs_->putInt("CurrentAppState", static_cast<int>(*CurrentAppState_));
+      if (editingFile_)     prefs_->putString("editingFile", *editingFile_);
+      prefs_->end();
+    }
 
     // Sleep the ESP32
     esp_deep_sleep_start();
-    }
-    
-    void IRAM_ATTR PWR_BTN_irq() {
-    PWR_BTN_event = true;
-    }
-    
-    void updateBattState() {
+}
+
+void IRAM_ATTR Pocketmage::PWR_BTN_irq() {
+  if (pwrBtnEvent_) *pwrBtnEvent_ = true;
+}
+
+void Pocketmage::updateBattState() {
     // Read and scale voltage (add calibration offset if needed)
     float rawVoltage = (analogRead(BAT_SENS) * (3.3 / 4095.0) * 2) + 0.2;
 
@@ -628,7 +628,7 @@ namespace pocketmage::power{
     static int prevBattState = -1;  // Ensure valid initial state
     const float threshold = 0.05;   // Hysteresis threshold
 
-    int newState = battState;
+    int newState = battState_ ? *battState_ : 0;
 
     // Charging state overrides everything
     if (digitalRead(CHRG_SENS) == 1) {
@@ -648,67 +648,69 @@ namespace pocketmage::power{
         }
     }
 
-    if (newState != battState) {
-        battState = newState;
+    if (battState_ && newState != *battState_) {
+        *battState_ = newState;
         prevBattState = newState;
         // newState = true;
     }
 
     prevVoltage = filteredVoltage;
-    }
-    
-    void loadState(bool changeState) {
+}
+
+void Pocketmage::loadState(bool changeState) {
     // LOAD PREFERENCES
-    prefs.begin("PocketMage", true);  // Read-Only
+    if (!prefs_) return;
+    prefs_->begin("PocketMage", true);  // Read-Only
     // Misc
-    TIMEOUT = prefs.getInt("TIMEOUT", 120);
-    DEBUG_VERBOSE = prefs.getBool("DEBUG_VERBOSE", true);
-    SYSTEM_CLOCK = prefs.getBool("SYSTEM_CLOCK", true);
-    SHOW_YEAR = prefs.getBool("SHOW_YEAR", true);
-    SAVE_POWER = prefs.getBool("SAVE_POWER", true);
-    ALLOW_NO_MICROSD = prefs.getBool("ALLOW_NO_SD", false);
-    editingFile = prefs.getString("editingFile", "");
-    HOME_ON_BOOT = prefs.getBool("HOME_ON_BOOT", false);
-    OLED_BRIGHTNESS = prefs.getInt("OLED_BRIGHTNESS", 255);
-    OLED_MAX_FPS = prefs.getInt("OLED_MAX_FPS", 30);
+    TIMEOUT = prefs_->getInt ("TIMEOUT", 120);
+    DEBUG_VERBOSE = prefs_->getBool("DEBUG_VERBOSE", true);
+    SYSTEM_CLOCK = prefs_->getBool("SYSTEM_CLOCK", true);
+    SHOW_YEAR = prefs_->getBool("SHOW_YEAR", true);
+    SAVE_POWER = prefs_->getBool("SAVE_POWER", true);
+    ALLOW_NO_MICROSD = prefs_->getBool("ALLOW_NO_SD", false);
+    editingFile = prefs_->getString("editingFile", "");
+    HOME_ON_BOOT = prefs_->getBool("HOME_ON_BOOT", false);
+    OLED_BRIGHTNESS = prefs_->getInt ("OLED_BRIGHTNESS", 255);
+    OLED_MAX_FPS = prefs_->getInt ("OLED_MAX_FPS", 30);
 
     // Update State (if needed)
     if (changeState) {
         u8g2.setContrast(OLED_BRIGHTNESS);
 
         if (HOME_ON_BOOT)
-        CurrentAppState = HOME;
-        else
-        CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
+          { if (CurrentAppState_) *CurrentAppState_ = HOME; }
+        else {
+          if (CurrentAppState_) *CurrentAppState_ = static_cast<AppState>(prefs_->getInt("CurrentAppState", HOME));
+        }
 
-        keypad.flush();
+        if (keypad_) keypad_->flush();
 
         // Initialize boot app if needed
-        switch (CurrentAppState) {
+        switch (CurrentAppState_ ? *CurrentAppState_ : HOME) {
         case HOME:
-            newState = true;
+            if (newState_) *newState_ = true;
             break;
         case TXT:
-            if (editingFile != "")
-            pocketmage::file::loadFile(false);
+            if (editingFile_ && *editingFile_ != "")
+            loadFile(false);
             else {
             stringToVector("");
             }
-            CurrentKBState = NORMAL;
-            dynamicScroll = 0;
-            newLineAdded = true;
-            newState = false;
+            if (CurrentKBState_) *CurrentKBState_ = NORMAL;
+            if (dynamicScroll_)  *dynamicScroll_ = 0;
+            if (newLineAdded_)   *newLineAdded_ = true;
+            if (newState_)       *newState_ = false;
             break;
         case SETTINGS:
-            newState = true;
+            if (newState_) *newState_ = true;
             break;
         case TASKS:
             TASKS_INIT();
             break;
         case USB_APP:
-            CurrentAppState = HOME;
-            CurrentKBState = NORMAL;
-            newState = true;
+            if (CurrentAppState_) *CurrentAppState_ = HOME;
+            if (CurrentKBState_)  *CurrentKBState_ = NORMAL;
+            if (newState_)        *newState_ = true;
             break;
         case CALENDAR:
             CALENDAR_INIT();
@@ -721,17 +723,14 @@ namespace pocketmage::power{
             break;
         }
     }
+    prefs_->end();
+}
 
-    prefs.end();
-    }
-}    // namespace pocketmage::power
-
-namespace pocketmage::debug{
-
-    void printDebug() {
+// --------- debug ---------
+void Pocketmage::printDebug() {
     DateTime now = CLOCK().nowDT();
-    if (now.second() != prevSec) {
-    prevSec = now.second();
+    if (prevSec_ && (now.second() != *prevSec_)) {
+    *prevSec_ = now.second();
     float batteryVoltage = (analogRead(BAT_SENS) * (3.3 / 4095.0) * 2) + 0.2;
 
     // Display GPIO states and system info
@@ -745,7 +744,6 @@ namespace pocketmage::debug{
         daysOfTheWeek[now.dayOfTheWeek()], now.hour(), now.minute(), now.second());
     }
 }
-}    // namespace pocketmage::debug
 
 // ===================== GLOBAL TEXT HELPERS =====================
 String vectorToString() {

@@ -57,7 +57,7 @@ void setupSD() {
     if (f) f.close();
   }
  
-  pocketmage::power::loadState();
+  pocketmage().loadState();
 
 }
 

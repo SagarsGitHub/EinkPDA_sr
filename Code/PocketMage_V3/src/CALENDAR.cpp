@@ -97,7 +97,7 @@ void updateEventsFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing calendarEvents file first
-  pocketmage::file::delFile("/sys/events.txt");
+  pocketmage().delFile("/sys/events.txt");
 
   // Iterate through the calendarEvents vector and append each task to the file
   for (size_t i = 0; i < calendarEvents.size(); i++) {
@@ -105,7 +105,7 @@ void updateEventsFile() {
     String eventInfo = calendarEvents[i][0] + "|" + calendarEvents[i][1] + "|" + calendarEvents[i][2] + "|" + calendarEvents[i][3]+ "|" + calendarEvents[i][4]+ "|" + calendarEvents[i][5];
     
     // Append the task info to the file
-    pocketmage::file::appendToFile("/sys/events.txt", eventInfo);
+    pocketmage().appendToFile("/sys/events.txt", eventInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);

@@ -19,7 +19,7 @@ void settingCommandSelect(String command) {
 
   if (command.startsWith("timeset ")) {
     String timePart = command.substring(8);
-    pocketmage::time::setTimeFromString(timePart);
+    pocketmage().setTimeFromString(timePart);
     return;
   }
   else if (command.startsWith("dateset ")) {
@@ -290,7 +290,7 @@ void einkHandler_settings() {
     newState = false;
 
     // Load settings
-    pocketmage::power::loadState(false);
+    pocketmage().loadState(false);
     
     // Display Background
     display.fillScreen(GxEPD_WHITE);

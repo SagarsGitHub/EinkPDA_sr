@@ -40,7 +40,7 @@ void updateTasksFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing tasks file first
-  pocketmage::file::delFile("/sys/tasks.txt");
+  pocketmage().delFile("/sys/tasks.txt");
 
   // Iterate through the tasks vector and append each task to the file
   for (size_t i = 0; i < tasks.size(); i++) {
@@ -48,7 +48,7 @@ void updateTasksFile() {
     String taskInfo = tasks[i][0] + "|" + tasks[i][1] + "|" + tasks[i][2] + "|" + tasks[i][3];
     
     // Append the task info to the file
-    pocketmage::file::appendToFile("/sys/tasks.txt", taskInfo);
+    pocketmage().appendToFile("/sys/tasks.txt", taskInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
