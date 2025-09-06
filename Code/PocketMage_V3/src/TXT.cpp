@@ -48,7 +48,7 @@ void processKB_TXT_OLD() {
         //No char recieved
         if (inchar == 0);  
         else if (inchar == 12) {
-          CurrentAppState = HOME;
+          CurrentAppState = HOME; CurrentHOMEState = HOME_HOME;
           currentLine     = "";
           newState        = true;
           CurrentKBState  = NORMAL;

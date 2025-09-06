@@ -547,3 +547,5 @@ const size_t CONV_FREQUENCY_COUNT = sizeof(CONV_FREQUENCY_LINES) / sizeof(CONV_F
 #pragma endregion
 
 #endif
+
+

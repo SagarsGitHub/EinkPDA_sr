@@ -2,6 +2,9 @@
 // @Ashtf 2025
 
 #include <pocketmage.h>
+#include <Preferences.h>
+#include <time.h>
+#include <sys/time.h>
 
 //        .o.       ooooooooo.   ooooooooo.    .oooooo..o  //
 //       .888.      `888   `Y88. `888   `Y88. d8P'    `Y8  //
@@ -27,8 +30,17 @@ void applicationEinkHandler() {
     case TASKS:
       einkHandler_TASKS();
       break;
+    case CALENDAR:
+      einkHandler_CALENDAR();
+      break;
+    case JOURNAL:
+      einkHandler_JOURNAL();
+      break;
     case LEXICON:
       einkHandler_LEXICON();
+      break;
+    case SETTINGS:
+      einkHandler_settings();
       break;
     case CALC:
       einkHandler_CALC();
@@ -64,8 +76,17 @@ void processKB() {
     case TASKS:
       processKB_TASKS();
       break;
+    case CALENDAR:
+      processKB_CALENDAR();
+      break;
+    case JOURNAL:
+      processKB_JOURNAL();
+      break;
     case LEXICON:
       processKB_LEXICON();
+      break;
+    case SETTINGS:
+      processKB_settings();
       break;
     case CALC:
       processKB_CALC();
@@ -108,6 +129,8 @@ void setup() {
   setupEink();
   Serial.println("setup eink!");
 
+
+
   // SD CARD SETUP
   setupSD();
 
@@ -131,8 +154,7 @@ void setup() {
     delay(1000);
   }
 
-  // setupRTC() to begin here
-  // RTC SETUP
+
     frames.reserve(MAX_FRAMES);
   //oledWord("setting cap thershold to 5,1");
   
@@ -174,7 +196,65 @@ void setup() {
   // Set "random" seed
   //randomSeed(analogRead(BAT_SENS));
   useRealRandomGenerator(true);
+  
+  // Initialize system time to compile time if unset
+  time_t now = time(nullptr);
+  if (now < 1577836800) { // before 2020 -> unset
+    const char* months = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    char mstr[4]; mstr[3] = 0;
+    int month = 1, day=1, year=2025, hour=0, min=0, sec=0;
+    // __DATE__="Mmm dd yyyy"  __TIME__="hh:mm:ss"
+    sscanf(__TIME__, "%d:%d:%d", &hour, &min, &sec);
+    sscanf(__DATE__, "%3s %d %d", mstr, &day, &year);
+    const char* p = strstr(months, mstr);
+    if (p) month = ((int)(p - months) / 3) + 1;
+    struct tm t = {};
+    t.tm_year = year - 1900;
+    t.tm_mon  = month - 1;
+    t.tm_mday = day;
+    t.tm_hour = hour;
+    t.tm_min  = min;
+    t.tm_sec  = sec;
+    time_t build = mktime(&t);
+    if (build != (time_t)-1) {
+      struct timeval tv = { build, 0 };
+      settimeofday(&tv, nullptr);
+    }
+  }
   // end setupSys()
+  // Restore last app on wake if configured (e.g., wake into CALC)
+  {
+    Preferences prefs;
+    prefs.begin("PocketMage", true);
+    bool restore = prefs.getBool("RESTORE_ON_WAKE", RESTORE_ON_WAKE);
+    int lastApp = prefs.getInt("LastAppState", HOME);
+    String lastFile = prefs.getString("editingFile", "");
+    prefs.end();
+
+    if (restore) {
+      switch (static_cast<AppState>(lastApp)) {
+        case HOME:
+          CurrentAppState = HOME; CurrentKBState = NORMAL; newState = true; break;
+        case TXT:
+          if (lastFile.length() > 0) editingFile = lastFile; TXT_INIT(); break;
+        case FILEWIZ:
+          FILEWIZ_INIT(); break;
+        case SETTINGS:
+          SETTINGS_INIT(); break;
+        case TASKS:
+          TASKS_INIT(); break;
+        case CALENDAR:
+          CALENDAR_INIT(); break;
+        case JOURNAL:
+          JOURNAL_INIT(); break;
+        case LEXICON:
+          LEXICON_INIT(); break;
+        case CALC:
+          CALC_INIT(); break;
+        default: break;
+      }
+    }
+  }
 }
 
 void loop() {

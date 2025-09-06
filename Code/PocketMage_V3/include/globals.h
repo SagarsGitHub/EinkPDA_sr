@@ -9,9 +9,6 @@
 #include <U8g2lib.h>
 #include <Adafruit_TCA8418.h>
 #include <vector>
-#include <Buzzer.h>
-#include <USB.h>
-#include <USBMSC.h>
 #include <Adafruit_MPR121.h>
 #include <esp_cpu.h>
 #include <freertos/FreeRTOS.h>
@@ -133,16 +130,14 @@ extern int lastTouch;                        // Last touch event
 extern unsigned long lastTouchTime;          // Last touch time
 
 // ===================== AUDIO =====================
-// Buzzer for sound feedback
-extern Buzzer buzzer;
+// No buzzer hardware on this device
 
 // ===================== RTC =====================
-
+// External RTC chip not present on this device; internal ESP time is used
 
 // ===================== USB & STORAGE =====================
-// USB mass storage controller
-extern USBMSC msc;           // USB MSC object
-extern bool mscEnabled;      // Is USB MSC active?
+// USB MSC not supported on this device (no SD_MMC).
+extern bool mscEnabled;      // Keep flag for UI only
 
 // ===================== SYSTEM SETTINGS =====================
 // Persistent preferences
@@ -154,6 +149,8 @@ extern bool SHOW_YEAR;           // Show year in clock
 extern bool SAVE_POWER;          // Enable power saving mode
 extern bool ALLOW_NO_MICROSD;    // Allow running without SD card
 extern bool HOME_ON_BOOT;        // Start home app on boot
+extern bool RESTORE_ON_WAKE;     // Restore last app on wake
+extern bool NOWLATER_ON_SLEEP;   // Enter NOW/LATER on idle sleep
 extern int OLED_BRIGHTNESS;      // OLED brightness (0-255)
 extern int OLED_MAX_FPS;         // OLED max FPS
 
@@ -575,6 +572,11 @@ void einkHandler_CALENDAR();
 void LEXICON_INIT();
 void processKB_LEXICON();
 void einkHandler_LEXICON();
+
+// <SETTINGS.cpp>
+void SETTINGS_INIT();
+void processKB_settings();
+void einkHandler_settings();
 
 // <JOURNAL.cpp>
 void JOURNAL_INIT();

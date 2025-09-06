@@ -6,6 +6,9 @@
 //  oo     .d8P      888      oo     .d8P      888       888       o  8    Y     888   //
 //  8""88888P'      o888o     8""88888P'      o888o     o888ooooood8 o8o        o888o  //
 #include <pocketmage.h>
+#include <time.h>
+#include <sys/time.h>
+#include <Preferences.h>
 
 
 // High-Level File Operations
@@ -66,14 +69,16 @@ void writeMetadata(const String& path) {
 
   String charStr  = String(charCount) + " Char";
 
-  // Get current time from RTC
-  //DateTime now = rtc.now();
+  // Build timestamp from internal RTC (ESP system time)
+  time_t raw = time(nullptr);
+  struct tm t;
+  localtime_r(&raw, &t);
   char timestamp[20];
-  //sprintf(timestamp, "%04d%02d%02d-%02d%02d",
-  //       now.year(), now.month(), now.day(), now.hour(), now.minute());
+  snprintf(timestamp, sizeof(timestamp), "%04d%02d%02d-%02d%02d",
+           t.tm_year + 1900, t.tm_mon + 1, t.tm_mday, t.tm_hour, t.tm_min);
 
-  // Compose new metadata line
-  String newEntry = path + "|" + fileSizeStr + "|" + charStr;
+  // Compose new metadata line: path|timestamp|size|chars
+  String newEntry = path + "|" + String(timestamp) + "|" + fileSizeStr + "|" + charStr;
 
   const char* metaPath = SYS_METADATA_FILE;
 
@@ -504,20 +509,36 @@ void updateScrollFromTouch() {
 }
 
 void setTimeFromString(String timeStr) {
-    if (timeStr.length() != 5 || timeStr[2] != ':') {
-        Serial.println("Invalid format! Use HH:MM");
-        return;
-    }
+  if (timeStr.length() != 5 || timeStr[2] != ':') {
+    Serial.println("Invalid format! Use HH:MM");
+    return;
+  }
 
-    int hours = timeStr.substring(0, 2).toInt();
-    int minutes = timeStr.substring(3, 5).toInt();
+  int hours = timeStr.substring(0, 2).toInt();
+  int minutes = timeStr.substring(3, 5).toInt();
 
-    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-      OLED().oledWord("Invalid");
-      delay(500);
-      return;
-    }
-    Serial.println("Time updated!");
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    OLED().oledWord("Invalid");
+    delay(500);
+    return;
+  }
+
+  time_t nowRaw = time(nullptr);
+  struct tm nowTm;
+  localtime_r(&nowRaw, &nowTm);
+  nowTm.tm_hour = hours;
+  nowTm.tm_min = minutes;
+  nowTm.tm_sec = 0;
+
+  time_t newRaw = mktime(&nowTm);
+  if (newRaw == (time_t)-1) {
+    Serial.println("Failed to compute new time");
+    return;
+  }
+
+  struct timeval tv = { newRaw, 0 };
+  settimeofday(&tv, nullptr);
+  Serial.println("Time updated!");
 }
 
 int stringToInt(String str) {
@@ -636,6 +657,31 @@ void checkTimeout() {
         //Save current work:
         saveFile();
 
+        // If configured, enter NOW/LATER instead of deep sleep
+        if (NOWLATER_ON_SLEEP) {
+          // persist last app and file so NOW/LATER wake can restore properly
+          {
+            Preferences prefs;
+            prefs.begin("PocketMage", false);
+            prefs.putInt("LastAppState", static_cast<int>(CurrentAppState));
+            prefs.putString("editingFile", editingFile);
+            prefs.end();
+          }
+          CurrentAppState  = HOME;
+          CurrentHOMEState = NOWLATER;
+          updateTaskArray();
+          sortTasksByDueDate(tasks);
+          u8g2.setPowerSave(1);
+          OLEDPowerSave  = true;
+          disableTimeout = true;
+          newState = true;
+
+          // Clear screen background
+          EINK().getDisplay().setFullWindow();
+          EINK().getDisplay().fillScreen(GxEPD_WHITE);
+          return;
+        }
+
 
         switch (CurrentAppState) {
           case TXT:
@@ -685,7 +731,32 @@ void checkTimeout() {
     OLED().oledWord("Saving Work");
     saveFile();
 
-    
+    // If configured, enter NOW/LATER on power button press
+    if (NOWLATER_ON_SLEEP) {
+      // persist last app and file for restoration
+      {
+        Preferences prefs;
+        prefs.begin("PocketMage", false);
+        prefs.putInt("LastAppState", static_cast<int>(CurrentAppState));
+        prefs.putString("editingFile", editingFile);
+        prefs.end();
+      }
+      CurrentAppState  = HOME;
+      CurrentHOMEState = NOWLATER;
+      updateTaskArray();
+      sortTasksByDueDate(tasks);
+
+      u8g2.setPowerSave(1);
+      OLEDPowerSave  = true;
+      disableTimeout = true;
+      newState = true;
+
+      // Clear screen
+      EINK().getDisplay().setFullWindow();
+      EINK().getDisplay().fillScreen(GxEPD_WHITE);
+      return;
+    }
+
     if (digitalRead(CHRG_SENS) == HIGH) {
       CurrentAppState = HOME;
       CurrentHOMEState = NOWLATER;
@@ -734,11 +805,37 @@ void checkTimeout() {
   }
   else if (PWR_BTN_event && CurrentHOMEState == NOWLATER) {
     // Load last state
-    /*prefs.begin("PocketMage", true);
-    editingFile = prefs.getString("editingFile", "");
-    if (HOME_ON_BOOT) CurrentAppState = HOME;
-    else CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
-    prefs.end();*/
+    Preferences prefs;
+    prefs.begin("PocketMage", true);
+    String lastFile = prefs.getString("editingFile", "");
+    int lastApp = prefs.getInt("LastAppState", HOME);
+    bool restore = prefs.getBool("RESTORE_ON_WAKE", RESTORE_ON_WAKE);
+    prefs.end();
+    
+    if (restore) {
+      switch (static_cast<AppState>(lastApp)) {
+        case HOME:
+          CurrentAppState = HOME; CurrentHOMEState = HOME_HOME; newState = true; PWR_BTN_event = false; return;
+        case TXT:
+          if (lastFile.length() > 0) editingFile = lastFile; TXT_INIT(); PWR_BTN_event = false; return;
+        case FILEWIZ:
+          FILEWIZ_INIT(); PWR_BTN_event = false; return;
+        case SETTINGS:
+          SETTINGS_INIT(); PWR_BTN_event = false; return;
+        case TASKS:
+          TASKS_INIT(); PWR_BTN_event = false; return;
+        case CALENDAR:
+          CALENDAR_INIT(); PWR_BTN_event = false; return;
+        case JOURNAL:
+          JOURNAL_INIT(); PWR_BTN_event = false; return;
+        case LEXICON:
+          LEXICON_INIT(); PWR_BTN_event = false; return;
+        case CALC:
+          CALC_INIT(); PWR_BTN_event = false; return;
+        default:
+          break;
+      }
+    }
   
     keypad.flush();
 
@@ -788,7 +885,15 @@ void deepSleep(bool alternateScreenSaver) {
   // Put E-Ink to sleep
   EINK().getDisplay().hibernate();
 
-      
+  // Persist last app state for wake restore
+  {
+    Preferences prefs;
+    prefs.begin("PocketMage", false);
+    prefs.putInt("LastAppState", static_cast<int>(CurrentAppState));
+    prefs.putString("editingFile", editingFile);
+    prefs.end();
+  }
+
   // Sleep the ESP32
   esp_deep_sleep_start();
 }

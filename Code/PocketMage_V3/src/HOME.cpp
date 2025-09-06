@@ -6,6 +6,7 @@
 //   888     888  `88b    d88'  8    Y     888   888       o  //
 //  o888o   o888o  `Y8bood8P'  o8o        o888o o888ooooood8  //
 #include <pocketmage.h>
+#include <time.h>
 
 static String currentLine = "";
 
@@ -104,8 +105,17 @@ void commandSelect(String command) {
   else if (command == "calc" || command == "calculator" || command == "math" || command == "10") {
     CALC_INIT();
   }
+  else if (command == "settings" || command == "set" || command == "5") {
+    SETTINGS_INIT();
+  }
   else if (command == "lex" || command == "lexicon" || command == "dict" || command == "dictionary" || command == "9") {
     LEXICON_INIT();
+  }
+  else if (command == "calendar" || command == "cal" || command == "7") {
+    CALENDAR_INIT();
+  }
+  else if (command == "journal" || command == "8") {
+    JOURNAL_INIT();
   }
   /////////////////////////////
   else if (command == "i farted") {
@@ -263,5 +273,41 @@ void einkHandler_HOME() {
         //EINK().multiPassRefesh(2);
       }
       break;
+    case NOWLATER: {
+      static int prevMinuteNL = -1;
+      time_t raw = time(nullptr);
+      struct tm t; localtime_r(&raw, &t);
+      if (newState || t.tm_min != prevMinuteNL) {
+        newState = false;
+        prevMinuteNL = t.tm_min;
+
+        auto &d = EINK().getDisplay();
+        d.setFullWindow();
+        d.firstPage();
+        do {
+          d.fillScreen(GxEPD_WHITE);
+          // Big clock time
+          EINK().setTXTFont(&FreeMonoBold24pt7b);
+          char tim[6];
+          snprintf(tim, sizeof(tim), "%02d:%02d", t.tm_hour, t.tm_min);
+          int16_t x1,y1; uint16_t w,h; d.getTextBounds(tim, 0, 0, &x1, &y1, &w, &h);
+          d.setCursor((d.width() - w)/2, 90);
+          d.print(tim);
+
+          // Date below
+          EINK().setTXTFont(&FreeSerif9pt7b);
+          char datebuf[16];
+          snprintf(datebuf, sizeof(datebuf), "%02d/%02d/%02d", t.tm_mon+1, t.tm_mday, (t.tm_year+1900)%100);
+          d.getTextBounds(datebuf, 0, 0, &x1, &y1, &w, &h);
+          d.setCursor((d.width() - w)/2, 120);
+          d.print(datebuf);
+
+          // Footer hint
+          EINK().setTXTFont(&FreeMonoBold9pt7b);
+          EINK().drawStatusBar("Press power to wake");
+        } while (d.nextPage());
+      }
+      break;
+    }
   }
 }

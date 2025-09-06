@@ -7,6 +7,7 @@
 //   `Y8bood8P'  o888ooooood8 o888ooooood8 o888bood8P'    //
 
 #include <pocketmage_oled.h>
+#include <time.h>
 
 // ===================== public functions =====================
 void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
@@ -158,20 +159,30 @@ void PocketmageOled::infoBar() {
     u8g2_.drawXBMP(0, u8g2_.getDisplayHeight()-6, 10, 6, battIcons_[state]);
   }
 
-  // CLOCK
-  if (systemClock_ && *systemClock_ && rtc_) {
+  // CLOCK (ESP internal RTC)
+  if (systemClock_ && *systemClock_) {
     u8g2_.setFont(u8g2_font_5x7_tf);
-    DateTime now = rtc_->now();
-    
-    // shortened time format
-    String timeString = String(now.hour()) + ":" + (now.minute() < 10 ? "0" : "") + String(now.minute());
+    time_t raw = time(nullptr);
+    struct tm t;
+    localtime_r(&raw, &t);
+
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%02d:%02d", t.tm_hour, t.tm_min);
+    String timeString(buf);
     u8g2_.drawStr(infoWidth, u8g2_.getDisplayHeight(), timeString.c_str());
 
-    String day3Char = days_ ? String(days_[now.dayOfTheWeek()]) : String("Day");
-    day3Char = day3Char.substring(0, 3);
-    if (showYear_ && *showYear_) day3Char += (" " + String(now.month()) + "/" + String(now.day()) + "/" + String(now.year()).substring(2,4));
-    else                          day3Char += (" " + String(now.month()) + "/" + String(now.day()));
-    u8g2_.drawStr(u8g2_.getDisplayWidth() - u8g2_.getStrWidth(day3Char.c_str()), u8g2_.getDisplayHeight(), day3Char.c_str());    
+    const char* days[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+    String day3Char = String(days[t.tm_wday]);
+    if (showYear_ && *showYear_) {
+      char dBuf[16];
+      snprintf(dBuf, sizeof(dBuf), " %d/%d/%02d", t.tm_mon+1, t.tm_mday, (t.tm_year + 1900) % 100);
+      day3Char += dBuf;
+    } else {
+      char dBuf[8];
+      snprintf(dBuf, sizeof(dBuf), " %d/%d", t.tm_mon+1, t.tm_mday);
+      day3Char += dBuf;
+    }
+    u8g2_.drawStr(u8g2_.getDisplayWidth() - u8g2_.getStrWidth(day3Char.c_str()), u8g2_.getDisplayHeight(), day3Char.c_str());
 
     infoWidth += (u8g2_.getStrWidth(timeString.c_str()) + 6);
   }

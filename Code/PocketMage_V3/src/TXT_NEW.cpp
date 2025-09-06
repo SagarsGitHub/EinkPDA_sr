@@ -661,7 +661,7 @@ void processKB_TXT_NEW() {
     if (inchar == 0);   
     // Home recieved
     else if (inchar == 12 || inchar == 8) {
-      CurrentAppState = HOME;
+      CurrentAppState = HOME; CurrentHOMEState = HOME_HOME;
       currentLine     = "";
       newState        = true;
       CurrentKBState  = NORMAL;

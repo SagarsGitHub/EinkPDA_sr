@@ -45,26 +45,24 @@ int lastTouch = -1;                          // Last touch event
 unsigned long lastTouchTime = 0;             // Last touch time
 
 // ===================== AUDIO =====================
-// Buzzer for sound feedback
-Buzzer buzzer(17);
+// No buzzer hardware on this device
 
 // ===================== RTC =====================
-
+// No external RTC; internal ESP time is used
 // ===================== USB & STORAGE =====================
-// USB mass storage controller
-USBMSC msc;
-bool mscEnabled = false;          // Is USB MSC active?
-sdmmc_card_t* card = nullptr;     // SD card pointer
+bool mscEnabled = false;          // Is USB MSC active? (unused UI flag)
 
 // ===================== SYSTEM SETTINGS =====================
 
 int TIMEOUT = 120;              // Auto sleep timeout (seconds)
 bool DEBUG_VERBOSE = false;       // Extra debug output
-bool SYSTEM_CLOCK = false;        // Show clock on screen
+bool SYSTEM_CLOCK = true;         // Show clock on screen
 bool SHOW_YEAR = false;           // Show year in clock
 bool SAVE_POWER = false;          // Enable power saving mode
 bool ALLOW_NO_MICROSD  =true;    // Allow running without SD card
-bool HOME_ON_BOOT = true;        // Start home app on boot
+bool HOME_ON_BOOT = false;        // Start home app on boot
+bool RESTORE_ON_WAKE = true;      // Restore last app on wake
+bool NOWLATER_ON_SLEEP = true;    // Enter NOW/LATER on idle sleep
 int OLED_BRIGHTNESS = 150;      // OLED brightness (0-255)
 int OLED_MAX_FPS = 100;         // OLED max FPS
 

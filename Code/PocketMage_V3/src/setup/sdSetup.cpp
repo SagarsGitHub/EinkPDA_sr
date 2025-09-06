@@ -19,6 +19,9 @@ void setupSD() {
   setCpuFrequencyMhz(240);
   // Create folders and files if needed
   // LOAD PREFERENCES
+  // Ensure SPIFFS directories used by apps exist
+  if (!SPIFFS.exists("/sys")) SPIFFS.mkdir("/sys");
+  if (!SPIFFS.exists("/journal")) SPIFFS.mkdir("/journal");
 
 }
 

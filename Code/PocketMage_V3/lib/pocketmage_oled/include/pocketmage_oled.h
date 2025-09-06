@@ -9,7 +9,6 @@
 #pragma once
 #include <Arduino.h>
 #include <U8g2lib.h>
-#include <RTClib.h>
 #include <vector>
 #include <functional>
 #include <utility>
@@ -43,12 +42,12 @@ public:
     battIconCount_ = iconCount;
   }
   void setKeyboardState(int* kbState)                       { kbState_ = kbState;}  // Keyboard state: 0=NORMAL, 1=SHIFT, 2=FUNC
-  void setKeyboardStateGetter(KbStateFn fn) { kbStateFn_ = std::move(fn);}
-  void setClock(RTC_PCF8563* rtc, bool* systemClock, bool* showYear, const char (*days)[12])   // Clock
-  { rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}
+  void setKeyboardStateGetter(KbStateFn fn) { kbStateFn_ = std::move(fn);} 
+  // Clock flags (ESP internal RTC is used; no external chip dependency)
+  void setClockFlags(bool* systemClock, bool* showYear) { systemClock_ = systemClock; showYear_ = showYear; }
   void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}  // Flags
   void setScrollBitmap(const uint8_t* bmp128x32)            { scrollBmp_ = bmp128x32;}  // Static assets
-  void setMaxCharsPerLineEinkGetter(MaxCharsFn fn) { maxCharsFn_ = std::move(fn);}
+  void setMaxCharsPerLineEinkGetter(MaxCharsFn fn) { maxCharsFn_ = std::move(fn);} 
   
   // Main methods
   void oledWord(String word, bool allowLarge = false, bool showInfo = true);
@@ -69,10 +68,8 @@ private:
   int*                  kbState_       = nullptr;
   KbStateFn             kbStateFn_;
 
-  RTC_PCF8563*          rtc_           = nullptr;
   bool*                 systemClock_   = nullptr;
   bool*                 showYear_      = nullptr;
-  const char            (*days_)[12]   = nullptr;
 
   bool*                 mscEnabled_    = nullptr;
   volatile bool*        sdActive_      = nullptr;

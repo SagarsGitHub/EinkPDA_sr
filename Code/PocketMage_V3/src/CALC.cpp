@@ -210,6 +210,7 @@ void closeCalc(AppState newAppState){
     TXT_INIT();
   }  else {
     CurrentAppState = HOME;
+    CurrentHOMEState = HOME_HOME; // ensure we land on Home grid, not NOWLATER
     currentLine     = "";
     newState        = true;
     CurrentKBState  = NORMAL; 

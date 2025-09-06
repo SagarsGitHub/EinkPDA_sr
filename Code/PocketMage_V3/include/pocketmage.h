@@ -5,6 +5,5 @@
 #include <pocketmage_oled.h>
 #include <pocketmage_sd.h>
 #include <pocketmage_kb.h>
-//#include <pocketmage_cap.h> // planned
-//#include <pocketmage_rtc.h> // planned
-//#include <pocketmage_sys.h> // planned
+#include <pocketmage_touch.h>
+#include <pocketmage_sys.h>

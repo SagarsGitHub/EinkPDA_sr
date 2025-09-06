@@ -7,7 +7,7 @@
 #define FULL_REFRESH_AFTER 5                    // Full refresh after N partial refreshes (CHANGE WITH CAUTION)
 #define MAX_FILES 10                            // Number of files to store
 #define FORMAT_SPIFFS_IF_FAILED true            // Format the SPIFFS filesystem if mount fails
-#define SLEEPMODE "TEXT"                        // TEXT, SPLASH, CLOCK
+#define SLEEPMODE "CLOCK"                        // TEXT, SPLASH, CLOCK
 #define TXT_APP_STYLE 1                         // 0: Old Style (NOT SUPPORTED), 1: New Style
 #define SET_CLOCK_ON_UPLOAD false               // Should system clock be set automatically on code upload?
 #define TOUCH_TIMEOUT_MS 1200                   // Delay after scrolling to return to typing mode (ms)

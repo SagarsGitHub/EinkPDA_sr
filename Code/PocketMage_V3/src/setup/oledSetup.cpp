@@ -8,7 +8,6 @@
 #include <pocketmage.h>
 #include <U8g2lib.h>
 #include <GxEPD2_BW.h>
-#include <RTClib.h>
 
 
 // Initialization of oled display class
@@ -51,6 +50,8 @@ void wireOled() {
   oled.setReferenceWidth(display.width());
   oled.setMeasureTextWidth(einkMeasureWidth);
   oled.setMaxCharsPerLineEinkGetter([]{ return EINK().maxCharsPerLine(); });
+  // Wire clock flags (ESP internal)
+  oled.setClockFlags(&SYSTEM_CLOCK, &SHOW_YEAR);
 }
 
 // oled object reference for other apps
