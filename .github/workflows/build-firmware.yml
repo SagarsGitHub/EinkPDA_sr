@@ -1,0 +1,53 @@
+name: Creare Magicae Ordinationis Fabrica
+# above means Create (infinitive) a magical organization (or arrangement literally) device. I'm a bit rusty in Latin so this may be off
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  creare_magicae_ordinationis_fabrica:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: Code/PocketMage_V3
+
+    steps:
+      - name: Conjure the Repository
+        uses: actions/checkout@v4
+
+      - name: Prepare the Python Cauldron
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache Ancient Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio/.cache
+            .pio
+          key: ${{ runner.os }}-pio-${{ hashFiles('platformio.ini') }}
+          restore-keys: |
+            ${{ runner.os }}-pio-
+
+      - name: Summon the PlatformIO Grimoire (stolas's grimoire :D)
+        run: pip install -U platformio
+
+      - name: Forge the PocketMage Spell
+        run: |
+          pio run -e PM_V3
+          echo "Listing the build directory:"
+          ls -l .pio/build/PM_V3
+          echo "Listing recursively:"
+          ls -lR .pio/build/PM_V3
+
+
+      - name: Create the Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocketmage-artifacts
+          path: Code/PocketMage_V3/.pio/build/PM_V3/firmware.*
