@@ -1,29 +1,27 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+
 // LIBRARIES
 #include <Arduino.h>
 #include <GxEPD2_BW.h>
 #include <U8g2lib.h>
-#include <Wire.h>
 #include <Adafruit_TCA8418.h>
 #include <vector>
-#include <algorithm>
 #include <Buzzer.h>
 #include <USB.h>
 #include <USBMSC.h>
 #include <SD_MMC.h>
 #include <Preferences.h>
-#include <stdint.h>
-#include "Adafruit_MPR121.h"
-#include "esp_cpu.h"
-#include "RTClib.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <Adafruit_MPR121.h>
+#include <esp_cpu.h>
+#include <RTClib.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <assets.h>
+#include <config.h>
 
-#include "assets.h"
-#include "config.h"
-
+/* // migrated to pocketmage_eink.h
 // FONTS
 // 3x7
 #include "Fonts/Font3x7FixedNum.h"
@@ -39,6 +37,9 @@
 #include <Fonts/FreeMono12pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
 #include <Fonts/FreeSerif12pt7b.h>
+*/
+
+/* // migrated to pocketmage_oled.h
 // U8G2 FONTS
 //U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 //u8g2_font_4x6_mf
@@ -46,12 +47,13 @@
 //u8g2_font_spleen5x8_mf
 //u8g2_font_boutique_bitmap_9x9_tf
 //u8g2_font_courR08_tf.h
+*/
 
 // ===================== DISPLAY =====================
-// E-Ink display object
-extern GxEPD2_BW<GxEPD2_310_GDEQ031T10, GxEPD2_310_GDEQ031T10::HEIGHT> display; // Main e-ink display
-// OLED display object
-extern U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2; // 256x32 SPI OLED
+// E-ink display
+extern GxEPD2_BW<GxEPD2_310_GDEQ031T10, GxEPD2_310_GDEQ031T10::HEIGHT> display;
+// OLED 
+extern U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2;
 
 // ===================== INPUT DEVICES =====================
 // Keypad controller
@@ -62,6 +64,10 @@ extern char keysArrayFN[4][10];     // Function key layout
 
 // Touch slider (capacitive)
 extern Adafruit_MPR121 cap; // Touch slider
+extern volatile long int dynamicScroll;      // Dynamic scroll offset
+extern volatile long int prev_dynamicScroll; // Previous scroll offset
+extern int lastTouch;                        // Last touch event
+extern unsigned long lastTouchTime;          // Last touch time
 
 // ===================== AUDIO =====================
 // Buzzer for sound feedback
@@ -91,9 +97,14 @@ extern bool HOME_ON_BOOT;        // Start home app on boot
 extern int OLED_BRIGHTNESS;      // OLED brightness (0-255)
 extern int OLED_MAX_FPS;         // OLED max FPS
 
+extern String OTA1_APP;
+extern String OTA2_APP;
+extern String OTA3_APP;
+extern String OTA4_APP;
+
 // ===================== SYSTEM STATE =====================
 // E-Ink refresh control
-extern volatile int einkRefresh;     // Partial/full refresh counter
+// extern volatile int einkRefresh;     // Partial/full refresh counter
 extern int OLEDFPSMillis;            // Last OLED FPS update time
 extern int KBBounceMillis;           // Last keyboard debounce time
 extern volatile int timeoutMillis;   // Timeout tracking
@@ -107,25 +118,25 @@ extern bool noTimeout;               // Disable timeout
 extern volatile bool OLEDPowerSave;  // OLED power save mode
 extern volatile bool disableTimeout; // Disable timeout globally
 extern volatile int battState;       // Battery state
-extern volatile int prevBattState;   // Previous battery state
+// extern volatile int prevBattState;   // Previous battery state
 extern unsigned int flashMillis;     // Flash timing
 extern int prevTime;                 // Previous time (minutes)
 extern uint8_t prevSec;              // Previous seconds
 extern TaskHandle_t einkHandlerTaskHandle; // E-Ink handler task
 
 // ===================== KEYBOARD STATE =====================
-extern char currentKB[4][10];        // Current keyboard layout
+// extern char currentKB[4][10];        // Current keyboard layout
 extern volatile bool SDCARD_INSERT;  // SD card inserted event
 extern bool noSD;                    // No SD card present
 extern volatile bool SDActive;       // SD card active
 
 // ===================== FILES & TEXT =====================
 extern String editingFile;           // Currently edited file
-extern const GFXfont *currentFont;   // Current font
-extern uint8_t maxCharsPerLine;      // Max chars per line (display)
-extern uint8_t maxLines;             // Max lines per screen
-extern uint8_t fontHeight;           // Font height in pixels
-extern uint8_t lineSpacing;          // Line spacing in pixels
+//extern const GFXfont *currentFont;   // Current font
+//extern uint8_t maxCharsPerLine;      // Max chars per line (display)
+//extern uint8_t maxLines;             // Max lines per screen
+//extern uint8_t fontHeight;           // Font height in pixels
+//extern uint8_t lineSpacing;          // Line spacing in pixels
 extern String workingFile;           // Working file name
 extern String filesList[MAX_FILES];  // List of files
 
@@ -133,21 +144,17 @@ extern String filesList[MAX_FILES];  // List of files
 enum KBState { NORMAL, SHIFT, FUNC };    // Keyboard state
 extern KBState CurrentKBState;           // Current keyboard state
 
-extern uint8_t partialCounter;           // E-Ink partial refresh counter
-extern volatile bool forceSlowFullUpdate;// Force slow full update
+// extern uint8_t partialCounter;           // E-Ink partial refresh counter
+// extern volatile bool forceSlowFullUpdate;// Force slow full update
 
-enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON };
+enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON, APPLOADER };
 extern const String appStateNames[];     // App state names
-extern const unsigned char *appIcons[9]; // App icons
+extern const unsigned char *appIcons[11]; // App icons
 extern AppState CurrentAppState;         // Current app state
 
 // ===================== TXT APP =====================
 extern volatile bool newLineAdded;           // New line added in TXT
 extern std::vector<String> allLines;         // All lines in TXT
-extern volatile long int dynamicScroll;      // Dynamic scroll offset
-extern volatile long int prev_dynamicScroll; // Previous scroll offset
-extern int lastTouch;                        // Last touch event
-extern unsigned long lastTouchTime;          // Last touch time
 
 // ===================== TASKS APP =====================
 extern std::vector<std::vector<String>> tasks; // Task list
@@ -158,14 +165,12 @@ extern HOMEState CurrentHOMEState;            // Current home state
 
 // ===================== FUNCTION PROTOTYPES =====================
 // <sysFunc.cpp>
-// SYSTEM
+/* migrated to pocketmage_sys
 void checkTimeout();
-void PWR_BTN_irq();
-void TCA8418_irq();
-char updateKeypress();
+void  IRAM_ATTR PWR_BTN_irq();
+void TCA8418_irq(); // migrated to pocketmage_keypad.h
+char updateKeypress(); // migrated to pocketmage_keypad.h
 void printDebug();
-String vectorToString();
-void stringToVector(String inputText);
 void saveFile();
 void writeMetadata(const String& path);
 void loadFile(bool showOLED = true);
@@ -175,15 +180,20 @@ void renFile(String oldFile, String newFile);
 void renMetadata(String oldPath, String newPath);
 void copyFile(String oldFile, String newFile);
 void updateBattState();
-String removeChar(String str, char character);
-void appendToFile(String path, String inText);
 void setCpuSpeed(int newFreq);
-void playJingle(String jingle);
+void playJingle(String jingle); // migrated to pocketmage_bz.h
 void deepSleep(bool alternateScreenSaver = false);
 void loadState(bool changeState = true);
-int stringToInt(String str);
-void updateScrollFromTouch();
+void updateScrollFromTouch(); // migrated to pocketmage_touch.h
+void setTimeFromString(String timeStr);
+*/
+//int stringToInt(String str);
+//String removeChar(String str, char character);
+//void appendToFile(String path, String inText);
+//String vectorToString();
+//void stringToVector(String inputText);
 
+/* //migrated to pocketmage_sd.h
 // microSD
 void listDir(fs::FS &fs, const char *dirname);
 void readFile(fs::FS &fs, const char *path);
@@ -192,17 +202,19 @@ void writeFile(fs::FS &fs, const char *path, const char *message);
 void appendFile(fs::FS &fs, const char *path, const char *message);
 void renameFile(fs::FS &fs, const char *path1, const char *path2);
 void deleteFile(fs::FS &fs, const char *path);
-void setTimeFromString(String timeStr);
+*/
 
-// <OLEDFunc.cpp>
+/* //migrated to pocketmage_oled.h
+// <OLEDFunc.cpp> 
 void oledWord(String word, bool allowLarge = false, bool showInfo = true);
 void oledLine(String line, bool doProgressBar = true, String bottomMsg = "");
 void oledScroll();
 void infoBar();
+*/
 
+/* // migrated to pocketmage_eink.h
 // <einkFunc.cpp>
 void refresh();
-void einkHandler(void *parameter);
 void statusBar(String input, bool fullWindow = false);
 void einkTextPartial(String text, bool noRefresh = false);
 int  countLines(String input, size_t maxLineLength = 29);
@@ -210,12 +222,14 @@ void einkTextDynamic(bool doFull_, bool noRefresh = false);
 void setTXTFont(const GFXfont *font);
 void setFastFullRefresh(bool setting);
 void drawStatusBar(String input);
-void multiPassRefesh(int passes);
+void multiPassRefresh(int passes);
+*/
 
 // <FILEWIZ.cpp>
 void FILEWIZ_INIT();
 void processKB_FILEWIZ();
 void einkHandler_FILEWIZ();
+String fileWizardMini(bool allowRecentSelect = false);
 
 // <TXT.cpp>
 void TXT_INIT();
@@ -260,7 +274,13 @@ void JOURNAL_INIT();
 void processKB_JOURNAL();
 void einkHandler_JOURNAL();
 
+// <APPLOADER.cpp>
+void APPLOADER_INIT();
+void processKB_APPLOADER();
+void einkHandler_APPLOADER();
+
 // <PocketMage>
+void einkHandler(void *parameter); // moved from EinkFunc.cpp
 void applicationEinkHandler();
 void processKB();
 

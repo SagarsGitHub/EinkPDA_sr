@@ -5,7 +5,7 @@
 //       888         .8PY888.         888       //
 //       888        d8'  `888b        888       //
 //      o888o     o888o  o88888o     o888o      //
-#include "globals.h"
+#include <pocketmage.h>
 
 enum TXTState { TXT_, WIZ0, WIZ1, WIZ2, WIZ3, FONT };
 TXTState CurrentTXTState = TXT_;
@@ -16,8 +16,8 @@ String prevEditingFile = "";
 static String currentLine = "";
 static volatile bool doFull = false;
 
-void TXT_INIT() {
-  if (editingFile != "") loadFile();
+void TXT_INIT_OLD() {
+  if (editingFile != "") pocketmage::file::loadFile();
   CurrentAppState = TXT;
   CurrentTXTState = TXT_;
   CurrentKBState  = NORMAL;
@@ -25,7 +25,7 @@ void TXT_INIT() {
   newLineAdded = true;
 }
 
-void processKB_TXT_NEW() {
+void processKB_TXT_OLD() {
   if (OLEDPowerSave) {
     u8g2.setPowerSave(0);
     OLEDPowerSave = false;
@@ -33,16 +33,16 @@ void processKB_TXT_NEW() {
 
   disableTimeout = false;
 
-  int currentMillis = millis();
+  unsigned long currentMillis = millis();
   if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-    char inchar = updateKeypress();
+    char inchar = KB().updateKeypress();
     switch (CurrentTXTState) {
       case TXT_:
         // SET MAXIMUMS AND FONT
-        setTXTFont(currentFont);
+        EINK().setTXTFont(EINK().getCurrentFont());
 
         // UPDATE SCROLLBAR
-        updateScrollFromTouch();
+        TOUCH().updateScrollFromTouch();
 
         // HANDLE INPUTS
         //No char recieved
@@ -81,7 +81,7 @@ void processKB_TXT_NEW() {
         else if (inchar == 20) {                                  
           allLines.clear();
           currentLine = "";
-          oledWord("Clearing...");
+          OLED().oledWord("Clearing...");
           doFull = true;
           newLineAdded = true;
           delay(300);
@@ -104,7 +104,7 @@ void processKB_TXT_NEW() {
         else if (inchar == 6) {
           //File exists, save normally
           if (editingFile != "" && editingFile != "-") {
-            saveFile();
+            pocketmage::file::saveFile();
             CurrentKBState = NORMAL;
             newLineAdded = true;
           }
@@ -119,7 +119,7 @@ void processKB_TXT_NEW() {
         }
         //LOAD Recieved
         else if (inchar == 5) {
-          loadFile();
+          pocketmage::file::loadFile();
           CurrentKBState = NORMAL;
           newLineAdded = true;
         }
@@ -149,10 +149,10 @@ void processKB_TXT_NEW() {
           OLEDFPSMillis = currentMillis;
           // ONLY SHOW OLEDLINE WHEN NOT IN SCROLL MODE
           if (lastTouch == -1) {
-            oledLine(currentLine);
+            OLED().oledLine(currentLine);
             if (prev_dynamicScroll != dynamicScroll) prev_dynamicScroll = dynamicScroll;
           }
-          else oledScroll();
+          else OLED().oledScroll();
         }
 
         if (currentLine.length() > 0) {
@@ -207,7 +207,7 @@ void processKB_TXT_NEW() {
             //Selected file does not exist, create a new one
             if (filesList[fileIndex - 1] == "-") {
               CurrentTXTState = WIZ3;
-              einkRefresh = FULL_REFRESH_AFTER + 1;
+              EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
               display.fillScreen(GxEPD_WHITE);
             }
@@ -216,7 +216,7 @@ void processKB_TXT_NEW() {
               prevEditingFile = editingFile;
               editingFile = filesList[fileIndex - 1];      
               CurrentTXTState = WIZ1;
-              einkRefresh = FULL_REFRESH_AFTER + 1;
+              EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
               display.fillScreen(GxEPD_WHITE);
             }
@@ -237,7 +237,7 @@ void processKB_TXT_NEW() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentWord, false);
+          OLED().oledLine(currentWord, false);
         }
         break;
       case WIZ1:
@@ -247,7 +247,7 @@ void processKB_TXT_NEW() {
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = WIZ0;
           CurrentKBState = FUNC;
-          einkRefresh = FULL_REFRESH_AFTER + 1;
+          EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
           newState = true;
           display.fillScreen(GxEPD_WHITE);
         }
@@ -255,24 +255,23 @@ void processKB_TXT_NEW() {
           int numSelect = (inchar == '0') ? 10 : (inchar - '0');
           //YES (save current file)
           if (numSelect == 1) {
-            Serial.println("YES (save current file)");
             //File to be saved does not exist
             if (prevEditingFile == "" || prevEditingFile == "-") {
               CurrentTXTState = WIZ2;
               currentWord = "";
               CurrentKBState = NORMAL;
-              einkRefresh = FULL_REFRESH_AFTER + 1;
+              EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
               display.fillScreen(GxEPD_WHITE);
             }
             //File to be saved exists
             else {
               //Save current file
-              saveFile();
+              pocketmage::file::saveFile();
 
               delay(200);
               //Load new file
-              loadFile();
+              pocketmage::file::loadFile();
               //Return to TXT
               CurrentTXTState = TXT_;
               CurrentKBState = NORMAL;
@@ -284,9 +283,8 @@ void processKB_TXT_NEW() {
           }
           //NO  (don't save current file)
           else if (numSelect == 2) {
-            Serial.println("NO  (don't save current file)");
             //Just load new file
-            loadFile();
+            pocketmage::file::loadFile();
             //Return to TXT
             CurrentTXTState = TXT_;
             CurrentKBState = NORMAL;
@@ -301,7 +299,7 @@ void processKB_TXT_NEW() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentWord, false);
+          OLED().oledLine(currentWord, false);
         }
         break;
 
@@ -337,11 +335,11 @@ void processKB_TXT_NEW() {
           prevEditingFile = "/" + currentWord + ".txt";
 
           //Save the file
-          saveFile();
+          pocketmage::file::saveFile();
 
           delay(200);
           //Load new file
-          loadFile();
+          pocketmage::file::loadFile();
 
           keypad.enableInterrupts();
 
@@ -366,7 +364,7 @@ void processKB_TXT_NEW() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentWord, false);
+          OLED().oledLine(currentWord, false);
         }
         break;
       case WIZ3:
@@ -399,7 +397,7 @@ void processKB_TXT_NEW() {
           editingFile = "/" + currentWord + ".txt";
 
           //Save the file
-          saveFile();
+          pocketmage::file::saveFile();
           //Ask to save prev file
           
           //Return to TXT_
@@ -423,7 +421,7 @@ void processKB_TXT_NEW() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentWord, false);
+          OLED().oledLine(currentWord, false);
         }
         break;
       case FONT:
@@ -442,32 +440,32 @@ void processKB_TXT_NEW() {
           int fontIndex = (inchar == '0') ? 10 : (inchar - '0');
           switch (fontIndex) {
             case 1:
-              currentFont = &FreeMonoBold9pt7b;
+              EINK().setCurrentFont(&FreeMonoBold9pt7b);
               break;
             case 2:
-              currentFont = &FreeSans9pt7b;
+              EINK().setCurrentFont(&FreeSans9pt7b);
               break;
             case 3:
-              currentFont = &FreeSerif9pt7b;
+              EINK().setCurrentFont(&FreeSerif9pt7b);
               break;
             case 4:
-              currentFont = &FreeSerifBold9pt7b;
+              EINK().setCurrentFont(&FreeSerifBold9pt7b);
               break;
             case 5:
-              currentFont = &FreeMono12pt7b;
+              EINK().setCurrentFont(&FreeMono12pt7b);
               break;
             case 6:
-              currentFont = &FreeSans12pt7b;
+              EINK().setCurrentFont(&FreeSans12pt7b);
               break;
             case 7:
-              currentFont = &FreeSerif12pt7b;
+              EINK().setCurrentFont(&FreeSerif12pt7b);
               break;
             default:
-              currentFont = &FreeMonoBold9pt7b;
+              EINK().setCurrentFont(&FreeMonoBold9pt7b);
               break;
           }
           // SET THE FONT
-          setTXTFont(currentFont);
+          EINK().setTXTFont(EINK().getCurrentFont());
 
           // UPDATE THE ARRAY TO MATCH NEW FONT SIZE
           String fullTextStr = vectorToString();
@@ -485,7 +483,7 @@ void processKB_TXT_NEW() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentWord, false);
+          OLED().oledLine(currentWord, false);
         }
         break;
 
@@ -494,35 +492,37 @@ void processKB_TXT_NEW() {
   }
 }
 
-void einkHandler_TXT_NEW() {
+void einkHandler_TXT_OLD() {
   if (newLineAdded || newState) {
     switch (CurrentTXTState) {
       case TXT_:
         if (newState && doFull) {
+          display.setRotation(3);
+          display.setFullWindow();
           display.fillScreen(GxEPD_WHITE);
-          refresh();
+          EINK().refresh();
         }
         if (newLineAdded && !newState) {
-          einkTextDynamic(true);
-          refresh();
+          EINK().einkTextDynamic(true);
+          EINK().refresh();
         }
         break;
       case WIZ0:
         display.setFullWindow();
-        einkTextDynamic(true, true);      
+        EINK().einkTextDynamic(true, true);      
         display.setFont(&FreeMonoBold9pt7b);
         
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
         display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(countLines(allText)));
+        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
         display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
         display.fillRect(60,0,200,218,GxEPD_WHITE);
         display.drawBitmap(60,0,fileWizLiteallArray[0],200,218, GxEPD_BLACK);
 
         keypad.disableInterrupts();
-        listDir(SD_MMC, "/");
+        SD().listDir(SD_MMC, "/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
@@ -530,7 +530,7 @@ void einkHandler_TXT_NEW() {
           display.print(filesList[i]);
         }
 
-        refresh();
+        EINK().refresh();
         CurrentKBState = FUNC;
         break;
       case WIZ1:
@@ -539,13 +539,13 @@ void einkHandler_TXT_NEW() {
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
         display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(countLines(allText)));
+        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
         display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
         display.fillRect(60,0,200,218,GxEPD_WHITE);
         display.drawBitmap(60,0,fileWizLiteallArray[1],200,218, GxEPD_BLACK);
 
-        refresh();
+        EINK().refresh();
         CurrentKBState = FUNC;
         break;
       case WIZ2:
@@ -554,43 +554,43 @@ void einkHandler_TXT_NEW() {
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
         display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(countLines(allText)));
+        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
         display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
         display.fillRect(60,0,200,218,GxEPD_WHITE);
         display.drawBitmap(60,0,fileWizLiteallArray[2],200,218, GxEPD_BLACK);
 
-        refresh();
+        EINK().refresh();
         CurrentKBState = NORMAL;
         break;
       case WIZ3:
         display.setFullWindow();
-        einkTextDynamic(true, true);      
+        EINK().einkTextDynamic(true, true);      
         display.setFont(&FreeMonoBold9pt7b);
         
         display.fillRect(0,display.height()-26,display.width(),26,GxEPD_WHITE);
         display.drawRect(0,display.height()-20,display.width(),20,GxEPD_BLACK);
         display.setCursor(4, display.height()-6);
-        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(countLines(allText)));
+        //display.print("W:" + String(countWords(allText)) + " C:" + String(countVisibleChars(allText)) + " L:" + String(EINK().countLines(allText)));
         display.drawBitmap(display.width()-30,display.height()-20, KBStatusallArray[6], 30, 20, GxEPD_BLACK);
 
         display.fillRect(60,0,200,218,GxEPD_WHITE);
         display.drawBitmap(60,0,fileWizLiteallArray[3],200,218, GxEPD_BLACK);
 
-        refresh();
+        EINK().refresh();
         CurrentKBState = NORMAL;
         break;
       case FONT:
         display.setFullWindow();
-        einkTextDynamic(true, true);      
+        EINK().einkTextDynamic(true, true);      
         
-        drawStatusBar("Select a Font (0-9)");
+        EINK().drawStatusBar("Select a Font (0-9)");
 
         display.fillRect(60,0,200,218,GxEPD_WHITE);
         display.drawBitmap(60,0,fontfont0,200,218, GxEPD_BLACK);
 
         keypad.disableInterrupts();
-        listDir(SD_MMC, "/");
+        SD().listDir(SD_MMC, "/");
         keypad.enableInterrupts();
 
         for (int i = 0; i < 7; i++) {
@@ -621,7 +621,7 @@ void einkHandler_TXT_NEW() {
           display.print("Font Number " + String(i+1));
         }
 
-        refresh();
+        EINK().refresh();
         CurrentKBState = FUNC;
         break;
     

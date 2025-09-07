@@ -1,4 +1,4 @@
-#include "globals.h"
+#include <pocketmage.h>
 
 enum LexState {MENU, DEF};
 LexState CurrentLexState = MENU;
@@ -10,7 +10,6 @@ std::vector<std::pair<String, String>> defList;
 int definitionIndex = 0;
 
 void LEXICON_INIT() {
-  // OPEN SETTINGS
   currentLine = "";
   CurrentAppState = LEXICON;
   CurrentLexState = MENU;
@@ -20,7 +19,7 @@ void LEXICON_INIT() {
 }
 
 void loadDefinitions(String word) {
-  oledWord("Loading Definitions");
+  OLED().oledWord("Loading Definitions");
   SDActive = true;
   setCpuFrequencyMhz(240);
   delay(50);
@@ -36,7 +35,7 @@ void loadDefinitions(String word) {
 
   File file = SD_MMC.open(filePath);
   if (!file) {
-    oledWord("Missing Dictionary!");
+    OLED().oledWord("Missing Dictionary!");
     delay(2000);
     return;
   }
@@ -71,7 +70,7 @@ void loadDefinitions(String word) {
   file.close();
 
   if (defList.empty()) {
-    oledWord("No definitions found");
+    OLED().oledWord("No definitions found");
     delay(2000);
   }
   else {
@@ -91,7 +90,7 @@ void processKB_LEXICON() {
   switch (CurrentLexState) {
     case MENU:
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        char inchar = updateKeypress();
+        char inchar = KB().updateKeypress();
         // HANDLE INPUTS
         //No char recieved
         if (inchar == 0);   
@@ -126,10 +125,7 @@ void processKB_LEXICON() {
         }
         // Home recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }
         else {
           currentLine += inchar;
@@ -143,14 +139,14 @@ void processKB_LEXICON() {
         //Make sure oled only updates at OLED_MAX_FPS
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentLine, false);
+          OLED().oledLine(currentLine, false);
         }
       }
       break;
 
     case DEF:
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        char inchar = updateKeypress();
+        char inchar = KB().updateKeypress();
         // HANDLE INPUTS
         //No char recieved
         if (inchar == 0);   
@@ -185,10 +181,7 @@ void processKB_LEXICON() {
         }
         // Home recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }
 
         // LEFT Recieved
@@ -216,7 +209,7 @@ void processKB_LEXICON() {
         //Make sure oled only updates at OLED_MAX_FPS
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentLine, false);
+          OLED().oledLine(currentLine, false);
         }
       }
       break;
@@ -228,12 +221,13 @@ void einkHandler_LEXICON() {
     case MENU:
       if (newState) {
         newState = false;
-
+        display.setRotation(3);
+        display.setFullWindow();
         display.drawBitmap(0, 0, _lex0, 320, 218, GxEPD_BLACK);
 
-        drawStatusBar("Type a Word:");
+        EINK().drawStatusBar("Type a Word:");
 
-        multiPassRefesh(2);
+        EINK().multiPassRefresh(2);
       }
       break;
     case DEF:
@@ -255,10 +249,10 @@ void einkHandler_LEXICON() {
         // ADD WORD WRAP
         display.print(defList[definitionIndex].second);
 
-        drawStatusBar("Type a New Word:");
+        EINK().drawStatusBar("Type a New Word:");
 
-        forceSlowFullUpdate = true;
-        refresh();
+        EINK().forceSlowFullUpdate(true);
+        EINK().refresh();
       }
       break;
   }

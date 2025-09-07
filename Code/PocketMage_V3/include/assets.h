@@ -1,7 +1,7 @@
 #ifndef ASSETS_H
 #define ASSETS_H
 
-#include "globals.h"
+#include <globals.h>
 
 //
 extern const unsigned char KBStatusKBStatus0 [] PROGMEM;
@@ -33,7 +33,11 @@ extern const unsigned char _homeIcons6 [] PROGMEM;
 extern const unsigned char _homeIcons7 [] PROGMEM;
 extern const unsigned char _homeIcons8 [] PROGMEM;
 extern const unsigned char _homeIcons9 [] PROGMEM;
-extern const unsigned char* homeIconsAllArray[8];
+extern const unsigned char _homeIcons10 [] PROGMEM;
+extern const unsigned char _homeIcons11 [] PROGMEM;
+extern const unsigned char* homeIconsAllArray[10];
+
+extern const unsigned char _noIconFound [] PROGMEM;
 
 //
 extern const unsigned char fileWizardfileWiz0 [] PROGMEM;
@@ -143,7 +147,20 @@ extern const unsigned char _eventMarker1 [] PROGMEM;
 //
 extern const unsigned char _journal [] PROGMEM;
 
+//
+extern const unsigned char _appLoader [] PROGMEM;
 
+// File icons
+extern const unsigned char _LFileIcon0 [] PROGMEM;
+extern const unsigned char _LFileIcon1 [] PROGMEM;
+extern const unsigned char _LFileIcon2 [] PROGMEM;
+extern const unsigned char _LFileIcon3 [] PROGMEM;
+extern const unsigned char* _LFileIcons[4];
 
+extern const unsigned char _SFileIcon0 [] PROGMEM;
+extern const unsigned char _SFileIcon1 [] PROGMEM;
+extern const unsigned char _SFileIcon2 [] PROGMEM;
+extern const unsigned char _SFileIcon3 [] PROGMEM;
+extern const unsigned char* _SFileIcons[4];
 
 #endif

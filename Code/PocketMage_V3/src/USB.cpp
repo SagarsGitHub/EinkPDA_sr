@@ -1,16 +1,18 @@
-#include "globals.h"
+#include <pocketmage.h>
+
 #include <USB.h>
 #include <USBMSC.h>
-#include "sdmmc_cmd.h"
-#include "driver/sdmmc_host.h"
-#include "driver/sdmmc_defs.h"
+#include <sdmmc_cmd.h>
+#include <driver/sdmmc_host.h>
+#include <driver/sdmmc_defs.h>
 
 static String currentLine = "";
+static constexpr const char* TAG = "USB";
 
 void USBAppShutdown() {
   if (!mscEnabled) return;
 
-  Serial.println("Shutting down USB MSC...");
+  ESP_LOGI(TAG, "Shutting down USB MSC...");
 
   // Notify host media removal
   msc.mediaPresent(false);
@@ -30,26 +32,26 @@ void USBAppShutdown() {
 
   mscEnabled = false;
 
-  Serial.println("Re-mounting SD_MMC...");
+  ESP_LOGI(TAG, "Re-mounting SD_MMC...");
 
   SD_MMC.end();  // Properly stop previous SD_MMC usage
 
   SD_MMC.setPins(SD_CLK, SD_CMD, SD_D0); // Check your pins here
 
   if (!SD_MMC.begin("/sdcard", true) || SD_MMC.cardType() == CARD_NONE) {
-    Serial.println("MOUNT FAILED");
-    oledWord("SD Card Not Detected!");
+    ESP_LOGE(TAG, "SD Mount Failed :(");
+    OLED().oledWord("SD Card Not Detected!");
     delay(2000);
 
     if (ALLOW_NO_MICROSD) {
-      oledWord("All Work Will Be Lost!");
+      OLED().oledWord("All Work Will Be Lost!");
       delay(5000);
       noSD = true;
     } else {
-      oledWord("Insert SD Card and Reboot!");
+      OLED().oledWord("Insert SD Card and Reboot!");
       delay(5000);
       u8g2.setPowerSave(1);
-      playJingle("shutdown");
+      BZ().playJingle(Jingles::Shutdown);
       esp_deep_sleep_start();
       return;
     }
@@ -57,9 +59,7 @@ void USBAppShutdown() {
 
   if (!SD_MMC.exists("/sys"))     SD_MMC.mkdir("/sys");
   if (!SD_MMC.exists("/journal")) SD_MMC.mkdir("/journal");
-
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
-
   disableTimeout = false;
 }
 
@@ -89,7 +89,8 @@ static int32_t onRead(uint32_t lba, uint32_t offset, void* buffer, uint32_t bufs
 
 static bool onStartStop(uint8_t power_condition, bool start, bool eject) {
   SDActive = true;
-  Serial.printf("MSC Start/Stop: power=%u, start=%d, eject=%d\n", power_condition, start, eject);
+  ESP_LOGI(TAG, "MSC Start/Stop: power=%u, start=%d, eject=%d\n", power_condition, start, eject);
+
   SDActive = false;
   return true;
 }
@@ -99,10 +100,10 @@ static void usbEventCallback(void* arg, esp_event_base_t event_base, int32_t eve
   if (event_base == ARDUINO_USB_EVENTS) {
     arduino_usb_event_data_t* data = (arduino_usb_event_data_t*)event_data;
     switch (event_id) {
-      case ARDUINO_USB_STARTED_EVENT: Serial.println("USB Connected"); break;
-      case ARDUINO_USB_STOPPED_EVENT: Serial.println("USB Disconnected"); break;
-      case ARDUINO_USB_SUSPEND_EVENT: Serial.println("USB Suspended"); break;
-      case ARDUINO_USB_RESUME_EVENT:  Serial.println("USB Resumed"); break;
+      case ARDUINO_USB_STARTED_EVENT: ESP_LOGI(TAG, "USB Connected"); break;
+      case ARDUINO_USB_STOPPED_EVENT: ESP_LOGI(TAG, "USB Disconnected"); break;
+      case ARDUINO_USB_SUSPEND_EVENT: ESP_LOGI(TAG, "USB Suspended"); break;
+      case ARDUINO_USB_RESUME_EVENT:  ESP_LOGI(TAG, "USB Resumed"); break;
     }
   }
   SDActive = false;
@@ -110,7 +111,7 @@ static void usbEventCallback(void* arg, esp_event_base_t event_base, int32_t eve
 
 void USB_INIT() {
   // OPEN USB FILE TRANSFER
-  oledWord("Initializing USB");
+  OLED().oledWord("Initializing USB");
   setCpuFrequencyMhz(240);
   delay(50);
 
@@ -118,7 +119,8 @@ void USB_INIT() {
 
   if (mscEnabled) return;
 
-  Serial.println("Unmounting SD_MMC for USB MSC...");
+  ESP_LOGI(TAG, "Unmounting SD_MMC for USB MSC...");
+
   SD_MMC.end();  // unmount FS before raw access
 
   // Configure SDMMC host and slot manually
@@ -135,33 +137,34 @@ void USB_INIT() {
   // Initialize host
   esp_err_t err = sdmmc_host_init();
   if (err != ESP_OK) {
-    Serial.printf("Host init failed: %s\n", esp_err_to_name(err));
+    ESP_LOGE(TAG, "Host init failed %s\n", esp_err_to_name(err));
     return;
   }
 
   err = sdmmc_host_init_slot(SDMMC_HOST_SLOT_1, &slot_config);
   if (err != ESP_OK) {
-    Serial.printf("Slot init failed: %s\n", esp_err_to_name(err));
+    ESP_LOGE(TAG, "Slot init failed: %s\n", esp_err_to_name(err));
     return;
   }
 
   // Allocate card object and mount
   card = (sdmmc_card_t*)malloc(sizeof(sdmmc_card_t));
   if (!card) {
-    Serial.println("Failed to allocate card struct");
+    ESP_LOGE(TAG, "Failed to allocate card struct\n", esp_err_to_name(err));
     return;
   }
 
   err = sdmmc_card_init(&host, card);
   if (err != ESP_OK) {
-    Serial.printf("Card init failed: %s\n", esp_err_to_name(err));
+    ESP_LOGE(TAG, "Card init failed: %s\n", esp_err_to_name(err));
     free(card);
     card = nullptr;
     return;
   }
 
   // Setup USB MSC
-  Serial.println("Initializing USB MSC...");
+  ESP_LOGI(TAG, "Initializing USB MSC...");
+
   msc.vendorID("ESP32");
   msc.productID("PocketMage");
   msc.productRevision("1.0");
@@ -174,7 +177,7 @@ void USB_INIT() {
   USB.onEvent(usbEventCallback);
   USB.begin();
 
-  Serial.printf("USB MSC started. Capacity: %llu bytes\n", card->csd.capacity * card->csd.sector_size);
+  ESP_LOGI("USB MSC started. Capacity: %d bytes\n", card->csd.capacity * card->csd.sector_size);
   mscEnabled = true;
   delay(50);
 
@@ -189,11 +192,11 @@ void processKB_USB() {
   //Make sure oled only updates at 10FPS
   if (currentMillis - OLEDFPSMillis >= (1000/10 /*OLED_MAX_FPS*/)) {
     OLEDFPSMillis = currentMillis;
-    oledLine(currentLine, false);
+    OLED().oledLine(currentLine, false);
   }
   
   if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-    char inchar = updateKeypress();
+    char inchar = KB().updateKeypress();
     // HANDLE INPUTS
     //No char recieved
     if (inchar == 0);   
@@ -215,11 +218,11 @@ void einkHandler_USB() {
     display.fillScreen(GxEPD_WHITE);
 
     // Display Status Bar
-    drawStatusBar("Connect to a Computer:");
+    EINK().drawStatusBar("Connect to a Computer:");
 
     // Display Background
     display.drawBitmap(0, 0, _usb, 320, 218, GxEPD_BLACK);
 
-    multiPassRefesh(2);
+    EINK().multiPassRefresh(2);
   }
 }

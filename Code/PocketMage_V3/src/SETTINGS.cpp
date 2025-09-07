@@ -1,4 +1,4 @@
-#include "globals.h"
+#include <pocketmage.h>
 
 enum SettingsState { settings0, settings1 };
 SettingsState CurrentSettingsState = settings0;
@@ -19,7 +19,7 @@ void settingCommandSelect(String command) {
 
   if (command.startsWith("timeset ")) {
     String timePart = command.substring(8);
-    setTimeFromString(timePart);
+    pocketmage::time::setTimeFromString(timePart);
     return;
   }
   else if (command.startsWith("dateset ")) {
@@ -29,10 +29,10 @@ void settingCommandSelect(String command) {
       int month = datePart.substring(4, 6).toInt();
       int day   = datePart.substring(6, 8).toInt();
 
-      DateTime now = rtc.now();  // Preserve current time
-      rtc.adjust(DateTime(year, month, day, now.hour(), now.minute(), now.second()));
+      DateTime now = CLOCK().nowDT();  // Preserve current time
+      CLOCK().getRTC().adjust(DateTime(year, month, day, now.hour(), now.minute(), now.second()));
     } else {
-      oledWord("Invalid format (use YYYYMMDD)");
+      OLED().oledWord("Invalid format (use YYYYMMDD)");
       delay(2000);
     }
     return;
@@ -41,7 +41,7 @@ void settingCommandSelect(String command) {
     String luminaPart = command.substring(7);
     int lumina = stringToInt(luminaPart);
     if (lumina == -1) {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -53,7 +53,7 @@ void settingCommandSelect(String command) {
     prefs.putInt("OLED_BRIGHTNESS", OLED_BRIGHTNESS);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -68,7 +68,7 @@ void settingCommandSelect(String command) {
     prefs.putInt("TIMEOUT", TIMEOUT);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -76,7 +76,7 @@ void settingCommandSelect(String command) {
     String oledfpsPart = command.substring(8);
     int oledfps = stringToInt(oledfpsPart);
     if (oledfps == -1) {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -87,7 +87,7 @@ void settingCommandSelect(String command) {
     prefs.putInt("OLED_MAX_FPS", OLED_MAX_FPS);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -96,7 +96,7 @@ void settingCommandSelect(String command) {
     clockPart.trim();
 
     if (clockPart != "t" && clockPart != "f") {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -106,7 +106,7 @@ void settingCommandSelect(String command) {
     prefs.putBool("SYSTEM_CLOCK", SYSTEM_CLOCK);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -116,7 +116,7 @@ void settingCommandSelect(String command) {
     yearPart.trim();
 
     if (yearPart != "t" && yearPart != "f") {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -126,7 +126,7 @@ void settingCommandSelect(String command) {
     prefs.putBool("SHOW_YEAR", SHOW_YEAR);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -136,7 +136,7 @@ void settingCommandSelect(String command) {
     savePowerPart.trim();
 
     if (savePowerPart != "t" && savePowerPart != "f") {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -146,7 +146,7 @@ void settingCommandSelect(String command) {
     prefs.putBool("SAVE_POWER", SAVE_POWER);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -156,7 +156,7 @@ void settingCommandSelect(String command) {
     debugPart.trim();
 
     if (debugPart != "t" && debugPart != "f") {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -166,7 +166,7 @@ void settingCommandSelect(String command) {
     prefs.putBool("DEBUG_VERBOSE", DEBUG_VERBOSE);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -176,7 +176,7 @@ void settingCommandSelect(String command) {
     bootHomePart.trim();
 
     if (bootHomePart != "t" && bootHomePart != "f") {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -186,7 +186,7 @@ void settingCommandSelect(String command) {
     prefs.putBool("HOME_ON_BOOT", HOME_ON_BOOT);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
@@ -196,7 +196,7 @@ void settingCommandSelect(String command) {
     noSDPart.trim();
 
     if (noSDPart != "t" && noSDPart != "f") {
-      oledWord("Invalid");
+      OLED().oledWord("Invalid");
       delay(500);
       return;
     }
@@ -206,12 +206,12 @@ void settingCommandSelect(String command) {
     prefs.putBool("ALLOW_NO_MICROSD", ALLOW_NO_MICROSD);
     prefs.end();
     newState = true;
-    oledWord("Settings Updated");
+    OLED().oledWord("Settings Updated");
     delay(200);
     return;
   }
   else {
-    oledWord("Huh?");
+    OLED().oledWord("Huh?");
     delay(1000);
   }
   return;
@@ -223,7 +223,7 @@ void processKB_settings() {
   switch (CurrentSettingsState) {
     case settings0:
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        char inchar = updateKeypress();
+        char inchar = KB().updateKeypress();
         // HANDLE INPUTS
         //No char recieved
         if (inchar == 0);   
@@ -275,7 +275,7 @@ void processKB_settings() {
         //Make sure oled only updates at OLED_MAX_FPS
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentLine, false);
+          OLED().oledLine(currentLine, false);
         }
       }
       break;
@@ -290,7 +290,7 @@ void einkHandler_settings() {
     newState = false;
 
     // Load settings
-    loadState(false);
+    pocketmage::power::loadState(false);
     
     // Display Background
     display.fillScreen(GxEPD_WHITE);
@@ -326,8 +326,8 @@ void einkHandler_settings() {
     display.setCursor(163, 42);
     display.print(String(OLED_MAX_FPS).c_str());
 
-    drawStatusBar("Type a Command:");
+    EINK().drawStatusBar("Type a Command:");
 
-    multiPassRefesh(2);
+    EINK().multiPassRefresh(2);
   }
 }

@@ -5,10 +5,14 @@
 //      888        .88ooo8888.        `"Y88b  888`88b.         `"Y88b //
 //      888       .8'     `888.  oo     .d8P  888  `88b.  oo     .d8P //
 //     o888o     o88o     o8888o 8""88888P'  o888o  o888o 8""88888P'  //  
-#include "globals.h"   
+#include <pocketmage.h>
+#include "esp32-hal-log.h"
+#include "esp_log.h"
 
 enum TasksState { TASKS0, TASKS0_NEWTASK, TASKS1, TASKS1_EDITTASK };
 TasksState CurrentTasksState = TASKS0;
+
+static constexpr const char* TAG = "TASKS";
 
 static String currentWord = "";
 static String currentLine = "";
@@ -21,7 +25,7 @@ uint8_t selectedTask = 0;
 void TASKS_INIT() {
   CurrentAppState = TASKS;
   CurrentTasksState = TASKS0;
-  forceSlowFullUpdate = true;
+  EINK().forceSlowFullUpdate(true);
   newState = true;
 }
 
@@ -36,7 +40,7 @@ void updateTasksFile() {
   setCpuFrequencyMhz(240);
   delay(50);
   // Clear the existing tasks file first
-  delFile("/sys/tasks.txt");
+  pocketmage::file::delFile("/sys/tasks.txt");
 
   // Iterate through the tasks vector and append each task to the file
   for (size_t i = 0; i < tasks.size(); i++) {
@@ -44,7 +48,7 @@ void updateTasksFile() {
     String taskInfo = tasks[i][0] + "|" + tasks[i][1] + "|" + tasks[i][2] + "|" + tasks[i][3];
     
     // Append the task info to the file
-    appendToFile("/sys/tasks.txt", taskInfo);
+    pocketmage::file::appendToFile("/sys/tasks.txt", taskInfo);
   }
 
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
@@ -65,7 +69,7 @@ void updateTaskArray() {
   delay(50);
   File file = SD_MMC.open("/sys/tasks.txt", "r"); // Open the text file in read mode
   if (!file) {
-    Serial.println("Failed to open file for reading");
+    ESP_LOGE(TAG, "Failed to open file to read: %s", file.path());
     return;
   }
 
@@ -111,7 +115,7 @@ void deleteTask(int index) {
 
 String convertDateFormat(String yyyymmdd) {
   if (yyyymmdd.length() != 8) {
-    Serial.println(("INVALID DATE: " + yyyymmdd).c_str());
+    ESP_LOGE(TAG, "Invalid Date: %s", yyyymmdd.c_str());
     return "Invalid";
   }
 
@@ -136,7 +140,7 @@ void processKB_TASKS() {
       CurrentKBState = FUNC;
       //Make keyboard only updates after cooldown
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        inchar = updateKeypress();
+        inchar = KB().updateKeypress();
         //No char recieved
         if (inchar == 0);
         //BKSP Recieved
@@ -170,7 +174,7 @@ void processKB_TASKS() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledWord(currentWord);
+          OLED().oledWord(currentWord);
         }
         KBBounceMillis = currentMillis;
       }
@@ -179,7 +183,7 @@ void processKB_TASKS() {
       if (newTaskState == 1) CurrentKBState = FUNC;
 
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        inchar = updateKeypress();
+        inchar = KB().updateKeypress();
         // HANDLE INPUTS
         //No char recieved
         if (inchar == 0);                                        
@@ -225,7 +229,7 @@ void processKB_TASKS() {
 
                 // ADD NEW TASK
                 addTask(newTaskName, newTaskDueDate, "0", "0");
-                oledWord("New Task Added");
+                OLED().oledWord("New Task Added");
                 delay(1000);
 
                 // RETURN
@@ -236,7 +240,7 @@ void processKB_TASKS() {
               }
               // DATE IS INVALID
               else {
-                oledWord("Invalid Date");
+                OLED().oledWord("Invalid Date");
                 delay(1000);
                 currentLine = "";
               }
@@ -256,7 +260,7 @@ void processKB_TASKS() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentLine, false);
+          OLED().oledLine(currentLine, false);
         }
       }
       break;
@@ -267,13 +271,13 @@ void processKB_TASKS() {
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        char inchar = updateKeypress();
+        char inchar = KB().updateKeypress();
         //No char recieved
         if (inchar == 0);
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8 || inchar == 12) {
           CurrentTasksState = TASKS0;
-          forceSlowFullUpdate = true;
+          EINK().forceSlowFullUpdate(true);
           newState = true;
           break;
         }
@@ -290,7 +294,7 @@ void processKB_TASKS() {
             updateTasksFile();
             
             CurrentTasksState = TASKS0;
-            forceSlowFullUpdate = true;
+            EINK().forceSlowFullUpdate(true);
             newState = true;
           }
           else if (inchar == '4') { // COPY TASK
@@ -303,7 +307,7 @@ void processKB_TASKS() {
         //Make sure oled only updates at 60fps
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledWord(currentWord);
+          OLED().oledWord(currentWord);
         }
         KBBounceMillis = currentMillis;
       }
@@ -329,9 +333,8 @@ void einkHandler_TASKS() {
         sortTasksByDueDate(tasks);
 
         if (!tasks.empty()) {
-          if (DEBUG_VERBOSE) Serial.println("Printing Tasks");
-
-          drawStatusBar("Select (0-9),New Task (N)");
+          ESP_LOGV(TAG, "Printing Tasks");
+          EINK().drawStatusBar("Select (0-9),New Task (N)");
 
           int loopCount = std::min((int)tasks.size(), MAX_FILES);
           for (int i = 0; i < loopCount; i++) {
@@ -342,12 +345,14 @@ void einkHandler_TASKS() {
             // PRINT TASK DUE DATE
             display.setCursor(231, 54 + (17 * i));
             display.print(convertDateFormat(tasks[i][1]).c_str());
-            Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+
+            // Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+            ESP_LOGI("TASKS", "%s, %s", tasks[i][0].c_str(), convertDateFormat(tasks[i][1]).c_str()); // TODO: Come up with some tag
           }
         }
-        else drawStatusBar("No Tasks! Add New Task (N)");
+        else EINK().drawStatusBar("No Tasks! Add New Task (N)");
 
-        refresh();
+        EINK().refresh();
       }
       break;
       case TASKS0_NEWTASK:
@@ -365,7 +370,7 @@ void einkHandler_TASKS() {
           sortTasksByDueDate(tasks);
 
           if (!tasks.empty()) {
-            if (DEBUG_VERBOSE) Serial.println("Printing Tasks");
+            ESP_LOGV(TAG, "Printing Tasks");
 
             int loopCount = std::min((int)tasks.size(), MAX_FILES);
             for (int i = 0; i < loopCount; i++) {
@@ -376,19 +381,21 @@ void einkHandler_TASKS() {
               // PRINT TASK DUE DATE
               display.setCursor(231, 54 + (17 * i));
               display.print(convertDateFormat(tasks[i][1]).c_str());
-              Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+
+              // Serial.print(tasks[i][0].c_str()); Serial.println(convertDateFormat(tasks[i][1]).c_str());
+              ESP_LOGI("TASKS", "%s, %s", tasks[i][0].c_str(), convertDateFormat(tasks[i][1]).c_str()); // TODO: Come up with some tag
             }
           }
           switch (newTaskState) {
             case 0:
-              drawStatusBar("Enter Task Name:");
+              EINK().drawStatusBar("Enter Task Name:");
               break;
             case 1:
-              drawStatusBar("Due Date (YYYYMMDD):");
+              EINK().drawStatusBar("Due Date (YYYYMMDD):");
               break;
           }
 
-          refresh();
+          EINK().refresh();
         }
         break;
     case TASKS1:
@@ -399,10 +406,10 @@ void einkHandler_TASKS() {
         display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
-        drawStatusBar("T:" + tasks[selectedTask][0]);
+        EINK().drawStatusBar("T:" + tasks[selectedTask][0]);
         display.drawBitmap(0, 0, tasksApp1, 320, 218, GxEPD_BLACK);
 
-        refresh();
+        EINK().refresh();
       }
       break;
     

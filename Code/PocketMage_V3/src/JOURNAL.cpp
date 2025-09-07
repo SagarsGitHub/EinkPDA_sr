@@ -1,4 +1,4 @@
-#include "globals.h"
+#include <pocketmage.h>
 
 enum JournalState {J_MENU, J_TXT};
 JournalState CurrentJournalState = J_MENU;
@@ -11,7 +11,7 @@ static volatile bool doFull = false;
 void JOURNAL_INIT() {
   CurrentAppState = JOURNAL;
   CurrentJournalState = J_MENU;
-  forceSlowFullUpdate = true;
+  EINK().forceSlowFullUpdate(true);
   newState = true;
   CurrentKBState = NORMAL;
   bufferEditingFile = editingFile;
@@ -20,12 +20,12 @@ void JOURNAL_INIT() {
 // File Operations
 void loadJournal() {
   editingFile = currentJournal;
-  loadFile();
+  pocketmage::file::loadFile();
 }
 
 void saveJournal() {
   editingFile = currentJournal;
-  saveFile();
+  pocketmage::file::saveFile();
 }
 
 // Functions
@@ -39,11 +39,11 @@ void drawJMENU() {
   delay(50);
 
   // Display background
-  drawStatusBar("Type:YYYYMMDD or (T)oday");
+  EINK().drawStatusBar("Type:YYYYMMDD or (T)oday");
   display.drawBitmap(0, 0, _journal, 320, 218, GxEPD_BLACK);
 
   // Update current progress graph
-  DateTime now = rtc.now();
+  DateTime now = CLOCK().nowDT();
   String year = String(now.year());
 
   // Files are in the format "/journal/YYYYMMDD.txt"
@@ -146,7 +146,7 @@ void JMENUCommand(String command) {
   command.toLowerCase();
 
   if (command == "t") {
-    DateTime now = rtc.now();
+    DateTime now = CLOCK().nowDT();
 
     String dayStr = "";
     if (now.day() < 10) dayStr = "0" + String(now.day());
@@ -173,6 +173,9 @@ void JMENUCommand(String command) {
     dynamicScroll = 0;
     newLineAdded = true;
     CurrentJournalState = J_TXT;
+
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+    SDActive = false;
     return;
   }
 
@@ -194,6 +197,9 @@ void JMENUCommand(String command) {
     dynamicScroll = 0;
     newLineAdded = true;
     CurrentJournalState = J_TXT;
+
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+    SDActive = false;
     return;
   }
 
@@ -205,15 +211,21 @@ void JMENUCommand(String command) {
       String dayStr = command.substring(spaceIndex + 1);
       int day = dayStr.toInt();
 
-      if (day < 1 || day > 31) return;  // invalid day
-
+      if (day < 1 || day > 31) {
+        if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+        SDActive = false;
+        return;  // invalid day
+      }
       String monthMap = "janfebmaraprmayjunjulaugsepoctnovdec";
       int monthIndex = monthMap.indexOf(monthStr);
-      if (monthIndex == -1) return;  // invalid month
-
+      if (monthIndex == -1) {
+        if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+        SDActive = false;
+        return;  // invalid month
+      }
       int month = (monthIndex / 3) + 1;
 
-      String year = String(rtc.now().year());
+      String year = String(CLOCK().nowDT().year());
       String m = (month < 10) ? "0" + String(month) : String(month);
       String d = (day < 10) ? "0" + String(day) : String(day);
       String fileName = "/journal/" + year + m + d + ".txt";
@@ -232,6 +244,9 @@ void JMENUCommand(String command) {
       dynamicScroll = 0;
       newLineAdded = true;
       CurrentJournalState = J_TXT;
+
+      if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+      SDActive = false;
       return;
     }
   }
@@ -248,7 +263,7 @@ void processKB_JOURNAL() {
   switch (CurrentJournalState) {
     case J_MENU:
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-        inchar = updateKeypress();
+        inchar = KB().updateKeypress();
         // HANDLE INPUTS
         //No char recieved
         if (inchar == 0);   
@@ -301,19 +316,19 @@ void processKB_JOURNAL() {
         //Make sure oled only updates at OLED_MAX_FPS
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          oledLine(currentLine, false);
+          OLED().oledLine(currentLine, false);
         }
       }
       break;
 
     case J_TXT:
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
-      inchar = updateKeypress();
+      inchar = KB().updateKeypress();
       // SET MAXIMUMS AND FONT
-      setTXTFont(currentFont);
+      EINK().setTXTFont(EINK().getCurrentFont());
 
       // UPDATE SCROLLBAR
-      updateScrollFromTouch();
+      TOUCH().updateScrollFromTouch();
 
       // HANDLE INPUTS
       //No char recieved
@@ -349,7 +364,7 @@ void processKB_JOURNAL() {
       else if (inchar == 20) {                                  
         allLines.clear();
         currentLine = "";
-        oledWord("Clearing...");
+        OLED().oledWord("Clearing...");
         doFull = true;
         newLineAdded = true;
         delay(300);
@@ -394,10 +409,10 @@ void processKB_JOURNAL() {
         OLEDFPSMillis = currentMillis;
         // ONLY SHOW OLEDLINE WHEN NOT IN SCROLL MODE
         if (lastTouch == -1) {
-          oledLine(currentLine);
+          OLED().oledLine(currentLine);
           if (prev_dynamicScroll != dynamicScroll) prev_dynamicScroll = dynamicScroll;
         }
-        else oledScroll();
+        else OLED().oledScroll();
       }
 
       if (currentLine.length() > 0) {
@@ -445,17 +460,17 @@ void einkHandler_JOURNAL() {
 
         drawJMENU();
 
-        multiPassRefesh(2);
+        EINK().multiPassRefresh(2);
       }
       break;
     case J_TXT:
       if (newState && doFull) {
         display.fillScreen(GxEPD_WHITE);
-        refresh();
+        EINK().refresh();
       }
       if (newLineAdded && !newState) {
-        einkTextDynamic(true);
-        refresh();
+        EINK().einkTextDynamic(true);
+        EINK().refresh();
       }
 
       newState = false;
