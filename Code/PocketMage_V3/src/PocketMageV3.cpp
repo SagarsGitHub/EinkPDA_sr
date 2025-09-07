@@ -106,18 +106,30 @@ void processKB() {
 // SETUP
 void setup() {
   setupSystem();
+  ESP_LOGE(TAG, "finished setting up system"); 
 }
 
 void loop() {
-  if (!noTimeout)  pocketmage().checkTimeout();
-  if (DEBUG_VERBOSE) pocketmage().printDebug();
 
+  if (!noTimeout){
+    ESP_LOGE(TAG, "checking timeout");
+    pocketmage().checkTimeout();
+  }  
+
+  if (DEBUG_VERBOSE) {
+    ESP_LOGE(TAG, "printing debug verbose"); 
+    pocketmage().printDebug();
+  }
+  ESP_LOGE(TAG, "updating battery state"); 
   pocketmage().updateBattState();
+  ESP_LOGE(TAG, "processing kb"); 
   processKB();
 
   // Yield to watchdog
+  ESP_LOGE(TAG, "yielding"); 
   vTaskDelay(50 / portTICK_PERIOD_MS);
   yield();
+  ESP_LOGE(TAG, "done yielding"); 
 }
 
 // migrated from einkFunc.cpp

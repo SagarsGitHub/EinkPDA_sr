@@ -3,7 +3,13 @@
 #include <Adafruit_MPR121.h>
 #include <config.h> // for TOUCH_TIMEOUT_MS
 
+const char* tag = "TOUCH";
+
 void PocketmageTOUCH::updateScrollFromTouch() {
+  if (!(eink_ && allLines_ && newLineAdded_ && dynamicScroll_ && prev_dynamicScroll_ && lastTouch_ && lastTouchTime_)){
+    ESP_LOGE(tag, "null pointer dereferenced in updateScrollFromTouch");  // TODO(logging): come up with more descriptive tags
+    return;
+  }
   uint16_t touched = cap_.touched();
   int newTouch = -1;
 
@@ -34,7 +40,11 @@ void PocketmageTOUCH::updateScrollFromTouch() {
 }
 
 bool PocketmageTOUCH::updateScroll(int maxScroll,ulong& lineScroll) {
-  const char* tag = "TOUCH";
+  if (!(eink_ && allLines_ && newLineAdded_ && dynamicScroll_ && prev_dynamicScroll_ && lastTouch_ && lastTouchTime_)){
+    ESP_LOGE(tag, "null pointer dereferenced in updateScroll");  // TODO(logging): come up with more descriptive tags
+    return false;
+  }
+
   static int lastTouchPos = -1;
   static unsigned long lastTouchTime = 0;
   static int prev_lineScroll = 0;

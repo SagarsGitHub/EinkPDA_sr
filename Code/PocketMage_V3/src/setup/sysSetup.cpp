@@ -2,7 +2,7 @@
 
 // Singleton instance for system class
 static Pocketmage pm_sys;
-
+static constexpr const char* TAG = "sysSETUP";
 // Wire function for system class
 void wirePocketmage() {
   pm_sys.setPwrBtnEventFlag(&PWR_BTN_event);
@@ -38,8 +38,7 @@ void setupSystem(){
   SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
 
   // OLED SETUP
-  setupOled();
-
+  setupOled(); 
   // STARTUP JINGLE
   setupBZ();
   
@@ -84,10 +83,9 @@ void setupSystem(){
   delay(500);
 
 
+  pocketmage().loadState();
   OLED().oledWord("loaded state");
   delay(500);
-
-  pocketmage().loadState();
   // Set "random" seed
   randomSeed(analogRead(BAT_SENS));
 }
