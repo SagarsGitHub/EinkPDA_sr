@@ -181,13 +181,21 @@ String renderWizMini(String folder, int8_t scrollDelta) {
   return cachedFiles[scroll].address;
 }
 
-String fileWizardMini(bool allowRecentSelect) {
+String fileWizardMini(bool allowRecentSelect, String rootDir) {
   setCpuFrequencyMhz(240);
 
   int8_t scrollDelta = 0;
   static String selectedPath = "";
-  // start at root once
-  static String selectedDirectory = "/";
+  static String selectedDirectory = "";
+
+  // Normalize rootDir so it always has trailing slash
+  if (!rootDir.endsWith("/")) rootDir += "/";
+
+  // Initialize or clamp selectedDirectory to rootDir
+  if (selectedDirectory == "" || selectedDirectory.length() < rootDir.length() || 
+      !selectedDirectory.startsWith(rootDir)) {
+    selectedDirectory = rootDir;
+  }
 
   // Handle Inputs
   int currentMillis = millis();
@@ -214,23 +222,27 @@ String fileWizardMini(bool allowRecentSelect) {
     else if (inchar == 19) {
       scrollDelta = -1;
     }  
-    // Right receive
+    // Right received
     else if (inchar == 21) {
       scrollDelta = 1;
-    }  
+    } 
+    // 'n' recieved (new folder)
+    else if (inchar == 'n' || inchar == 'N' || inchar == '/') {
+      // TODO: populate
+    }
     // Exit received
     else if (inchar == 12) {
       return "_EXIT_";
     }
     // Back received
     else if (inchar == 8) {
-      // If not at root, go up one directory
-      if (selectedDirectory != "/") {
+      // If not at rootDir, go up one directory
+      if (selectedDirectory != rootDir) {
         int lastSlash = selectedDirectory.lastIndexOf('/');
         if (lastSlash > 0) {
           selectedDirectory = selectedDirectory.substring(0, lastSlash);
         } else {
-          selectedDirectory = "/";
+          selectedDirectory = rootDir;
         }
       }
     }
@@ -239,7 +251,14 @@ String fileWizardMini(bool allowRecentSelect) {
       if (selectedPath != "") {
         File entry = SD_MMC.open(selectedPath);
         // If selectedPath is a folder, open it and change the selectedDirectory
-        if (entry && entry.isDirectory()) selectedDirectory = selectedPath;
+        if (entry && entry.isDirectory()) {
+          selectedDirectory = selectedPath;
+          // Clamp to rootDir if needed
+          if (selectedDirectory.length() < rootDir.length() || 
+              !selectedDirectory.startsWith(rootDir)) {
+            selectedDirectory = rootDir;
+          }
+        }
         // If selectedPath is a file, return the selectedPath as a String 
         else return selectedPath;
       }

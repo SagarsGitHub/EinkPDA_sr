@@ -12,9 +12,37 @@
 #include <SD_MMC.h>
 #include <Preferences.h>
 #include <esp_log.h>
+#include "esp_partition.h"
+#include "esp_ota_ops.h"
+#include "esp_system.h"
 
 static constexpr const char* TAG = "SYSTEM";
 
+///////////////////////////////////////////////////////////////////////////////
+//            Use this function in apps to return to PocketMage OS           //
+bool rebootToPocketMage() {
+  const esp_partition_t *partition =
+      esp_partition_find_first(ESP_PARTITION_TYPE_APP,
+                                ESP_PARTITION_SUBTYPE_APP_FACTORY,
+                                nullptr);
+  if (!partition) {
+    Serial.println("Factory (OTA0) partition not found");
+    return false;
+  }
+
+  esp_err_t err = esp_ota_set_boot_partition(partition);
+  if (err != ESP_OK) {
+    Serial.printf("esp_ota_set_boot_partition failed: %d\n", (int)err);
+    return false;
+  }
+
+  Serial.println("Boot partition set to OTA0 (factory). Restarting...");
+  esp_restart();  // Soft restart
+  return true;    // Won’t actually return because of restart
+}
+///////////////////////////////////////////////////////////////////////////////
+
+// Helpers
 static int countVisibleChars(String input) {
   int count = 0;
 

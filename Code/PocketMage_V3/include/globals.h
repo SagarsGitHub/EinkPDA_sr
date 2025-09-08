@@ -229,7 +229,7 @@ void multiPassRefresh(int passes);
 void FILEWIZ_INIT();
 void processKB_FILEWIZ();
 void einkHandler_FILEWIZ();
-String fileWizardMini(bool allowRecentSelect = false);
+String fileWizardMini(bool allowRecentSelect = false, String rootDir = "/");
 
 // <TXT.cpp>
 void TXT_INIT();

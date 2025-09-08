@@ -1,6 +1,6 @@
 #include <pocketmage.h>
 
-void setupSystem(){
+void PocketMage_INIT(){
   // Serial, I2C, SPI
   Serial.begin(115200);
   Wire.begin(I2C_SDA, I2C_SCL);

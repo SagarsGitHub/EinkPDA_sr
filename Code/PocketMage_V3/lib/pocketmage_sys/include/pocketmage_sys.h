@@ -4,6 +4,8 @@
 
 class String;
 
+extern bool rebootToPocketMage();
+
 namespace pocketmage{
   namespace file{
     void saveFile();
@@ -34,7 +36,7 @@ namespace pocketmage{
 }
 
 // ===================== SYSTEM SETUP =====================
-void setupSystem();
+void PocketMage_INIT();
 // ===================== GLOBAL TEXT HELPERS =====================
 String vectorToString();
 void stringToVector(String inputText);
