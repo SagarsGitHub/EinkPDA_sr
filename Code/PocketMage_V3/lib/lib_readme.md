@@ -32,7 +32,6 @@ This is a basic overview of pocketmage library. Any suggestions/edits to further
 - oled OLED()
 - sd SD()
 - capacitive touch TOUCH()
-- system pocketmage()
 
 ## Adding to the library
 
@@ -58,4 +57,4 @@ This is a basic overview of pocketmage library. Any suggestions/edits to further
 4. Each class references pointers to globals that should exist for the lifetime of the program. These pointers are wired for each class during setup. 
 
 > (class_variable_) && (*class_variable_ == true) checks that variable pointer is not null before checking value
-> this will be replaces with variables owned by different parts of the library accessed with getters
+> this will be replaced with variables owned by different parts of the library accessed with getters
