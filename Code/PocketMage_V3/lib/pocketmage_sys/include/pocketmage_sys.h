@@ -1,3 +1,12 @@
+//  888888ba                    dP                  dP                                          //
+//  88    `8b                   88                  88                                          //
+// a88aaaa8P' .d8888b. .d8888b. 88  .dP  .d8888b. d8888P 88d8b.d8b. .d8888b. .d8888b. .d8888b.  //
+//  88        88'  `88 88'  `"" 88888"   88ooood8   88   88'`88'`88 88'  `88 88'  `88 88ooood8  //
+//  88        88.  .88 88.  ... 88  `8b. 88.  ...   88   88  88  88 88.  .88 88.  .88 88.  ...  //
+//  dP        `88888P' `88888P' dP   `YP `88888P'   dP   dP  dP  dP `88888P8 `8888P88 `88888P'  //
+//                                                                                .88           //
+//                                                                            d8888P            //
+                                                     
 #pragma once
 #include <Arduino.h>
 #include <vector>
@@ -5,7 +14,8 @@
 class String;
 
 extern bool rebootToPocketMage();
-
+// To Do: remove nested namespaces and default to pocketmage::method()
+// maybe: refactor pocketmage to be consistent with hardware classes in library (Pocketmage().method())
 namespace pocketmage{
   namespace file{
     void saveFile();

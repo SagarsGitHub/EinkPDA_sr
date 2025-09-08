@@ -2,8 +2,10 @@
 
 static constexpr const char* TAG = "CLOCK"; // TODO: Come up with a better tag
 
+// Initialization of clock class
 static PocketmageCLOCK pm_clock(rtc);
 
+// Setup for Clock Class
 void setupClock(){
   pinMode(RTC_INT, INPUT);
   if (!CLOCK().begin()) {
@@ -18,9 +20,11 @@ void setupClock(){
   wireClock();
 }
 
+// Wire function  for Clock class
+// add any global references here + add set function to class header file
 void wireClock(){
     
 }
 
-// clock object reference for other apps
+// Access for other apps
 PocketmageCLOCK& CLOCK() { return pm_clock; }

@@ -60,15 +60,13 @@ public:
   void einkTextDynamic(bool doFull, bool noRefresh=false);
   int  countLines(const String& input, size_t maxLineLength = 29);
 
-  // getters 
+  // getters To Do: migrate definitions here from pocketmage_eink.cpp
   uint8_t maxCharsPerLine() const;
   uint8_t maxLines() const;
   const GFXfont* getCurrentFont();
   
   void forceSlowFullUpdate(bool force);
-
-
-
+  
 private:
   DisplayT&             display_; // class reference to hardware display object
   bool                  forceSlowFullUpdate_  = false;

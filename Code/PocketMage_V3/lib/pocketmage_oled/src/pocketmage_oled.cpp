@@ -8,6 +8,8 @@
 
 #include <pocketmage_oled.h>
 
+static constexpr const char* tag = "OLED";
+
 // ===================== public functions =====================
 void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
   u8g2_.clearBuffer();
