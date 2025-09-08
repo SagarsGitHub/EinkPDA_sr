@@ -1,9 +1,9 @@
-// .d88888b  888888ba  //
-// 88.    "' 88    `8b //
-// `Y88888b. 88     88 //
-//       `8b 88     88 //
-// d8'   .8P 88    .8P //
-//  Y88888P  8888888P  //
+//  .d88888b  888888ba   //
+//  88.    "' 88    `8b  //
+//  `Y88888b. 88     88  //
+//        `8b 88     88  //
+//  d8'   .8P 88    .8P  //
+//   Y88888P  8888888P   //
 
 #include <pocketmage_sd.h>
 #include <pocketmage_oled.h> 
@@ -11,6 +11,7 @@
 #include <config.h> // for FULL_REFRESH_AFTER
 
 extern bool SAVE_POWER;
+static constexpr const char* tag = "SD";
 
 // ===================== main functions =====================
 // Low-Level SDMMC Operations switch to using internal fs::FS*

@@ -1,3 +1,10 @@
+//  888888ba  d888888P  a88888b. //
+//  88    `8b    88    d8'   `88 //
+// a88aaaa8P'    88    88        //
+//  88   `8b.    88    88        //
+//  88     88    88    Y8.   .88 //
+//  dP     dP    dP     Y88888P' //
+
 #pragma once
 #include <Arduino.h>
 #include <RTClib.h>

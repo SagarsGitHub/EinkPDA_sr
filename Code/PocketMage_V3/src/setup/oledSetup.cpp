@@ -41,7 +41,7 @@ void wireOled() {
   pm_oled.setAllLines(&allLines);
   pm_oled.setDynamicScroll(&dynamicScroll);
   pm_oled.setBattery(&battState, batt_allArray, kBattIconCount);
-  // lamda to avoid redundant functions To Do: make class interface for each pocketmage component in library
+  // lamda to avoid redundant functions To Do: kb state getter stored in pocketmage_kb
   pm_oled.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
   pm_oled.setMSC(&mscEnabled);
   pm_oled.setSD(&SDActive);
