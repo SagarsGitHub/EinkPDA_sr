@@ -43,6 +43,7 @@ void setupSD() {
   if (!SD_MMC.exists("/journal"))           SD_MMC.mkdir( "/journal"      );
   if (!SD_MMC.exists("/dict"))              SD_MMC.mkdir( "/dict"         );
   if (!SD_MMC.exists("/apps"))              SD_MMC.mkdir( "/apps"         );
+  if (!SD_MMC.exists("/apps/temp"))         SD_MMC.mkdir( "/apps/temp"    );
   if (!SD_MMC.exists("/screensavers"))      SD_MMC.mkdir( "/screensavers" );
   
   if (!SD_MMC.exists("/sys/events.txt")) {

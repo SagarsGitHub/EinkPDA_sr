@@ -23,7 +23,7 @@ void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
     }*/
     u8g2_.setFont(u8g2_font_ncenB18_tr);
     if (u8g2_.getStrWidth(word.c_str()) < u8g2_.getDisplayWidth()) {
-      u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+9,word.c_str());
+      u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+5,word.c_str());
       u8g2_.sendBuffer();
       return;
     }
@@ -31,32 +31,32 @@ void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
 
   u8g2_.setFont(u8g2_font_ncenB14_tr);
   if (u8g2_.getStrWidth(word.c_str()) < u8g2_.getDisplayWidth()) {
-    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+7,word.c_str());
+    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+3,word.c_str());
     u8g2_.sendBuffer();
     return;
   }
 
   u8g2_.setFont(u8g2_font_ncenB12_tr);
   if (u8g2_.getStrWidth(word.c_str()) < u8g2_.getDisplayWidth()) {
-    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+6,word.c_str());
+    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+2,word.c_str());
     u8g2_.sendBuffer();
     return;
   }
 
   u8g2_.setFont(u8g2_font_ncenB10_tr);
   if (u8g2_.getStrWidth(word.c_str()) < u8g2_.getDisplayWidth()) {
-    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+5,word.c_str());
+    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+1,word.c_str());
     u8g2_.sendBuffer();
     return;
   }
 
   u8g2_.setFont(u8g2_font_ncenB08_tr);
   if (u8g2_.getStrWidth(word.c_str()) < u8g2_.getDisplayWidth()) {
-    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16+4,word.c_str());
+    u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()))/2,16,word.c_str());
     u8g2_.sendBuffer();
     return;
   } else {
-    u8g2_.drawStr(u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()),16+4,word.c_str());
+    u8g2_.drawStr(u8g2_.getDisplayWidth() - u8g2_.getStrWidth(word.c_str()),16,word.c_str());
     u8g2_.sendBuffer();
     return;
   }

@@ -16,7 +16,9 @@ static String currentLine = "";
 
 std::vector<String> excludedPaths = {
   "/sys",
-  "/System Volume Information"
+  "/System Volume Information",
+  "/apps/temp",
+  "/temp"
 };
 
 void FILEWIZ_INIT() {
@@ -189,7 +191,7 @@ String fileWizardMini(bool allowRecentSelect, String rootDir) {
   static String selectedDirectory = "";
 
   // Normalize rootDir so it always has trailing slash
-  if (!rootDir.endsWith("/")) rootDir += "/";
+  //if (!rootDir.endsWith("/")) rootDir += "/";
 
   // Initialize or clamp selectedDirectory to rootDir
   if (selectedDirectory == "" || selectedDirectory.length() < rootDir.length() || 

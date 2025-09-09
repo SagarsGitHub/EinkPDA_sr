@@ -278,6 +278,7 @@ void einkHandler_JOURNAL();
 void APPLOADER_INIT();
 void processKB_APPLOADER();
 void einkHandler_APPLOADER();
+void rebootToAppSlot(int otaIndex);
 
 // <PocketMage>
 void einkHandler(void *parameter); // moved from EinkFunc.cpp
