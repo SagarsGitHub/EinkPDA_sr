@@ -279,6 +279,7 @@ void APPLOADER_INIT();
 void processKB_APPLOADER();
 void einkHandler_APPLOADER();
 void rebootToAppSlot(int otaIndex);
+void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName = true);
 
 // <PocketMage>
 void einkHandler(void *parameter); // moved from EinkFunc.cpp

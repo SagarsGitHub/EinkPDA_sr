@@ -3,6 +3,7 @@
 #include <Update.h>
 #include "esp_ota_ops.h"
 
+
 #define APP_DIRECTORY   "/apps"
 #define TEMP_DIR        "/apps/temp"
 #define PREFS_NAMESPACE "AppLoader"
@@ -63,158 +64,228 @@ static String pathJoin(const String &a, const String &b) {
   }
 }
 
+// ---------- Saving/Loading appInfo ----------
+#define APP_ICON_BYTES 200  // 40x40 monochrome = 200 bytes
+
+struct AppInfo {
+  char name[32];       // App name
+  char tarPath[64];    // Path to .tar file
+  char iconPath[64];   // Path to extracted icon.bmp (in /apps/temp or similar)
+};
+
+bool saveAppInfo(int otaIndex, const AppInfo &info) {
+  String key = "OTA" + String(otaIndex);
+  prefs.begin("PocketMage", false);
+  bool ok = prefs.putBytes(key.c_str(), &info, sizeof(info)) == sizeof(info);
+  prefs.end();
+  return ok;
+}
+
+bool loadAppInfo(int otaIndex, AppInfo &info) {
+  String key = "OTA" + String(otaIndex);
+  prefs.begin("PocketMage", true);
+  size_t n = prefs.getBytes(key.c_str(), &info, sizeof(info));
+  prefs.end();
+  return n == sizeof(info);
+}
+
+void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName) {
+  setCpuFrequencyMhz(240);
+
+	AppInfo app;
+	if (!loadAppInfo(otaIndex, app)) return;
+	if (!SD_MMC.exists(app.iconPath)) return;
+
+	File f = SD_MMC.open(app.iconPath, "r");
+	if (!f) return;
+
+	uint8_t buf[40 * 5]; // 40x40 1-bit = 200 bytes
+	if (f.read(buf, sizeof(buf)) != sizeof(buf)) { f.close(); return; }
+	f.close();
+
+	display.drawBitmap(x, y, buf, 40, 40, GxEPD_BLACK);
+
+	if (showName) {
+		display.setFont(&FreeSerif9pt7b);
+		display.setTextColor(GxEPD_BLACK);
+		int16_t x1, y1;
+		uint16_t w, h;
+		display.getTextBounds(app.name, 0, 0, &x1, &y1, &w, &h);
+		int tx = x + (40 - w)/2;
+		int ty = y + 40 + 13;
+		display.setCursor(tx, ty);
+		display.print(app.name);
+	}
+
+  if (SAVE_POWER) setCpuFrequencyMhz(40);
+}
+
 // ---------- Install Task ----------
+
 struct InstallTaskParams {
     const char *tarRelName;
     int otaIndex; // 1..4
 };
 
 static void installTask(void *param) {
-  setCpuFrequencyMhz(240);
+	setCpuFrequencyMhz(240);
 
-  InstallTaskParams *p = (InstallTaskParams *)param;
-  g_installProgress = 0;
-  g_installDone = false;
-  g_installFailed = false;
+	InstallTaskParams *p = (InstallTaskParams *)param;
+	g_installProgress = 0;
+	g_installDone = false;
+	g_installFailed = false;
 
-  String tarPath = String(APP_DIRECTORY) + "/" + p->tarRelName;
+	String tarPath = String(APP_DIRECTORY) + "/" + p->tarRelName;
 
-  // --- Check TAR exists ---
-  if (!SD_MMC.exists(tarPath.c_str())) {
-    Serial.printf("Tar not found: %s\n", tarPath.c_str());
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	// --- Check TAR exists ---
+	if (!SD_MMC.exists(tarPath.c_str())) {
+		Serial.printf("Tar not found: %s\n", tarPath.c_str());
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  // --- Ensure directories ---
-  if (!ensureDir(SD_MMC, APP_DIRECTORY) ||
-    !rmRF(SD_MMC, TEMP_DIR) ||
-    !ensureDir(SD_MMC, TEMP_DIR)) {
-    Serial.println("Failed to prepare TEMP_DIR");
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	// --- Ensure directories ---
+	if (!ensureDir(SD_MMC, APP_DIRECTORY) ||
+		!rmRF(SD_MMC, TEMP_DIR) ||
+		!ensureDir(SD_MMC, TEMP_DIR)) {
+		Serial.println("Failed to prepare TEMP_DIR");
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  // --- TAR extraction ---
-  TarUnpacker unpacker;
-  unpacker.haltOnError(true);
-  unpacker.setTarProgressCallback([](uint8_t progress){
-    g_installProgress = progress / 2; // 0-50% for extraction
-  });
+	// --- TAR extraction ---
+	TarUnpacker unpacker;
+	unpacker.haltOnError(true);
+	unpacker.setTarProgressCallback([](uint8_t progress) {
+		g_installProgress = progress / 2; // 0–50% for extraction
+	});
 
-  if (!unpacker.tarExpander(SD_MMC, tarPath.c_str(), SD_MMC, TEMP_DIR)) {
-    Serial.printf("Extraction failed (err=%d)\n", unpacker.tarGzGetError());
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	if (!unpacker.tarExpander(SD_MMC, tarPath.c_str(), SD_MMC, TEMP_DIR)) {
+		Serial.printf("Extraction failed (err=%d)\n", unpacker.tarGzGetError());
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  g_installProgress = 50; // halfway
+	g_installProgress = 50; // halfway
 
-  // --- Prepare BIN path ---
-  String base = basenameNoExt(p->tarRelName, ".tar");
-  String binPath = String(TEMP_DIR) + "/" + base + ".bin";
+	// --- Prepare BIN path ---
+	String base = basenameNoExt(p->tarRelName, ".tar");
+	String binPath = pathJoin(TEMP_DIR, base + ".bin");
+	if (!SD_MMC.exists(binPath.c_str())) {
+		Serial.printf("Bin not found after extraction: %s\n", binPath.c_str());
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  if (!SD_MMC.exists(binPath.c_str())) {
-    Serial.printf("Bin not found after extraction: %s\n", binPath.c_str());
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	// --- OTA flashing ---
+	const esp_partition_t *partition = esp_partition_find_first(
+		ESP_PARTITION_TYPE_APP,
+		(esp_partition_subtype_t)(ESP_PARTITION_SUBTYPE_APP_OTA_MIN + p->otaIndex),
+		nullptr);
 
-  // --- OTA flashing ---
-  const esp_partition_t *partition = esp_partition_find_first(
-    ESP_PARTITION_TYPE_APP,
-    (esp_partition_subtype_t)(ESP_PARTITION_SUBTYPE_APP_OTA_MIN + p->otaIndex),
-    nullptr
-  );
+	if (!partition) {
+		Serial.printf("OTA_%d partition not found\n", p->otaIndex);
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  if (!partition) {
-    Serial.printf("OTA_%d partition not found\n", p->otaIndex);
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	File f = SD_MMC.open(binPath, "r");
+	if (!f) {
+		Serial.printf("Failed to open: %s\n", binPath.c_str());
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  File f = SD_MMC.open(binPath, "r");
-  if (!f) {
-    Serial.printf("Failed to open: %s\n", binPath.c_str());
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	uint32_t sz = f.size();
+	Serial.printf("Flashing %s (%u bytes) -> OTA_%d @ 0x%08x\n",
+				  binPath.c_str(), sz, p->otaIndex, partition->address);
 
-  uint32_t sz = f.size();
-  Serial.printf("Flashing %s (%u bytes) -> OTA_%d @ 0x%08x\n",
-                binPath.c_str(), sz, p->otaIndex, partition->address);
+	esp_ota_handle_t ota_handle;
+	esp_err_t err = esp_ota_begin(partition, sz, &ota_handle);
+	if (err != ESP_OK) {
+		Serial.printf("esp_ota_begin failed: %s\n", esp_err_to_name(err));
+		f.close();
+		g_installFailed = true;
+		g_installDone = true;
+		delete p;
+		vTaskDelete(NULL);
+	}
 
-  esp_ota_handle_t ota_handle;
-  esp_err_t err = esp_ota_begin(partition, sz, &ota_handle);
-  if (err != ESP_OK) {
-    Serial.printf("esp_ota_begin failed: %s\n", esp_err_to_name(err));
-    f.close();
-    g_installFailed = true;
-    g_installDone = true;
-    delete p;
-    vTaskDelete(NULL);
-  }
+	uint8_t buf[4096];
+	uint32_t written = 0;
+	while (f.available()) {
+		size_t rd = f.read(buf, sizeof(buf));
+		err = esp_ota_write(ota_handle, buf, rd);
+		if (err != ESP_OK) {
+			Serial.printf("esp_ota_write failed: %s\n", esp_err_to_name(err));
+			esp_ota_abort(ota_handle);
+			f.close();
+			g_installFailed = true;
+			g_installDone = true;
+			delete p;
+			vTaskDelete(NULL);
+		}
+		written += rd;
+		g_installProgress = 50 + (written * 50 / sz); // 50–100% flashing
+	}
 
-  uint8_t buf[4096];
-  uint32_t written = 0;
-  while (f.available()) {
-    size_t rd = f.read(buf, sizeof(buf));
-    err = esp_ota_write(ota_handle, buf, rd);
-    if (err != ESP_OK) {
-      Serial.printf("esp_ota_write failed: %s\n", esp_err_to_name(err));
-      esp_ota_abort(ota_handle);
-      f.close();
-      g_installFailed = true;
-      g_installDone = true;
-      delete p;
-      vTaskDelete(NULL);
-    }
-    written += rd;
-    g_installProgress = 50 + (written * 50 / sz); // 50-100% flashing
-  }
+	f.close();
+	err = esp_ota_end(ota_handle);
+	if (err != ESP_OK) {
+		Serial.printf("esp_ota_end failed: %s\n", esp_err_to_name(err));
+		g_installFailed = true;
+	} else {
+		Serial.println("Flash OK");
 
-  f.close();
-  err = esp_ota_end(ota_handle);
-  if (err != ESP_OK) {
-    Serial.printf("esp_ota_end failed: %s\n", esp_err_to_name(err));
-    g_installFailed = true;
-  } else {
-    Serial.println("Flash OK");
-    //OLED().oledWord("App Install Complete!");
-  }
+		// --- Determine icon path ---
+		String iconPath = pathJoin(TEMP_DIR, base + "_ICON.bin");
+		if (!SD_MMC.exists(iconPath.c_str())) iconPath = ""; // fallback
 
-  if (err == ESP_OK) {
-    Serial.println("Flash OK");
-    //OLED().oledWord("App Install Complete!");
+		// --- Save AppInfo ---
+		AppInfo info = {};
+		strncpy(info.name, base.c_str(), sizeof(info.name)-1);
+		strncpy(info.tarPath, tarPath.c_str(), sizeof(info.tarPath)-1);
+		strncpy(info.iconPath, iconPath.c_str(), sizeof(info.iconPath)-1);
 
-    // Save the installed app to Preferences
-    prefs.begin("PocketMage", false); // RW
-    prefs.putString((String("OTA") + p->otaIndex).c_str(), p->tarRelName);
-    prefs.end();
-  }
+		if (!saveAppInfo(p->otaIndex, info)) {
+			Serial.printf("Failed to save AppInfo for OTA_%d\n", p->otaIndex);
+		}
+	}
 
-  // --- Cleanup ---
-  rmRF(SD_MMC, TEMP_DIR);
-  ensureDir(SD_MMC, TEMP_DIR);
+	// --- Cleanup TEMP_DIR, keep *_ICON.bin only ---
+	File root = SD_MMC.open(TEMP_DIR);
+	if (root && root.isDirectory()) {
+		File entry;
+		while ((entry = root.openNextFile())) {
+			String name = String(entry.name());
+			entry.close();
+			if (!name.endsWith("_ICON.bin")) SD_MMC.remove(name);
+		}
+		root.close();
+	}
 
-  g_installProgress = 100;
-  g_installDone = true;
-  delete p;
-  vTaskDelete(NULL);
+	// --- Delete app .bin ---
+	if (SD_MMC.exists(binPath.c_str())) SD_MMC.remove(binPath.c_str());
 
-  if (SAVE_POWER) setCpuFrequencyMhz(40);
+	g_installProgress = 100;
+	g_installDone = true;
+
+	if (SAVE_POWER) setCpuFrequencyMhz(40);
+
+	delete p;
+	vTaskDelete(NULL);
 }
 
 // ---------- Async API ----------
@@ -305,6 +376,8 @@ void drawProgressBar(uint8_t progress) {
 
   u8g2.sendBuffer();
 }
+
+// ---------- Operations ----------
 
 void APPLOADER_INIT() {
   currentLine = "";
@@ -474,7 +547,7 @@ void processKB_APPLOADER() {
         else {
           OLED().oledWord("Install complete!");
           delay(2000);
-          rebootToAppSlot(selectedSlot);
+          //rebootToAppSlot(selectedSlot);
         }
         delay(2000);
         CurrentAppLoaderState = MENU;

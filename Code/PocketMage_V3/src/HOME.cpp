@@ -81,6 +81,12 @@ void commandSelect(String command) {
     }
   }
 
+  // Boot to other apps
+  else if (command == "a") rebootToAppSlot(1);
+  else if (command == "b") rebootToAppSlot(2);
+  else if (command == "c") rebootToAppSlot(3);
+  else if (command == "d") rebootToAppSlot(4);
+
   else if (command == "home") {
     OLED().oledWord("You're home, silly!");
     delay(1000);
@@ -187,6 +193,12 @@ void drawHome() {
   // Draw sideload app rounded rect
   display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (5*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
   display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (1*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
+
+  // Draw sideload apps
+  loadAndDrawAppIcon(80 , 140, 1, true);  // OTA1
+  loadAndDrawAppIcon(140, 140, 2, true);  // OTA2
+  loadAndDrawAppIcon(200, 140, 3, true);  // OTA3
+  loadAndDrawAppIcon(260, 140, 4, true);  // OTA4
 
   // Draw status bar
   EINK().drawStatusBar("Type a Command:");
