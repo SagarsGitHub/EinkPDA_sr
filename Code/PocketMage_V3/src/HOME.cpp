@@ -191,14 +191,14 @@ void drawHome() {
   display.setFont(&FreeMonoBold9pt7b);
 
   // Draw sideload app rounded rect
-  display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (5*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
-  display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (1*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
+  //display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (5*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
+  //display.drawRoundRect(startX-15, (3*spacingY) - iconSize, (1*spacingX)+10, spacingY + 10, 15, GxEPD_BLACK);
 
   // Draw sideload apps
-  loadAndDrawAppIcon(80 , 140, 1, true);  // OTA1
-  loadAndDrawAppIcon(140, 140, 2, true);  // OTA2
-  loadAndDrawAppIcon(200, 140, 3, true);  // OTA3
-  loadAndDrawAppIcon(260, 140, 4, true);  // OTA4
+  loadAndDrawAppIcon(80 , 150, 1, true, 7);  // OTA1
+  loadAndDrawAppIcon(140, 150, 2, true, 7);  // OTA2
+  loadAndDrawAppIcon(200, 150, 3, true, 7);  // OTA3
+  loadAndDrawAppIcon(260, 150, 4, true, 7);  // OTA4
 
   // Draw status bar
   EINK().drawStatusBar("Type a Command:");

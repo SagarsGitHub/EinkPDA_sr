@@ -89,7 +89,7 @@ bool loadAppInfo(int otaIndex, AppInfo &info) {
   return n == sizeof(info);
 }
 
-void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName) {
+void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName, int maxNameChars) {
   setCpuFrequencyMhz(240);
 
 	AppInfo app;
@@ -103,21 +103,49 @@ void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName) {
 	if (f.read(buf, sizeof(buf)) != sizeof(buf)) { f.close(); return; }
 	f.close();
 
+  display.fillRect(x, y, 40, 40, GxEPD_WHITE);
+
 	display.drawBitmap(x, y, buf, 40, 40, GxEPD_BLACK);
 
 	if (showName) {
-		display.setFont(&FreeSerif9pt7b);
-		display.setTextColor(GxEPD_BLACK);
-		int16_t x1, y1;
-		uint16_t w, h;
-		display.getTextBounds(app.name, 0, 0, &x1, &y1, &w, &h);
-		int tx = x + (40 - w)/2;
-		int ty = y + 40 + 13;
-		display.setCursor(tx, ty);
-		display.print(app.name);
+    // Make a copy and truncate
+    String appNameStr = String(app.name);
+    if (appNameStr.length() > maxNameChars) {
+        appNameStr = appNameStr.substring(0, maxNameChars);
+    }
+
+    display.setFont(&FreeSerif9pt7b);
+    display.setTextColor(GxEPD_BLACK);
+
+    int16_t x1, y1;
+    uint16_t w, h;
+    display.getTextBounds(appNameStr, 0, 0, &x1, &y1, &w, &h);
+
+    int tx = x + (40 - w) / 2;
+    int ty = y + 40 + 13;
+
+    display.setCursor(tx, ty);
+    display.print(appNameStr);
 	}
 
   if (SAVE_POWER) setCpuFrequencyMhz(40);
+}
+
+void cleanupAppsTemp(String binPath) {
+  // --- Cleanup TEMP_DIR, keep *_ICON.bin only ---
+	File root = SD_MMC.open(TEMP_DIR);
+	if (root && root.isDirectory()) {
+		File entry;
+		while ((entry = root.openNextFile())) {
+			String name = String(entry.name());
+			entry.close();
+			if (!name.endsWith("_ICON.bin")) SD_MMC.remove(name);
+		}
+		root.close();
+	}
+
+	// --- Delete app .bin ---
+	if (SD_MMC.exists(binPath.c_str())) SD_MMC.remove(binPath.c_str());
 }
 
 // ---------- Install Task ----------
@@ -135,11 +163,13 @@ static void installTask(void *param) {
 	g_installDone = false;
 	g_installFailed = false;
 
-	String tarPath = String(APP_DIRECTORY) + "/" + p->tarRelName;
+	//String tarPath = String(APP_DIRECTORY) + "/" + p->tarRelName;
+  String tarPath = pathJoin(APP_DIRECTORY, p->tarRelName);
 
 	// --- Check TAR exists ---
 	if (!SD_MMC.exists(tarPath.c_str())) {
 		Serial.printf("Tar not found: %s\n", tarPath.c_str());
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -151,6 +181,7 @@ static void installTask(void *param) {
 		!rmRF(SD_MMC, TEMP_DIR) ||
 		!ensureDir(SD_MMC, TEMP_DIR)) {
 		Serial.println("Failed to prepare TEMP_DIR");
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -166,6 +197,9 @@ static void installTask(void *param) {
 
 	if (!unpacker.tarExpander(SD_MMC, tarPath.c_str(), SD_MMC, TEMP_DIR)) {
 		Serial.printf("Extraction failed (err=%d)\n", unpacker.tarGzGetError());
+
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
+
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -179,6 +213,10 @@ static void installTask(void *param) {
 	String binPath = pathJoin(TEMP_DIR, base + ".bin");
 	if (!SD_MMC.exists(binPath.c_str())) {
 		Serial.printf("Bin not found after extraction: %s\n", binPath.c_str());
+
+    cleanupAppsTemp(binPath);
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
+
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -193,6 +231,10 @@ static void installTask(void *param) {
 
 	if (!partition) {
 		Serial.printf("OTA_%d partition not found\n", p->otaIndex);
+
+    cleanupAppsTemp(binPath);
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
+
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -202,6 +244,10 @@ static void installTask(void *param) {
 	File f = SD_MMC.open(binPath, "r");
 	if (!f) {
 		Serial.printf("Failed to open: %s\n", binPath.c_str());
+
+    cleanupAppsTemp(binPath);
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
+
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -217,6 +263,10 @@ static void installTask(void *param) {
 	if (err != ESP_OK) {
 		Serial.printf("esp_ota_begin failed: %s\n", esp_err_to_name(err));
 		f.close();
+
+    cleanupAppsTemp(binPath);
+    if (SAVE_POWER) setCpuFrequencyMhz(40);
+
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -232,6 +282,10 @@ static void installTask(void *param) {
 			Serial.printf("esp_ota_write failed: %s\n", esp_err_to_name(err));
 			esp_ota_abort(ota_handle);
 			f.close();
+
+      cleanupAppsTemp(binPath);
+      if (SAVE_POWER) setCpuFrequencyMhz(40);
+
 			g_installFailed = true;
 			g_installDone = true;
 			delete p;
@@ -264,25 +318,11 @@ static void installTask(void *param) {
 		}
 	}
 
-	// --- Cleanup TEMP_DIR, keep *_ICON.bin only ---
-	File root = SD_MMC.open(TEMP_DIR);
-	if (root && root.isDirectory()) {
-		File entry;
-		while ((entry = root.openNextFile())) {
-			String name = String(entry.name());
-			entry.close();
-			if (!name.endsWith("_ICON.bin")) SD_MMC.remove(name);
-		}
-		root.close();
-	}
-
-	// --- Delete app .bin ---
-	if (SD_MMC.exists(binPath.c_str())) SD_MMC.remove(binPath.c_str());
+	cleanupAppsTemp(binPath);
+  if (SAVE_POWER) setCpuFrequencyMhz(40);
 
 	g_installProgress = 100;
 	g_installDone = true;
-
-	if (SAVE_POWER) setCpuFrequencyMhz(40);
 
 	delete p;
 	vTaskDelete(NULL);
@@ -481,14 +521,27 @@ void processKB_APPLOADER() {
         else if (inchar == 'D' || inchar == 'd' || inchar == '$') {
           // Clear the slot
           prefs.begin("PocketMage", false);
-          prefs.putString((String("OTA") + String(selectedSlot)).c_str(), "-");
+          prefs.remove(("OTA" + String(selectedSlot)).c_str());
           prefs.end();
 
+          const esp_partition_t *partition =
+            esp_partition_find_first(ESP_PARTITION_TYPE_APP,
+            (esp_partition_subtype_t)(ESP_PARTITION_SUBTYPE_APP_OTA_MIN + selectedSlot),
+            nullptr);
+
+          if (partition) {
+            esp_err_t err = esp_partition_erase_range(partition, 0, partition->size);
+            if (err == ESP_OK) {
+              Serial.printf("OTA_%d erased\n", selectedSlot);
+            }
+          }
+
           OLED().oledWord("App removed");
-          delay(2000);
 
           // Return to menu
+          newState = true;
           CurrentAppLoaderState = MENU;
+          delay(2000);
         }
         
         // Home recieved
@@ -546,8 +599,6 @@ void processKB_APPLOADER() {
         } 
         else {
           OLED().oledWord("Install complete!");
-          delay(2000);
-          //rebootToAppSlot(selectedSlot);
         }
         delay(2000);
         CurrentAppLoaderState = MENU;
@@ -564,6 +615,11 @@ void einkHandler_APPLOADER() {
         display.setRotation(3);
         display.setFullWindow();
         display.drawBitmap(0, 0, _appLoader, 320, 218, GxEPD_BLACK);
+
+        loadAndDrawAppIcon(42 , 146, 1, true, 7);  // OTA1
+        loadAndDrawAppIcon(106, 146, 2, true, 7);  // OTA2
+        loadAndDrawAppIcon(174, 146, 3, true, 7);  // OTA3
+        loadAndDrawAppIcon(238, 146, 4, true, 7);  // OTA4
 
         EINK().drawStatusBar("Type Letter A-D:");
 

@@ -147,8 +147,9 @@ String renderWizMini(String folder, int8_t scrollDelta) {
         default:  u8g2.drawXBMP(1, 1, 30, 30, _LFileIcons[3]); break;
       }
       String dispName = f.name + f.extension;
-      u8g2.setFont(u8g2_font_helvB14_tf);
-      u8g2.drawStr(34,30,dispName.c_str());
+      //u8g2.setFont(u8g2_font_helvB14_tf);
+      u8g2.setFont(u8g2_font_7x13B_tf);
+      u8g2.drawStr(34,29,dispName.c_str());
     }
     else {
       int x = 34 + 18 * (i - scroll - 1);
