@@ -1,3 +1,12 @@
+//  888888ba                    dP                  dP                                          //
+//  88    `8b                   88                  88                                          //
+// a88aaaa8P' .d8888b. .d8888b. 88  .dP  .d8888b. d8888P 88d8b.d8b. .d8888b. .d8888b. .d8888b.  //
+//  88        88'  `88 88'  `"" 88888"   88ooood8   88   88'`88'`88 88'  `88 88'  `88 88ooood8  //
+//  88        88.  .88 88.  ... 88  `8b. 88.  ...   88   88  88  88 88.  .88 88.  .88 88.  ...  //
+//  dP        `88888P' `88888P' dP   `YP `88888P'   dP   dP  dP  dP `88888P8 `8888P88 `88888P'  //
+//                                                                                .88           //
+//                                                                            d8888P            //
+
 #include <pocketmage.h>
 #include <pocketmage_sys.h>
 #include <pocketmage_eink.h>
@@ -17,7 +26,7 @@
 #include "esp_system.h"
 
 static constexpr const char* TAG = "SYSTEM";
-
+// To Do: migrate to pocketmage::
 ///////////////////////////////////////////////////////////////////////////////
 //            Use this function in apps to return to PocketMage OS           //
 bool rebootToPocketMage() {

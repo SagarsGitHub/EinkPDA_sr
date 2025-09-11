@@ -29,7 +29,6 @@ public:
   void IRAM_ATTR TCA8418_irq();
   char updateKeypress();
 
-
 private:
   Adafruit_TCA8418      &keypad_; // class reference to hardware keypad object
 

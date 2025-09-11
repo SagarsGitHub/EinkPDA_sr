@@ -3,9 +3,9 @@
 
 @Ashtf 2025
 
-![P1130558](https://github.com/user-attachments/assets/791df932-b2c9-459f-9c58-0640f6f8a929)
+<img width="1245" height="882" alt="Screenshot 2025-09-10 203805" src="https://github.com/user-attachments/assets/f021dc66-12d8-489f-9078-9c7eeeb4ad03" />
 
-![P1130549](https://github.com/user-attachments/assets/870af762-9d3f-4b4d-afb1-b597d016a69a)
+<img width="1151" height="807" alt="Screenshot 2025-09-10 203851" src="https://github.com/user-attachments/assets/676fe6bb-d124-4707-828f-a3c22c24fd00" />
 
 # [Project Summary]
   This project is a PDA powered by an ESP32-S3 running a custom OS written in C++ using PlatformIO. This project utilizes an E-Ink and OLED screen in tandem to mitigate the refresh rate restrictions of an E-Ink panel while retaining the aesthetics and benefits of using E-Ink. This project is a work in progress and currently amounts to a simple GUI for navigating between apps, a text (.txt) file editor, and a basic file manager. More applications are planned for the future and a list of TO-DOs can be found below.
