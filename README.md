@@ -14,6 +14,11 @@
 
   I will try my best to keep this GitHub up to date with the development of the device.
 
+# [Creating Your Own Apps]
+  Check out the /Code/BlankApp folder for a simple example app template. Check out the following video as a tutorial on how to create and format your app:
+
+[Developing For the PocketMage]([https://duckduckgo.com](https://www.youtube.com/watch?v=3Ytc-3-BbMM))
+
 # [Hardware]
 - ESP32-S3 WROOM1 with 16mb flash and 8mb RAM. WiFi and Bluetooth supported.
 - 3.1" 320x240px 1-bit SPI Eink panel (GDEQ031T10) with integrated driver
