@@ -2,8 +2,7 @@
 // To Do:
 // make currentKBState a member of PocketmageKB and change all references in main apps/libraries
 
-// Adafruit_TCA8418 keypad;
-// Initialization of sd class
+// Initialization of kb class
 static PocketmageKB pm_kb(keypad);
 
 static constexpr const char* TAG = "KEYBOARD";
@@ -30,7 +29,7 @@ void setupKB() {
 void wireKB() {
     pm_kb.setTCA8418EventFlag(&TCA8418_event);
     pm_kb.setPrevTimeMillis(&prevTimeMillis);
-    // lamda to avoid redundant functions To Do: make class interface for each pocketmage component in library
+    // lamda to avoid redundant functions To Do: move KB state into KB class and reference with setters and getters
     pm_kb.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
 }
 

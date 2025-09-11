@@ -7,6 +7,8 @@
 
 #include <pocketmage_bz.h>
 
+static constexpr const char* tag = "BUZZER";
+
 // ===================== main functions =====================
 void PocketmageBZ::playJingle(const Jingle& jingle) const {
   if (jingle.notes == nullptr || jingle.len == 0) {

@@ -23,7 +23,7 @@
 //u8g2_font_courR08_tf.h
 #pragma endregion
 
-
+// To Do: add forward declaration of u8g2, remove #include<U8g2lib.h>, add forward declaration of pocketmage_clock and replace rtc w/ CLOCK()
 
 // ===================== OLED CLASS =====================
 class PocketmageOled {
@@ -39,7 +39,7 @@ public:
   void setDynamicScroll(volatile long* scroll)               { dynamicScroll_ = scroll;}
   void setReferenceWidth(uint16_t w)                                   { refWidth_ = w;}  // E-ink measurement
   void setMeasureTextWidth(MeasureTextFn fn)                { measure_ = std::move(fn);}  // function for measuring text width in e-ink pixels
-  void setBattery(volatile int* st, const uint8_t* const* icons, int iconCount) {   // Battery icon/state
+  void setBattery(volatile int* st, const uint8_t* const* icons, int iconCount) {         // Battery icon/state
     battState_ = st;
     battIcons_ = icons;
     battIconCount_ = iconCount;

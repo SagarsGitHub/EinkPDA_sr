@@ -8,6 +8,8 @@
 
 #include <pocketmage_eink.h>
 
+static constexpr const char* tag = "EINK";
+
 // ===================== main functions =====================
 void PocketmageEink::refresh() {
   // USE A SLOW FULL UPDATE EVERY N FAST UPDATES OR WHEN SPECIFIED

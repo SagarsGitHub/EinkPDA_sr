@@ -8,8 +8,9 @@
 #include <pocketmage_kb.h>
 #include <Adafruit_TCA8418.h>
 #pragma region keymaps
+
 // ===================== Keymaps =====================
-char currentKB[4][10];            // Current keyboard layout
+char currentKB[4][10];            // Current keyboard layout (remove)
 
 char keysArray[4][10] = {
     { 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p' },
@@ -30,6 +31,8 @@ char keysArrayFN[4][10] = {
     {   0,  17,  18, ' ', ' ', ' ',  12,    7,    6,   0 }
 };
 #pragma endregion
+
+static constexpr const char* tag = "KB";
 
 // ===================== public functions =====================
 char PocketmageKB::updateKeypress() {
