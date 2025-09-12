@@ -146,9 +146,6 @@ void cleanupAppsTemp(String binPath) {
     }
     root.close();
   }
-
-  // --- Delete app .bin ---
-  if (SD_MMC.exists(binPath.c_str())) SD_MMC.remove(binPath.c_str());
 }
 
 // ---------- Install Task ----------
@@ -181,7 +178,7 @@ static void installTask(void *param) {
 
 	// --- Ensure directories ---
 	if (!ensureDir(SD_MMC, APP_DIRECTORY) ||
-		!rmRF(SD_MMC, TEMP_DIR) ||
+		//!rmRF(SD_MMC, TEMP_DIR) ||
 		!ensureDir(SD_MMC, TEMP_DIR)) {
 		Serial.println("Failed to prepare TEMP_DIR");
     if (SAVE_POWER) setCpuFrequencyMhz(40);
@@ -225,6 +222,8 @@ static void installTask(void *param) {
 		delete p;
 		vTaskDelete(NULL);
 	}
+
+  delay(100);
 
 	// --- OTA flashing ---
 	const esp_partition_t *partition = esp_partition_find_first(
