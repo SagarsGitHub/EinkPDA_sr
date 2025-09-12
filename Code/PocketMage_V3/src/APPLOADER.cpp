@@ -133,19 +133,22 @@ void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName, int maxNameCh
 
 void cleanupAppsTemp(String binPath) {
   // --- Cleanup TEMP_DIR, keep *_ICON.bin only ---
-	File root = SD_MMC.open(TEMP_DIR);
-	if (root && root.isDirectory()) {
-		File entry;
-		while ((entry = root.openNextFile())) {
-			String name = String(entry.name());
-			entry.close();
-			if (!name.endsWith("_ICON.bin")) SD_MMC.remove(name);
-		}
-		root.close();
-	}
+  File root = SD_MMC.open(TEMP_DIR);
+  if (root && root.isDirectory()) {
+    File entry;
+    while ((entry = root.openNextFile())) {
+      String name = String(entry.name());
+      String fullPath = pathJoin(TEMP_DIR, name);
+      entry.close();
+      if (!name.endsWith("_ICON.bin")) {
+        SD_MMC.remove(fullPath);
+      }
+    }
+    root.close();
+  }
 
-	// --- Delete app .bin ---
-	if (SD_MMC.exists(binPath.c_str())) SD_MMC.remove(binPath.c_str());
+  // --- Delete app .bin ---
+  if (SD_MMC.exists(binPath.c_str())) SD_MMC.remove(binPath.c_str());
 }
 
 // ---------- Install Task ----------
@@ -601,6 +604,7 @@ void processKB_APPLOADER() {
           OLED().oledWord("Install complete!");
         }
         delay(2000);
+        newState = true;
         CurrentAppLoaderState = MENU;
       }
       break;
