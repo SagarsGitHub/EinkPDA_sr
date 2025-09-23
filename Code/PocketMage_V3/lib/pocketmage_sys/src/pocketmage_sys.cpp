@@ -86,9 +86,9 @@ namespace pocketmage::file{
         keypad.disableInterrupts();
         if (!editingFile.startsWith("/"))
         editingFile = "/" + editingFile;
-        // OLED().oledWord("Saving File: "+ editingFile);
+        //OLED().oledWord("Saving File: "+ editingFile);
         SD().writeFile(SD_MMC, (editingFile).c_str(), textToSave.c_str());
-        // OLED().oledWord("Saved: "+ editingFile);
+        //OLED().oledWord("Saved: "+ editingFile);
 
         // Write MetaData
         pocketmage::file::writeMetadata(editingFile);
@@ -498,10 +498,11 @@ namespace pocketmage::time{
 
         // Save current work:
         OLED().oledWord("Saving Work");
-        pocketmage::file::saveFile();
+        //pocketmage::file::saveFile();
 
         if (digitalRead(CHRG_SENS) == HIGH) {
         // Save last state
+
         prefs.begin("PocketMage", false);
         prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
         prefs.putString("editingFile", editingFile);

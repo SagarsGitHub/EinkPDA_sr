@@ -16,12 +16,14 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////|
 
 // PIN DEFINITION
+
 #define I2C_SCL       35
 #define I2C_SDA       36
 #define MPR121_ADDR   0x5A
 
 #define KB_IRQ        8
-#define PWR_BTN       38
+//#define PWR_BTN       38  // V3.0
+#define PWR_BTN       0     // V3.2
 #define BAT_SENS      4
 #define CHRG_SENS     39
 #define RTC_INT       1 
@@ -41,5 +43,6 @@
 #define SD_CLK        12
 #define SD_CMD        11
 #define SD_D0         13
+
 
 #endif
