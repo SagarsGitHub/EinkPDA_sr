@@ -102,12 +102,17 @@ namespace pocketmage::file{
     }
     
     void writeMetadata(const String& path) {
+    OLED().oledWord("start of writeMetadata");
+    delay(1000);
     File file = SD_MMC.open(path);
     if (!file || file.isDirectory()) {
-        ESP_LOGE(TAG, "Invalid file for metadata: %s", file.path());
+        OLED().oledWord("META WRITE ERR");
+        delay(1000);
+        ESP_LOGE(TAG, "Invalid file for metadata: %s", path);
         return;
     }
-
+    OLED().oledWord("getting file size");
+    delay(1000);
     // Get file size
     size_t fileSizeBytes = file.size();
     file.close();
@@ -119,7 +124,8 @@ namespace pocketmage::file{
     int charCount = countVisibleChars(SD().readFileToString(SD_MMC, path.c_str()));
 
     String charStr = String(charCount) + " Char";
-
+    OLED().oledWord("getting current time");
+    delay(1000);
     // Get current time from RTC
     DateTime now = CLOCK().nowDT();
     char timestamp[20];
@@ -130,14 +136,19 @@ namespace pocketmage::file{
     String newEntry = path + "|" + timestamp + "|" + fileSizeStr + "|" + charStr;
 
     const char* metaPath = SYS_METADATA_FILE;
-
+    OLED().oledWord("reading existing metadata");
+    delay(1000);
     // Read existing entries and rebuild the file without duplicates
     File metaFile = SD_MMC.open(metaPath, FILE_READ);
     String updatedMeta = "";
     bool replaced = false;
 
     if (metaFile) {
+        OLED().oledWord("reading all metadata lines");
+        delay(1000);
         while (metaFile.available()) {
+        OLED().oledWord("reading metadata line");
+        delay(100);
         String line = metaFile.readStringUntil('\n');
         if (line.startsWith(path + "|")) {
             updatedMeta += newEntry + "\n";
@@ -152,16 +163,20 @@ namespace pocketmage::file{
     if (!replaced) {
         updatedMeta += newEntry + "\n";
     }
-
+    OLED().oledWord("writing back metadata");
+    delay(1000);
     // Write back the updated metadata
     metaFile = SD_MMC.open(metaPath, FILE_WRITE);
     if (!metaFile) {
+        OLED().oledWord("failed to open metadata file for writing");
+        delay(1000);
         ESP_LOGE(TAG, "Failed to open metadata file for writing: %s", metaPath);
         return;
     }
     metaFile.print(updatedMeta);
     metaFile.close();
-
+    OLED().oledWord("updated metadata!");
+    delay(1000);
     ESP_LOGI(TAG, "Metadata updated");
     }
     
