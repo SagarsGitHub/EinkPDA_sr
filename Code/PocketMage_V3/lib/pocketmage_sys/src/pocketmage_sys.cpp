@@ -102,8 +102,10 @@ namespace pocketmage::file{
     }
     
     void writeMetadata(const String& path) {
-    OLED().oledWord("start of writeMetadata");
-    delay(1000);
+    SDActive = true;
+    setCpuFrequencyMhz(240);
+    delay(50);
+
     File file = SD_MMC.open(path);
     if (!file || file.isDirectory()) {
         OLED().oledWord("META WRITE ERR");
@@ -111,8 +113,6 @@ namespace pocketmage::file{
         ESP_LOGE(TAG, "Invalid file for metadata: %s", path);
         return;
     }
-    OLED().oledWord("getting file size");
-    delay(1000);
     // Get file size
     size_t fileSizeBytes = file.size();
     file.close();
@@ -124,8 +124,6 @@ namespace pocketmage::file{
     int charCount = countVisibleChars(SD().readFileToString(SD_MMC, path.c_str()));
 
     String charStr = String(charCount) + " Char";
-    OLED().oledWord("getting current time");
-    delay(1000);
     // Get current time from RTC
     DateTime now = CLOCK().nowDT();
     char timestamp[20];
@@ -136,19 +134,13 @@ namespace pocketmage::file{
     String newEntry = path + "|" + timestamp + "|" + fileSizeStr + "|" + charStr;
 
     const char* metaPath = SYS_METADATA_FILE;
-    OLED().oledWord("reading existing metadata");
-    delay(1000);
     // Read existing entries and rebuild the file without duplicates
     File metaFile = SD_MMC.open(metaPath, FILE_READ);
     String updatedMeta = "";
     bool replaced = false;
 
     if (metaFile) {
-        OLED().oledWord("reading all metadata lines");
-        delay(1000);
         while (metaFile.available()) {
-        OLED().oledWord("reading metadata line");
-        delay(100);
         String line = metaFile.readStringUntil('\n');
         if (line.startsWith(path + "|")) {
             updatedMeta += newEntry + "\n";
@@ -163,24 +155,26 @@ namespace pocketmage::file{
     if (!replaced) {
         updatedMeta += newEntry + "\n";
     }
-    OLED().oledWord("writing back metadata");
-    delay(1000);
     // Write back the updated metadata
     metaFile = SD_MMC.open(metaPath, FILE_WRITE);
     if (!metaFile) {
-        OLED().oledWord("failed to open metadata file for writing");
-        delay(1000);
         ESP_LOGE(TAG, "Failed to open metadata file for writing: %s", metaPath);
         return;
     }
     metaFile.print(updatedMeta);
     metaFile.close();
-    OLED().oledWord("updated metadata!");
-    delay(1000);
     ESP_LOGI(TAG, "Metadata updated");
+
+    if (SAVE_POWER)
+    setCpuFrequencyMhz(POWER_SAVE_FREQ);
+    SDActive = false;
     }
     
     void loadFile(bool showOLED) {
+    SDActive = true;
+    setCpuFrequencyMhz(240);
+    delay(50);
+
     if (noSD) {
         OLED().oledWord("LOAD FAILED - No SD!");
         delay(5000);
@@ -239,6 +233,10 @@ namespace pocketmage::file{
     }
     
     void deleteMetadata(String path) {
+    SDActive = true;
+    setCpuFrequencyMhz(240);
+    delay(50);
+
     const char* metaPath = SYS_METADATA_FILE;
 
     // Open metadata file for reading
@@ -307,7 +305,9 @@ namespace pocketmage::file{
     }
     
     void renMetadata(String oldPath, String newPath) {
+    SDActive = true;
     setCpuFrequencyMhz(240);
+    delay(50);
     const char* metaPath = SYS_METADATA_FILE;
 
     // Open metadata file for reading
@@ -356,7 +356,7 @@ namespace pocketmage::file{
     ESP_LOGI(TAG, "Metadata updated for renamed file.");
 
     if (SAVE_POWER)
-        setCpuFrequencyMhz(40);
+        setCpuFrequencyMhz(POWER_SAVE_FREQ);
     }
     
     void copyFile(String oldFile, String newFile) {
@@ -513,7 +513,7 @@ namespace pocketmage::time{
 
         // Save current work:
         OLED().oledWord("Saving Work");
-        //pocketmage::file::saveFile();
+        pocketmage::file::saveFile();
 
         if (digitalRead(CHRG_SENS) == HIGH) {
         // Save last state

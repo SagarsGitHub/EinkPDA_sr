@@ -13,6 +13,7 @@ FileWizState CurrentFileWizState = WIZ0_;
 
 String currentWord = "";
 static String currentLine = "";
+bool refreshFiles = false;
 
 std::vector<String> excludedPaths = {
   "/sys",
@@ -76,6 +77,10 @@ String renderWizMini(String folder, int8_t scrollDelta) {
 
   // Reload directory if folder changed
   if (folder != prevFolder) {
+    SDActive = true;
+    setCpuFrequencyMhz(240);
+    delay(50);
+
     scroll = 0;
     scrollDelta = 0;
     cachedFiles.clear();
@@ -118,6 +123,23 @@ String renderWizMini(String folder, int8_t scrollDelta) {
     });
 
     prevFolder = folder;
+
+    if (SAVE_POWER)
+    setCpuFrequencyMhz(POWER_SAVE_FREQ);
+    SDActive = false;
+  }
+
+  // Reload directory if file changed
+  if (refreshFiles) {
+    SDActive = true;
+    setCpuFrequencyMhz(240);
+    delay(50);
+
+    // TODO: Need to refresh directory here.
+
+    if (SAVE_POWER)
+    setCpuFrequencyMhz(POWER_SAVE_FREQ);
+    SDActive = false;
   }
 
   // Empty folder
@@ -289,7 +311,7 @@ String fileWizardMini(bool allowRecentSelect, String rootDir) {
     }
   }
 
-  if (SAVE_POWER) setCpuFrequencyMhz(40);
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   return "";
 }
 
@@ -390,6 +412,7 @@ void processKB_FILEWIZ() {
           pocketmage::file::delFile(workingFile);
           
           // RETURN TO FILE WIZ HOME
+          refreshFiles = true;
           CurrentFileWizState = WIZ0_;
           newState = true;
           break;
@@ -458,6 +481,7 @@ void processKB_FILEWIZ() {
           pocketmage::file::renFile(workingFile, newName);
 
           // RETURN TO WIZ0
+          refreshFiles = true;
           CurrentFileWizState = WIZ0_;
           CurrentKBState = NORMAL;
           newState = true;
@@ -524,11 +548,12 @@ void processKB_FILEWIZ() {
         }
         //ENTER Recieved
         else if (inchar == 13) {      
-          // RENAME FILE                    
+          // Copy FILE                    
           String newName = "/" + currentWord + ".txt";
           pocketmage::file::copyFile(workingFile, newName);
 
           // RETURN TO WIZ0
+          refreshFiles = true;
           CurrentFileWizState = WIZ0_;
           CurrentKBState = NORMAL;
           newState = true;
