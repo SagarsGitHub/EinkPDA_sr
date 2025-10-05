@@ -128,7 +128,7 @@ void loadAndDrawAppIcon(int x, int y, int otaIndex, bool showName, int maxNameCh
     display.print(appNameStr);
 	}
 
-  if (SAVE_POWER) setCpuFrequencyMhz(40);
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 }
 
 void cleanupAppsTemp(String binPath) {
@@ -169,7 +169,7 @@ static void installTask(void *param) {
 	// --- Check TAR exists ---
 	if (!SD_MMC.exists(tarPath.c_str())) {
 		Serial.printf("Tar not found: %s\n", tarPath.c_str());
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -181,7 +181,7 @@ static void installTask(void *param) {
 		//!rmRF(SD_MMC, TEMP_DIR) ||
 		!ensureDir(SD_MMC, TEMP_DIR)) {
 		Serial.println("Failed to prepare TEMP_DIR");
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 		g_installFailed = true;
 		g_installDone = true;
 		delete p;
@@ -198,7 +198,7 @@ static void installTask(void *param) {
 	if (!unpacker.tarExpander(SD_MMC, tarPath.c_str(), SD_MMC, TEMP_DIR)) {
 		Serial.printf("Extraction failed (err=%d)\n", unpacker.tarGzGetError());
 
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 		g_installFailed = true;
 		g_installDone = true;
@@ -215,7 +215,7 @@ static void installTask(void *param) {
 		Serial.printf("Bin not found after extraction: %s\n", binPath.c_str());
 
     cleanupAppsTemp(binPath);
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 		g_installFailed = true;
 		g_installDone = true;
@@ -235,7 +235,7 @@ static void installTask(void *param) {
 		Serial.printf("OTA_%d partition not found\n", p->otaIndex);
 
     cleanupAppsTemp(binPath);
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 		g_installFailed = true;
 		g_installDone = true;
@@ -248,7 +248,7 @@ static void installTask(void *param) {
 		Serial.printf("Failed to open: %s\n", binPath.c_str());
 
     cleanupAppsTemp(binPath);
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 		g_installFailed = true;
 		g_installDone = true;
@@ -267,7 +267,7 @@ static void installTask(void *param) {
 		f.close();
 
     cleanupAppsTemp(binPath);
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 		g_installFailed = true;
 		g_installDone = true;
@@ -286,7 +286,7 @@ static void installTask(void *param) {
 			f.close();
 
       cleanupAppsTemp(binPath);
-      if (SAVE_POWER) setCpuFrequencyMhz(40);
+      if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 			g_installFailed = true;
 			g_installDone = true;
@@ -321,7 +321,7 @@ static void installTask(void *param) {
 	}
 
 	cleanupAppsTemp(binPath);
-  if (SAVE_POWER) setCpuFrequencyMhz(40);
+  if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
 
 	g_installProgress = 100;
 	g_installDone = true;

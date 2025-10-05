@@ -72,7 +72,7 @@ void PocketmageSD::listDir(fs::FS &fs, const char *dirname) {
     // }
 
     if (noTimeout_) *noTimeout_ = false;
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::readFile(fs::FS &fs, const char *path) {
@@ -96,7 +96,7 @@ void PocketmageSD::readFile(fs::FS &fs, const char *path) {
 
     file.close();
     if (noTimeout_) *noTimeout_ = false;
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
@@ -159,7 +159,7 @@ void PocketmageSD::writeFile(fs::FS &fs, const char *path, const char *message) 
     }
     file.close();
     if (noTimeout_) *noTimeout_ = false;
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message) {
@@ -188,7 +188,7 @@ void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message)
     }
     file.close();
     if (noTimeout_) *noTimeout_ = false;
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) {
@@ -210,7 +210,7 @@ void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) 
       ESP_LOGE(tag, "Rename failed: %s to %s", path1, path2);
     }
     if (noTimeout_) *noTimeout_ = false;
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::deleteFile(fs::FS &fs, const char *path) {
@@ -231,6 +231,6 @@ void PocketmageSD::deleteFile(fs::FS &fs, const char *path) {
       ESP_LOGE(tag, "Delete failed for %s", path);
     }
     if (noTimeout_) *noTimeout_ = false;
-    if (SAVE_POWER) setCpuFrequencyMhz(40);
+    if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
