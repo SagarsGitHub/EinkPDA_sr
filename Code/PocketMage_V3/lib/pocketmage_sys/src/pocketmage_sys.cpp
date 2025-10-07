@@ -786,7 +786,6 @@ namespace pocketmage::power{
 }    // namespace pocketmage::power
 
 namespace pocketmage::debug{
-
     void printDebug() {
     DateTime now = CLOCK().nowDT();
     if (now.second() != prevSec) {

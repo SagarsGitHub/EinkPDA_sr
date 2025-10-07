@@ -49,7 +49,7 @@
 #include "esp_log.h"
 
 // ------------------ General ------------------
-enum TXTState_NEW { TXT_, WIZ0, WIZ1, WIZ2, WIZ3, FONT };
+enum TXTState_NEW { TXT_, FONT, SAVE_AS, LOAD_FILE };
 TXTState_NEW CurrentTXTState_NEW = TXT_;
 
 #define TYPE_INTERFACE_TIMEOUT 5000  // ms
@@ -184,6 +184,7 @@ ulong indexCounter = 0;
 ulong lineScroll = 0;
 enum EditingModes { edit_inline = 0, edit_append = 1 };
 uint8_t currentEditMode = edit_append;
+String currentLine = "";
 
 struct wordObject {
   String text;
@@ -288,6 +289,37 @@ struct DocLine {
       currentLine.index = indexCounter++;
       lines.push_back(currentLine);
     }
+  }
+
+  // Compile line objects back into text
+  void compileToText() {
+    String compiled = "";
+
+    for (auto &ln : lines) {
+      for (auto &w : ln.words) {
+        // Determine formatting markers
+        if (w.bold && w.italic)
+          compiled += "***";
+        else if (w.bold)
+          compiled += "**";
+        else if (w.italic)
+          compiled += "*";
+
+        compiled += w.text;
+
+        if (w.bold && w.italic)
+          compiled += "***";
+        else if (w.bold)
+          compiled += "**";
+        else if (w.italic)
+          compiled += "*";
+
+        compiled += " ";
+      }
+    }
+
+    compiled.trim();
+    line = compiled;
   }
 
   int displayLine(int startX, int startY) {
@@ -1160,6 +1192,69 @@ void loadMarkdownFile(const String& path) {
   SDActive = false;
 }
 
+void saveMarkdownFile(const String& path, std::vector<DocLine>& docLines) {
+  if (noSD) {
+    OLED().oledWord("SAVE FAILED - No SD!");
+    delay(3000);
+    return;
+  }
+
+  SDActive = true;
+  setCpuFrequencyMhz(240);
+  delay(50);
+
+  // Determine save path
+  String savePath = path;
+  if (savePath == "" || savePath == "-")
+    savePath = "/temp.txt";
+  if (!savePath.startsWith("/"))
+    savePath = "/" + savePath;
+
+  File file = SD_MMC.open(savePath.c_str(), FILE_WRITE);
+  if (!file) {
+    OLED().oledWord("SAVE FAILED - OPEN ERR");
+    delay(2000);
+    ESP_LOGE("SD", "Failed to open file for writing: %s", savePath.c_str());
+    SDActive = false;
+    return;
+  }
+
+  // Write each DocLine as Markdown
+  for (auto &dl : docLines) {
+    dl.compileToText();
+
+    String out;
+
+    switch (dl.style) {
+      case '1': out = "# " + dl.line; break;
+      case '2': out = "## " + dl.line; break;
+      case '3': out = "### " + dl.line; break;
+      case '>': out = "> " + dl.line; break;
+      case '-': out = "- " + dl.line; break;
+      case 'L': out = "1. " + dl.line; break; //String(dl.orderedListNumber) + ". " + dl.line; break;
+      case 'H': out = "---"; break;
+      case 'C': out = "```" + dl.line + "```"; break;
+      case 'B': out = ""; break;
+      default:  out = dl.line; break;
+    }
+
+    file.println(out);
+  }
+
+  file.close();
+
+  // Save metadata
+  pocketmage::file::writeMetadata(savePath);
+  editingFile = savePath;
+
+  OLED().oledWord("Saved: " + savePath);
+  delay(1000);
+
+  if (SAVE_POWER)
+    setCpuFrequencyMhz(POWER_SAVE_FREQ);
+  SDActive = false;
+}
+
 // Returns the pixel width of a LineObject (vector of wordObjects)
 int getLineWidth(const LineObject& lineObj, char style) {
   int lineWidth = 0;
@@ -1434,9 +1529,20 @@ void editAppend(char inchar) {
   }
   // SAVE Recieved
   else if (inchar == 6) {
+    String savePath = editingFile;
+    if (savePath == "" || savePath == "-" || savePath == "/temp.txt") {
+      CurrentKBState = NORMAL;
+      CurrentTXTState_NEW = SAVE_AS;
+      return;
+    }
+    if (!savePath.startsWith("/")) savePath = "/" + savePath;
+    
+    saveMarkdownFile(editingFile, docLines);
   }
   // FILE Recieved
   else if (inchar == 7) {
+    CurrentTXTState_NEW = LOAD_FILE;
+    CurrentKBState = NORMAL;
   }
   // Font Switcher
   else if (inchar == 14) {
@@ -1490,7 +1596,7 @@ void editAppend(char inchar) {
   }
 
   if (SAVE_POWER)
-    setCpuFrequencyMhz(80);
+    setCpuFrequencyMhz(POWER_SAVE_FREQ);
 }
 
 // INIT
@@ -1607,9 +1713,11 @@ void initFonts() {
 void TXT_INIT() {
   initFonts();
 
-  loadMarkdownFile("/markdownTest.txt");
-  OLED().oledWord("FILE LOADED");
-  delay(500);
+  if (editingFile != "") {
+    loadMarkdownFile(editingFile);
+    OLED().oledWord("FILE LOADED");
+    delay(500);
+  }
 
   setFontStyle(serif);
 
@@ -1636,12 +1744,15 @@ void processKB_TXT_NEW() {
   }
 
   disableTimeout = false;
+  String outPath = "";
+  char inchar;
 
   unsigned long currentMillis = millis();
-  if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {
-    char inchar = KB().updateKeypress();
-    switch (CurrentTXTState_NEW) {
-      case TXT_:
+
+  switch (CurrentTXTState_NEW) {
+    case TXT_:
+      inchar = KB().updateKeypress();
+      if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {
         // update scroll
         if (TOUCH().updateScroll(getTotalDisplayLines(), lineScroll)) {
           updateScreen = true;
@@ -1654,7 +1765,94 @@ void processKB_TXT_NEW() {
 
             break;
         }
+      }
+      break;
+    case SAVE_AS:
+      inchar = KB().updateKeypress();
+      if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {
+        // HANDLE INPUTS
+        //No char recieved
+        if (inchar == 0);   
+        //CR Recieved
+        else if (inchar == 13) {                          
+          if (currentLine != "" && currentLine != "-") {
+            if (!currentLine.startsWith("/")) currentLine = "/" + currentLine;
+            if (!currentLine.endsWith(".txt")) currentLine = currentLine + ".txt";
+            saveMarkdownFile(currentLine, docLines);
+            CurrentTXTState_NEW = TXT_;
+          } else {
+            OLED().oledWord("Invalid Name");
+            delay(2000);
+          }
+          
+          currentLine = "";
+        }                                      
+        //SHIFT Recieved
+        else if (inchar == 17) {                                  
+          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
+          else CurrentKBState = SHIFT;
+        }
+        //FN Recieved
+        else if (inchar == 18) {                                  
+          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
+          else CurrentKBState = FUNC;
+        }
+        //Space Recieved
+        else if (inchar == 32) {                                  
+          // Spaces not allowed in filenames
+        }
+        //ESC / CLEAR Recieved
+        else if (inchar == 20) {                                  
+          currentLine = "";
+        }
+        //BKSP Recieved
+        else if (inchar == 8) {                  
+          if (currentLine.length() > 0) {
+            currentLine.remove(currentLine.length() - 1);
+          }
+        }
+        // Home recieved
+        else if (inchar == 12) {
+          CurrentTXTState_NEW = TXT_;
+        }
+        else {
+          currentLine += inchar;
+          if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
+          else if (CurrentKBState != NORMAL) {
+            CurrentKBState = NORMAL;
+          }
+        }
+
+        currentMillis = millis();
+        //Make sure oled only updates at OLED_MAX_FPS
+        if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
+          OLEDFPSMillis = currentMillis;
+          OLED().oledLine(currentLine, false, "Input Filename");
+        }
+      }
+      break;
+    case LOAD_FILE:
+      outPath = fileWizardMini(false);
+      if (outPath == "_EXIT_") {
+        // Return to TXT
+        CurrentTXTState_NEW = TXT_;
+        //newState = true;
         break;
-    }
+      }
+      else if (outPath != "") {
+        // Ensure file is a .txt or .md
+        if (outPath.endsWith(".txt") || outPath.endsWith(".md")) {
+          if (!outPath.startsWith("/")) outPath = "/" + outPath;
+          loadMarkdownFile(outPath);
+          editingFile = outPath;
+          CurrentTXTState_NEW = TXT_;
+          updateScreen = true;
+        } else {
+          OLED().oledWord("Incompatible Filetype!");
+          delay(2000);
+          CurrentTXTState_NEW = TXT_;
+        }
+      }
+      break;
   }
 }
