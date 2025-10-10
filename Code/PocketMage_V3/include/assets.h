@@ -163,4 +163,61 @@ extern const unsigned char _SFileIcon2 [] PROGMEM;
 extern const unsigned char _SFileIcon3 [] PROGMEM;
 extern const unsigned char* _SFileIcons[4];
 
+
+// Mage idle left frames
+extern const unsigned char _mage_idle_left0[] PROGMEM;
+extern const unsigned char _mage_idle_left1[] PROGMEM;
+extern const unsigned char _mage_idle_left2[] PROGMEM;
+extern const unsigned char _mage_idle_left3[] PROGMEM;
+extern const unsigned char _mage_idle_left4[] PROGMEM;
+extern const unsigned char _mage_idle_left5[] PROGMEM;
+extern const unsigned char _mage_idle_left6[] PROGMEM;
+extern const unsigned char* idle_left_allArray[7];
+
+// Mage idle right frames
+extern const unsigned char _mage_idle_right0[] PROGMEM;
+extern const unsigned char _mage_idle_right1[] PROGMEM;
+extern const unsigned char _mage_idle_right2[] PROGMEM;
+extern const unsigned char _mage_idle_right3[] PROGMEM;
+extern const unsigned char _mage_idle_right4[] PROGMEM;
+extern const unsigned char _mage_idle_right5[] PROGMEM;
+extern const unsigned char _mage_idle_right6[] PROGMEM;
+extern const unsigned char* idle_right_allArray[7];
+
+// Transition left frames
+extern const unsigned char _transition_left0[] PROGMEM;
+extern const unsigned char _transition_left1[] PROGMEM;
+extern const unsigned char _transition_left2[] PROGMEM;
+extern const unsigned char _transition_left3[] PROGMEM;
+extern const unsigned char _transition_left4[] PROGMEM;
+extern const unsigned char* trans_left_allArray[5];
+
+// Transition right frames
+extern const unsigned char _transition_right0[] PROGMEM;
+extern const unsigned char _transition_right1[] PROGMEM;
+extern const unsigned char _transition_right2[] PROGMEM;
+extern const unsigned char _transition_right3[] PROGMEM;
+extern const unsigned char _transition_right4[] PROGMEM;
+extern const unsigned char* trans_right_allArray[5];
+
+// Mage running left frames
+extern const unsigned char _mage_run_left0[] PROGMEM;
+extern const unsigned char _mage_run_left1[] PROGMEM;
+extern const unsigned char _mage_run_left2[] PROGMEM;
+extern const unsigned char _mage_run_left3[] PROGMEM;
+extern const unsigned char _mage_run_left4[] PROGMEM;
+extern const unsigned char _mage_run_left5[] PROGMEM;
+extern const unsigned char _mage_run_left6[] PROGMEM;
+extern const unsigned char* run_left_allArray[7];
+
+// Mage running right frames
+extern const unsigned char _mage_run_right0[] PROGMEM;
+extern const unsigned char _mage_run_right1[] PROGMEM;
+extern const unsigned char _mage_run_right2[] PROGMEM;
+extern const unsigned char _mage_run_right3[] PROGMEM;
+extern const unsigned char _mage_run_right4[] PROGMEM;
+extern const unsigned char _mage_run_right5[] PROGMEM;
+extern const unsigned char _mage_run_right6[] PROGMEM;
+extern const unsigned char* run_right_allArray[7];
+
 #endif

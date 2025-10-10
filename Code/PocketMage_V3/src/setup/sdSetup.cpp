@@ -45,6 +45,7 @@ void setupSD() {
   if (!SD_MMC.exists("/apps"))              SD_MMC.mkdir( "/apps"         );
   if (!SD_MMC.exists("/apps/temp"))         SD_MMC.mkdir( "/apps/temp"    );
   if (!SD_MMC.exists("/screensavers"))      SD_MMC.mkdir( "/screensavers" );
+  if (!SD_MMC.exists("/notes"))             SD_MMC.mkdir( "/notes"        );
   
   if (!SD_MMC.exists("/sys/events.txt")) {
     File f = SD_MMC.open("/sys/events.txt", FILE_WRITE);
@@ -58,9 +59,6 @@ void setupSD() {
     File f = SD_MMC.open("/sys/SDMMC_META.txt", FILE_WRITE);
     if (f) f.close();
   }
- 
-  pocketmage::power::loadState();
-
 }
 
 // Wire function  for SD class

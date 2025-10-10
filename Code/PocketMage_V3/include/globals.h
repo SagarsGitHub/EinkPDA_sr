@@ -235,6 +235,7 @@ String fileWizardMini(bool allowRecentSelect = false, String rootDir = "/");
 void TXT_INIT();
 void processKB_TXT_NEW();
 void einkHandler_TXT_NEW();
+void saveMarkdownFile(const String& path);
 
 // <HOME.cpp>
 void HOME_INIT();
