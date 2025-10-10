@@ -1121,10 +1121,23 @@ void loadMarkdownFile(const String& path) {
   delay(50);
 
   docLines.clear();
-  File file = SD_MMC.open(path.c_str());
+  File file = SD_MMC.open(path.c_str(), FILE_READ);
   if (!file) {
-    ESP_LOGE("SD", "Failed to open file: %s\n", file.path());  // FIXME: - Come up with better error handling
-                                                             //        - Should this be Error or Warning?
+    ESP_LOGE("SD", "File does not exist: %s", path.c_str());  // FIXME: - Come up with better error handling
+                                                              //        - Should this be Error or Warning?
+    OLED().oledWord("LOAD FAILED - FILE MISSING");
+    delay(2000);
+
+    // Create an empty new docLines object
+    docLines.push_back({'T', "", {}});
+    editingLine_index = 0;
+
+    // Populate and update as usual so UI doesn’t crash
+    populateLines(docLines);
+    refreshAllLineIndexes();
+
+    if (SAVE_POWER)
+      setCpuFrequencyMhz(80);
     SDActive = false;
     return;
   }
@@ -1156,10 +1169,12 @@ void loadMarkdownFile(const String& path) {
     } else if (line == "---") {
       style = 'H'; // Horizontal Rule
       content = "---";  // horizontal line has no content
-    } else if ((line.startsWith("'''")) || (line.startsWith("'") && line.endsWith("'"))) {
-      if (line.startsWith("'''"))
+    } else if ((line.startsWith("```")) || (line.startsWith("`") && line.endsWith("`")) || (line.startsWith("```") && line.endsWith("```"))) {
+      if (line.startsWith("```"))
         content = line.substring(3);
-      else
+      else if (line.startsWith("```") && line.endsWith("```"))
+        content = line.substring(3, line.length() - 3);
+      else if (line.startsWith("`") && line.endsWith("`"))
         content = line.substring(1, line.length() - 1);
 
       style = 'C'; // Code Block
@@ -1190,9 +1205,12 @@ void loadMarkdownFile(const String& path) {
   if (SAVE_POWER)
     setCpuFrequencyMhz(80);
   SDActive = false;
+
+  OLED().oledWord("FILE LOADED");
+  delay(500);
 }
 
-void saveMarkdownFile(const String& path, std::vector<DocLine>& docLines) {
+void saveMarkdownFile(const String& path) {
   if (noSD) {
     OLED().oledWord("SAVE FAILED - No SD!");
     delay(3000);
@@ -1537,7 +1555,7 @@ void editAppend(char inchar) {
     }
     if (!savePath.startsWith("/")) savePath = "/" + savePath;
     
-    saveMarkdownFile(editingFile, docLines);
+    saveMarkdownFile(editingFile);
   }
   // FILE Recieved
   else if (inchar == 7) {
@@ -1715,8 +1733,6 @@ void TXT_INIT() {
 
   if (editingFile != "") {
     loadMarkdownFile(editingFile);
-    OLED().oledWord("FILE LOADED");
-    delay(500);
   }
 
   setFontStyle(serif);
@@ -1776,9 +1792,9 @@ void processKB_TXT_NEW() {
         //CR Recieved
         else if (inchar == 13) {                          
           if (currentLine != "" && currentLine != "-") {
-            if (!currentLine.startsWith("/")) currentLine = "/" + currentLine;
+            if (!currentLine.startsWith("/notes/")) currentLine = "/notes/" + currentLine;
             if (!currentLine.endsWith(".txt")) currentLine = currentLine + ".txt";
-            saveMarkdownFile(currentLine, docLines);
+            saveMarkdownFile(currentLine);
             CurrentTXTState_NEW = TXT_;
           } else {
             OLED().oledWord("Invalid Name");
@@ -1832,7 +1848,7 @@ void processKB_TXT_NEW() {
       }
       break;
     case LOAD_FILE:
-      outPath = fileWizardMini(false);
+      outPath = fileWizardMini(false, "/notes");
       if (outPath == "_EXIT_") {
         // Return to TXT
         CurrentTXTState_NEW = TXT_;

@@ -218,6 +218,91 @@ void drawThickLine(int x0, int y0, int x1, int y1, int thickness) {
   }
 }
 
+void mageIdle() {
+  enum MageState { IDLE, RUN_LEFT, RUN_RIGHT};
+  static MageState CurrentMageState = RUN_RIGHT;
+
+  static int MagePosition = -30; //px
+  static bool MageDirection = true; // T:right, F:left
+  static int goalPosition = 30;
+  static int progress = 0;
+
+  uint32_t chance = 1;
+  
+  // Frame rate control
+  const uint32_t FRAME_INTERVAL = 100; // milliseconds per frame (e.g., 10 FPS = 100 ms)
+  static uint32_t lastUpdate = 0;
+  uint32_t now = millis();
+  if (now - lastUpdate < FRAME_INTERVAL) return; // skip until next frame
+  lastUpdate = now;
+
+  u8g2.clearBuffer();
+
+  switch (CurrentMageState) {
+    case IDLE:
+      // Idle animation (half frames)
+      if (MageDirection)  u8g2.drawXBMP(MagePosition,3,29,29,idle_right_allArray[(millis()/4) % 7]);
+      else                u8g2.drawXBMP(MagePosition,3,29,29,idle_left_allArray[(millis()/4) % 7]);
+
+      // 1 in 50 chance to stop idling (0-5 sec)
+      chance = (esp_random() % 50);
+      
+      if (chance == 0) {
+        // Generate random position for Mage to walk to
+        goalPosition = (esp_random() % (u8g2.getDisplayWidth()-29)); // 0 - screen width)
+        
+        if      (goalPosition < MagePosition)  CurrentMageState = RUN_LEFT;
+        else if (goalPosition > MagePosition)  CurrentMageState = RUN_RIGHT;
+      }
+      break;
+    case RUN_LEFT:
+      MageDirection = false;
+      
+      // Display animation frame
+      if (progress < 5) {
+        u8g2.drawXBMP(MagePosition,3,29,29,trans_left_allArray[progress]);      // Transition for first 5 frames
+        progress++;
+        MagePosition--;
+      }
+      else {
+        u8g2.drawXBMP(MagePosition,3,29,29,run_left_allArray[(progress-5)%6]);  // Rest of frames are running
+        progress++;
+        MagePosition-=3;
+      }
+
+      // Goal reached
+      if (MagePosition <= goalPosition) {
+        progress = 0;
+        CurrentMageState = IDLE;
+      }
+
+      break;
+    case RUN_RIGHT:
+      MageDirection = true;
+      
+      // Display animation frame
+      if (progress < 5) {
+        u8g2.drawXBMP(MagePosition,3,29,29,trans_right_allArray[progress]);      // Transition for first 5 frames
+        progress++;
+        MagePosition++;
+      }
+      else {
+        u8g2.drawXBMP(MagePosition,3,29,29,run_right_allArray[(progress-5)%6]);  // Rest of frames are running
+        progress++;
+        MagePosition+=3;
+      }             
+
+      // Goal reached
+      if (MagePosition >= goalPosition) {
+        progress = 0;
+        CurrentMageState = IDLE;
+      }
+      break;
+  }
+
+  u8g2.sendBuffer();
+}
+
 void processKB_HOME() {
   int currentMillis = millis();
 
@@ -276,7 +361,9 @@ void processKB_HOME() {
         //Make sure oled only updates at OLED_MAX_FPS
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          OLED().oledLine(currentLine, false);
+          //OLED().oledLine(currentLine, false);
+
+          mageIdle();
         }
       }
       break;

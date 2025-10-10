@@ -464,11 +464,17 @@ namespace pocketmage::time{
         }
 
         // Save current work:
-        pocketmage::file::saveFile();
+        //pocketmage::file::saveFile();
+        String savePath = editingFile;
+        if (savePath != "" && savePath != "-" && savePath != "/temp.txt") {
+            if (!savePath.startsWith("/")) savePath = "/" + savePath;
+            saveMarkdownFile(editingFile);
+        }
 
         switch (CurrentAppState) {
             case TXT:
             if (SLEEPMODE == "TEXT" && editingFile != "") {
+                /*
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
@@ -486,6 +492,7 @@ namespace pocketmage::time{
                 display.drawBitmap(320 - 86, 240 - 52, sleep1, 87, 52, GxEPD_BLACK);
 
                 // Put device to sleep with alternate sleep screen
+                */
                 pocketmage::power::deepSleep(true);
             } else
                 pocketmage::power::deepSleep();
@@ -513,7 +520,13 @@ namespace pocketmage::time{
 
         // Save current work:
         OLED().oledWord("Saving Work");
-        pocketmage::file::saveFile();
+        //pocketmage::file::saveFile();
+        String savePath = editingFile;
+        if (savePath != "" && savePath != "-" && savePath != "/temp.txt") {
+            if (!savePath.startsWith("/")) savePath = "/" + savePath;
+            saveMarkdownFile(editingFile);
+        }
+
 
         if (digitalRead(CHRG_SENS) == HIGH) {
         // Save last state
@@ -745,29 +758,20 @@ namespace pocketmage::power{
         // Initialize boot app if needed
         switch (CurrentAppState) {
         case HOME:
-            newState = true;
+            HOME_INIT();
             break;
         case TXT:
-            if (editingFile != "")
-            pocketmage::file::loadFile(false);
-            else {
-            stringToVector("");
-            }
-            CurrentKBState = NORMAL;
-            dynamicScroll = 0;
-            newLineAdded = true;
-            newState = false;
+            TXT_INIT(); // TODO: Does not work? Crash on startup
+            //HOME_INIT(); 
             break;
         case SETTINGS:
-            newState = true;
+            SETTINGS_INIT();
             break;
         case TASKS:
             TASKS_INIT();
             break;
         case USB_APP:
-            CurrentAppState = HOME;
-            CurrentKBState = NORMAL;
-            newState = true;
+            HOME_INIT();
             break;
         case CALENDAR:
             CALENDAR_INIT();

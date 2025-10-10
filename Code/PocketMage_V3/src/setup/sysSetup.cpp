@@ -45,4 +45,7 @@ void PocketMage_INIT(){
 
   // Set "random" seed
   randomSeed(analogRead(BAT_SENS));
+
+  // Load State
+  pocketmage::power::loadState();
 }
