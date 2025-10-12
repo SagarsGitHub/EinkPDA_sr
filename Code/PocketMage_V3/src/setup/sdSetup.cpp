@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 static constexpr const char* TAG = "SD";
 
@@ -20,7 +20,7 @@ void setupSD() {
     if (ALLOW_NO_MICROSD) {
       OLED().oledWord("All Work Will Be Lost!");
       delay(5000);
-      noSD = true;
+      SD().setNoSD(true);
     }
     else {
       OLED().oledWord("Insert SD Card and Reboot!");
@@ -68,10 +68,7 @@ void wireSD() {
     pm_sd.setFileSys(&SD_MMC);
     pm_sd.setOled(OLED());
     pm_sd.setEink(EINK());
-    pm_sd.setEditingFile(&editingFile);
     pm_sd.setFilesList(filesList);
-    pm_sd.setNoSD(&noSD);
-    pm_sd.setNoTimeout(&noTimeout);
 }
 
 // Access for other apps

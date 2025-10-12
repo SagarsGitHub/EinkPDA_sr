@@ -5,7 +5,7 @@
 //   888     888  888      888  8  `888'   888   888    "     //
 //   888     888  `88b    d88'  8    Y     888   888       o  //
 //  o888o   o888o  `Y8bood8P'  o8o        o888o o888ooooood8  //
-#include <pocketmage.h>
+#include <globals.h>
 #include "esp_log.h"
 
 static String currentLine = "";
@@ -25,9 +25,9 @@ void commandSelect(String command) {
   if (command.startsWith("-")) {
     command = removeChar(command, ' ');
     command = removeChar(command, '-');
-    keypad.disableInterrupts();
+    KB().disableInterrupts();
     SD().listDir(SD_MMC, "/");
-    keypad.enableInterrupts();
+    KB().enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
       String lowerFileName = filesList[i]; 
@@ -44,15 +44,15 @@ void commandSelect(String command) {
   if (command.startsWith("/")) {
     command = removeChar(command, ' ');
     command = removeChar(command, '/');
-    keypad.disableInterrupts();
+    KB().disableInterrupts();
     SD().listDir(SD_MMC, "/");
-    keypad.enableInterrupts();
+    KB().enableInterrupts();
 
     for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
       String lowerFileName = filesList[i]; 
       lowerFileName.toLowerCase();
       if (command == lowerFileName || (command+".txt") == lowerFileName || ("/"+command+".txt") == lowerFileName) {
-        editingFile = filesList[i];
+        SD().setEditingFile(filesList[i]);
         TXT_INIT();
         return;
       }

@@ -26,6 +26,10 @@
 #define CHRG_SENS     39
 #define RTC_INT       1 
 
+#ifndef POCKETMAGE_BUZZER_PIN
+#define POCKETMAGE_BUZZER_PIN 17
+#endif
+
 #define SPI_MOSI      14
 #define SPI_SCK       15
 

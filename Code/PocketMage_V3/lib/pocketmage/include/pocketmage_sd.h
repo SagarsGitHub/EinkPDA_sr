@@ -25,10 +25,7 @@ public:
   void setOled(PocketmageOled& oled)                    { oled_ = &oled;}  // reference reference to pocketmage oled object
   void setEink(PocketmageEink* eink)                     { eink_ = eink;}  // overloaded reference to pocketmage eink object (remove)
   void setEink(PocketmageEink& eink)                    { eink_ = &eink;}  // reference to pocketmage eink object
-  void setEditingFile(String* editingFile) { editingFile_ = editingFile;}  // reference to editingFile
   void setFilesList(String* filesList)          {filesList_ = filesList;}  // reference to filesList
-  void setNoSD(volatile bool* noSD)                       {noSD_ = noSD;}  // reference to noSD
-  void setNoTimeout(bool* noTimeout)            {noTimeout_ = noTimeout;}  // reference to noTimeout
 
   // Main methods  To Do: remove arguments for fs::FS &fs and reference internal fs::FS* instead
   void listDir(fs::FS &fs, const char *dirname);
@@ -38,6 +35,10 @@ public:
   void appendFile(fs::FS &fs, const char *path, const char *message);
   void renameFile(fs::FS &fs, const char *path1, const char *path2);
   void deleteFile(fs::FS &fs, const char *path);
+  void setNoSD(bool noSD) { noSD_ = noSD; };  // reference to noSD flag
+  bool getNoSD() { return noSD_; };
+  String getEditingFile() { return editingFile_; };
+  void setEditingFile(const String& file) { editingFile_ = file; };
 
 private:
   static constexpr const char*  tag               = "MAGE_SD";
@@ -50,12 +51,9 @@ private:
   String                        excludedFiles_[3] = { "/temp.txt", "/settings.txt", "/tasks.txt" };
 
   // App state
-  String*                       editingFile_      = nullptr;
+  String                       editingFile_      = "";
   String*                       filesList_        = nullptr;  // size MAX_FILES
-
-  // Flags / counters
-  volatile bool*                noSD_             = nullptr;
-  bool*                         noTimeout_        = nullptr; 
+  bool noSD_ = false;                    // No SD card present
 };
 
 void wireSD();

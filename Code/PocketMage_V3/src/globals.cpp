@@ -12,7 +12,7 @@ U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2(U8G2_R2, OLED_CS, OLED_DC, OLED_RST);
 // ===================== INPUT DEVICES =====================
 
 // Matrix keypad controller
-Adafruit_TCA8418 keypad;
+//Adafruit_TCA8418 keypad;
 // Key layouts
 /* migrated to pocketmage_kb.h
 char keysArray[4][10] = {
@@ -36,14 +36,8 @@ char keysArrayFN[4][10] = {
 */
 // Capacitive touch slider
 Adafruit_MPR121 cap = Adafruit_MPR121();
-volatile long int dynamicScroll = 0;         // Dynamic scroll offset
-volatile long int prev_dynamicScroll = 0;    // Previous scroll offset
-int lastTouch = -1;                          // Last touch event
-unsigned long lastTouchTime = 0;             // Last touch time
 
-// ===================== AUDIO =====================
-// Buzzer for sound feedback
-Buzzer buzzer(17);
+
 
 // ===================== RTC =====================
 // Real-time clock chip
@@ -80,14 +74,13 @@ String OTA4_APP;
 // volatile int einkRefresh = FULL_REFRESH_AFTER; // Partial/full refresh counter
 int OLEDFPSMillis = 0;            // Last OLED FPS update time
 int KBBounceMillis = 0;           // Last keyboard debounce time
-volatile int timeoutMillis = 0;   // Timeout tracking
-volatile int prevTimeMillis = 0;  // Previous time for timeout
-volatile bool TCA8418_event = false;  // Keypad interrupt event
+
+
 volatile bool PWR_BTN_event = false;  // Power button event
 volatile bool SHFT = false;           // Shift key state
 volatile bool FN = false;             // Function key state
 volatile bool newState = false;       // App state changed
-bool noTimeout = false;               // Disable timeout
+
 volatile bool OLEDPowerSave = false;  // OLED power save mode
 volatile bool disableTimeout = false; // Disable timeout globally
 volatile int battState = 0;           // Battery state
@@ -105,9 +98,8 @@ KBState CurrentKBState = NORMAL;  // Current keyboard state
 
 // ===================== FILES & TEXT =====================
 volatile bool SDCARD_INSERT = false;  // SD card inserted event
-bool noSD = false;                    // No SD card present
+
 volatile bool SDActive = false;       // SD card active
-String editingFile;                   // Currently edited file
 // const GFXfont *currentFont = (GFXfont *)&FreeSerif9pt7b; // Current font
 // uint8_t maxCharsPerLine = 0;          // Max chars per line (display)
 // uint8_t maxLines = 0;                 // Max lines per screen

@@ -5,7 +5,7 @@
 //       888         .8PY888.         888       //
 //       888        d8'  `888b        888       //
 //      o888o     o888o  o88888o     o888o      //
-#include <pocketmage.h>
+#include <globals.h>
 
 enum TXTState { TXT_, WIZ0, WIZ1, WIZ2, WIZ3, FONT };
 TXTState CurrentTXTState = TXT_;
@@ -17,11 +17,11 @@ static String currentLine = "";
 static volatile bool doFull = false;
 
 void TXT_INIT_OLD() {
-  if (editingFile != "") pocketmage::file::loadFile();
+  if (SD().getEditingFile() != "") pocketmage::file::loadFile();
   CurrentAppState = TXT;
   CurrentTXTState = TXT_;
   CurrentKBState  = NORMAL;
-  dynamicScroll = 0;
+  TOUCH().setDynamicScroll(0);
   newLineAdded = true;
 }
 
@@ -103,7 +103,7 @@ void processKB_TXT_OLD() {
         //SAVE Recieved
         else if (inchar == 6) {
           //File exists, save normally
-          if (editingFile != "" && editingFile != "-") {
+          if (SD().getEditingFile() != "" && SD().getEditingFile() != "-") {
             pocketmage::file::saveFile();
             CurrentKBState = NORMAL;
             newLineAdded = true;
@@ -148,9 +148,9 @@ void processKB_TXT_OLD() {
         if (currentMillis - OLEDFPSMillis >= (1000/60)) {
           OLEDFPSMillis = currentMillis;
           // ONLY SHOW OLEDLINE WHEN NOT IN SCROLL MODE
-          if (lastTouch == -1) {
+          if (TOUCH().getLastTouch() == -1) {
             OLED().oledLine(currentLine);
-            if (prev_dynamicScroll != dynamicScroll) prev_dynamicScroll = dynamicScroll;
+            if (TOUCH().getDiff() != 0) TOUCH().setDynamicScroll(TOUCH().getPrevDynamicScroll());
           }
           else OLED().oledScroll();
         }
@@ -203,7 +203,7 @@ void processKB_TXT_OLD() {
         else if (inchar >= '0' && inchar <= '9'){
           int fileIndex = (inchar == '0') ? 10 : (inchar - '0');
           //Edit a new file
-          if (filesList[fileIndex - 1] != editingFile) {
+          if (filesList[fileIndex - 1] != SD().getEditingFile()) {
             //Selected file does not exist, create a new one
             if (filesList[fileIndex - 1] == "-") {
               CurrentTXTState = WIZ3;
@@ -213,8 +213,8 @@ void processKB_TXT_OLD() {
             }
             //Selected file exists, prompt to save current file
             else {      
-              prevEditingFile = editingFile;
-              editingFile = filesList[fileIndex - 1];      
+              prevEditingFile = SD().getEditingFile();
+              SD().setEditingFile(filesList[fileIndex - 1]);      
               CurrentTXTState = WIZ1;
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
@@ -341,7 +341,7 @@ void processKB_TXT_OLD() {
           //Load new file
           pocketmage::file::loadFile();
 
-          keypad.enableInterrupts();
+          KB().enableInterrupts();
 
           //Return to TXT_
           CurrentTXTState = TXT_;
@@ -394,7 +394,7 @@ void processKB_TXT_OLD() {
         }
         //ENTER Recieved
         else if (inchar == 13) {                          
-          editingFile = "/" + currentWord + ".txt";
+          SD().setEditingFile("/" + currentWord + ".txt");
 
           //Save the file
           pocketmage::file::saveFile();
@@ -521,7 +521,7 @@ void einkHandler_TXT_OLD() {
         display.fillRect(60,0,200,218,GxEPD_WHITE);
         display.drawBitmap(60,0,fileWizLiteallArray[0],200,218, GxEPD_BLACK);
 
-        keypad.disableInterrupts();
+        KB().disableInterrupts();
         SD().listDir(SD_MMC, "/");
         keypad.enableInterrupts();
 

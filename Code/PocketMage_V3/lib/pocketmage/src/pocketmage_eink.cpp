@@ -6,7 +6,7 @@
 //   888       o          888   8       `888   888  `88b.   //
 //  o888ooooood8         o888o o8o        `8  o888o  o888o  //
 
-#include <pocketmage_eink.h>
+#include <pocketmage.h>
 
 static constexpr const char* tag = "EINK";
 
@@ -90,7 +90,7 @@ void PocketmageEink::setTXTFont(const GFXfont* font) {
   if (changed) computeFontMetrics_();
 }
 void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
-  if (!lines_ || !currentFont_ || !dynamicScroll_) return;
+  if (!lines_ || !currentFont_ || !TOUCH().getDynamicScroll()) return;
   
    // SET FONT
   setTXTFont(currentFont_);
@@ -101,7 +101,7 @@ void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
 
   if (displayLines > size) displayLines = size;
 
-  int scrollOffset = *dynamicScroll_;
+  int scrollOffset = TOUCH().getDynamicScroll();
   if (scrollOffset < 0) scrollOffset = 0;
   if (scrollOffset > size - displayLines) scrollOffset = size - displayLines;
   
@@ -128,7 +128,7 @@ void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
   }
   
 
-  drawStatusBar(String("L:") + String(lines_->size()) + " " + *editingFile_);
+  drawStatusBar(String("L:") + String(lines_->size()) + " " + SD().getEditingFile());
 }
 int PocketmageEink::countLines(const String& input, size_t maxLineLength) {
   size_t inputLength = input.length();

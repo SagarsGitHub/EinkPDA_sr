@@ -1,9 +1,9 @@
-#include <pocketmage_touch.h>
-#include <pocketmage_eink.h> 
+#include <pocketmage.h> 
 #include <Adafruit_MPR121.h>
-#include <config.h> // for TOUCH_TIMEOUT_MS
+
 
 static constexpr const char* tag = "TOUCH";
+
 
 void PocketmageTOUCH::updateScrollFromTouch() {
   uint16_t touched = cap_.touched();
@@ -15,22 +15,22 @@ void PocketmageTOUCH::updateScrollFromTouch() {
   unsigned long now = millis();
 
   if (newTouch != -1) {
-    if (*lastTouch_ != -1) {
-      int d = abs(newTouch - *lastTouch_);
+    if (lastTouch_ != -1) {
+      int d = abs(newTouch - lastTouch_);
       if (d <= 2) {
         int maxScroll = max(0, (int)allLines_->size() - eink_->maxLines());
-        if (newTouch > *lastTouch_) {
-          *dynamicScroll_ = min((long)(*dynamicScroll_ + 1), (long)maxScroll);
-        } else if (newTouch < *lastTouch_) {
-          *dynamicScroll_ = max((long)(*dynamicScroll_ - 1), 0L);
+        if (newTouch > lastTouch_) {
+          dynamicScroll_ = min((long)(dynamicScroll_ + 1), (long)maxScroll);
+        } else if (newTouch < lastTouch_) {
+          dynamicScroll_ = max((long)(dynamicScroll_ - 1), 0L);
         }
       }
     }
-    *lastTouch_ = newTouch;
-    *lastTouchTime_ = now;
-  } else if (*lastTouch_ != -1 && (now - *lastTouchTime_ > TOUCH_TIMEOUT_MS)) {
-    *lastTouch_ = -1;
-    if (*prev_dynamicScroll_ != *dynamicScroll_)
+    lastTouch_ = newTouch;
+    lastTouchTime_ = now;
+  } else if (lastTouch_ != -1 && (now - lastTouchTime_ > TOUCH_TIMEOUT_MS)) {
+    lastTouch_ = -1;
+    if (prev_dynamicScroll_ != dynamicScroll_)
       *newLineAdded_ = true;
   }
 }
@@ -78,12 +78,12 @@ bool PocketmageTOUCH::updateScroll(int maxScroll,ulong& lineScroll) {
     }
 
     lastTouchPos = touchPos;      // update tracked touch
-    *lastTouch_ = touchPos;         // <--- update UI flag
+    lastTouch_ = touchPos;         // <--- update UI flag
     lastTouchTime = currentTime;  // reset timeout
   } else if (lastTouchPos != -1 && (currentTime - lastTouchTime > TOUCH_TIMEOUT_MS)) {
     // Timeout: reset both
     lastTouchPos = -1;
-    *lastTouch_ = -1;  // <--- reset UI flag
+    lastTouch_ = -1;  // <--- reset UI flag
 
     if (prev_lineScroll != lineScroll) {
       updateScreen = true;

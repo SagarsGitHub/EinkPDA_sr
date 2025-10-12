@@ -13,6 +13,8 @@
 
 class String;
 
+extern bool noTimeout;               // Disable timeout
+
 extern bool rebootToPocketMage();
 // To Do: remove nested namespaces and default to pocketmage::method()
 // maybe: refactor pocketmage to be consistent with hardware classes in library (Pocketmage().method())

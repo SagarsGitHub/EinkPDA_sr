@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 // Initialization of capacative touch class
 static PocketmageTOUCH pm_touch(cap);
@@ -23,10 +23,6 @@ void wireTouch(){
   pm_touch.setAllLines(&allLines);
   pm_touch.setEink(EINK());
   pm_touch.setNewLineAdded(&newLineAdded);
-  pm_touch.setDynamicScroll(&dynamicScroll);
-  pm_touch.setPrevDynamicScroll(&prev_dynamicScroll);
-  pm_touch.setLastTouch(&lastTouch);
-  pm_touch.setLastTouchTime(&lastTouchTime);
 }
 
 // Access for other apps

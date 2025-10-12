@@ -1,10 +1,10 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 enum JournalState {J_MENU, J_TXT};
 JournalState CurrentJournalState = J_MENU;
 
 String currentJournal = "";
-String bufferEditingFile = editingFile;
+String bufferEditingFile = SD().getEditingFile();
 static String currentLine = "";
 static volatile bool doFull = false;
 
@@ -14,17 +14,17 @@ void JOURNAL_INIT() {
   EINK().forceSlowFullUpdate(true);
   newState = true;
   CurrentKBState = NORMAL;
-  bufferEditingFile = editingFile;
+  bufferEditingFile = SD().getEditingFile();
 }
 
 // File Operations
 void loadJournal() {
-  editingFile = currentJournal;
+  SD().setEditingFile(currentJournal);
   pocketmage::file::loadFile();
 }
 
 void saveJournal() {
-  editingFile = currentJournal;
+  SD().setEditingFile(currentJournal);
   pocketmage::file::saveFile();
 }
 
@@ -167,10 +167,10 @@ void JMENUCommand(String command) {
     currentJournal = fileName;
 
     // Load file
-    editingFile = currentJournal;
+    SD().setEditingFile(currentJournal);
     loadJournal();
 
-    dynamicScroll = 0;
+    TOUCH().setDynamicScroll(0);
     newLineAdded = true;
     CurrentJournalState = J_TXT;
 
@@ -191,10 +191,10 @@ void JMENUCommand(String command) {
     currentJournal = fileName;
 
     // Load file
-    editingFile = currentJournal;
+    SD().setEditingFile(currentJournal);
     loadJournal();
 
-    dynamicScroll = 0;
+    TOUCH().setDynamicScroll(0);
     newLineAdded = true;
     CurrentJournalState = J_TXT;
 
@@ -238,10 +238,10 @@ void JMENUCommand(String command) {
       currentJournal = fileName;
 
       // Load file
-      editingFile = currentJournal;
+      SD().setEditingFile(currentJournal);
       loadJournal();
 
-      dynamicScroll = 0;
+      TOUCH().setDynamicScroll(0);
       newLineAdded = true;
       CurrentJournalState = J_TXT;
 
@@ -298,7 +298,7 @@ void processKB_JOURNAL() {
         }
         // Home recieved
         else if (inchar == 12) {
-          editingFile = bufferEditingFile;
+          SD().setEditingFile(bufferEditingFile);
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
@@ -408,9 +408,9 @@ void processKB_JOURNAL() {
       if (currentMillis - OLEDFPSMillis >= (1000/60)) {
         OLEDFPSMillis = currentMillis;
         // ONLY SHOW OLEDLINE WHEN NOT IN SCROLL MODE
-        if (lastTouch == -1) {
+        if (TOUCH().getLastTouch() == -1) {
           OLED().oledLine(currentLine);
-          if (prev_dynamicScroll != dynamicScroll) prev_dynamicScroll = dynamicScroll;
+          TOUCH().setDynamicScroll(TOUCH().getPrevDynamicScroll());
         }
         else OLED().oledScroll();
       }

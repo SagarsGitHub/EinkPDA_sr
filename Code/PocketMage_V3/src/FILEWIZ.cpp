@@ -5,7 +5,7 @@
 //   888    "     888   888          888    "        `888.8'  `888.8'      888     .888P       //
 //   888          888   888       o  888       o      `888'    `888'       888    d888'    .P  //
 //  o888o        o888o o888ooooood8 o888ooooood8       `8'      `8'       o888o .8888888888P   //
-#include <pocketmage.h>
+#include <globals.h>
 
 
 enum FileWizState { WIZ0_, WIZ1_, WIZ1_YN, WIZ2_R, WIZ2_C, WIZ3_ };
@@ -568,9 +568,9 @@ void einkHandler_FILEWIZ() {
         display.drawBitmap(0, 0, fileWizardallArray[0], 320, 218, GxEPD_BLACK);
 
         // DRAW FILE LIST
-        keypad.disableInterrupts();
+        KB().disableInterrupts();
         SD().listDir(SD_MMC, "/");
-        keypad.enableInterrupts();
+        KB().enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {
           display.setCursor(30, 54+(17*i));

@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include <GxEPD2_BW.h>
 #include <U8g2lib.h>
-#include <Adafruit_TCA8418.h>
+
 #include <vector>
 #include <Buzzer.h>
 #include <USB.h>
@@ -20,7 +20,7 @@
 #include <freertos/task.h>
 #include <assets.h>
 #include <config.h>
-
+#include <pocketmage.h>
 /* // migrated to pocketmage_eink.h
 // FONTS
 // 3x7
@@ -56,22 +56,11 @@ extern GxEPD2_BW<GxEPD2_310_GDEQ031T10, GxEPD2_310_GDEQ031T10::HEIGHT> display;
 extern U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2;
 
 // ===================== INPUT DEVICES =====================
-// Keypad controller
-extern Adafruit_TCA8418 keypad; // Matrix keypad
-extern char keysArray[4][10];       // Normal key layout
-extern char keysArraySHFT[4][10];   // Shift key layout
-extern char keysArrayFN[4][10];     // Function key layout
+
 
 // Touch slider (capacitive)
 extern Adafruit_MPR121 cap; // Touch slider
-extern volatile long int dynamicScroll;      // Dynamic scroll offset
-extern volatile long int prev_dynamicScroll; // Previous scroll offset
-extern int lastTouch;                        // Last touch event
-extern unsigned long lastTouchTime;          // Last touch time
 
-// ===================== AUDIO =====================
-// Buzzer for sound feedback
-extern Buzzer buzzer;
 
 // ===================== RTC =====================
 // Real-time clock
@@ -107,14 +96,8 @@ extern String OTA4_APP;
 // extern volatile int einkRefresh;     // Partial/full refresh counter
 extern int OLEDFPSMillis;            // Last OLED FPS update time
 extern int KBBounceMillis;           // Last keyboard debounce time
-extern volatile int timeoutMillis;   // Timeout tracking
-extern volatile int prevTimeMillis;  // Previous time for timeout
-extern volatile bool TCA8418_event;  // Keypad interrupt event
 extern volatile bool PWR_BTN_event;  // Power button event
-extern volatile bool SHFT;           // Shift key state
-extern volatile bool FN;             // Function key state
 extern volatile bool newState;       // App state changed
-extern bool noTimeout;               // Disable timeout
 extern volatile bool OLEDPowerSave;  // OLED power save mode
 extern volatile bool disableTimeout; // Disable timeout globally
 extern volatile int battState;       // Battery state
@@ -127,11 +110,10 @@ extern TaskHandle_t einkHandlerTaskHandle; // E-Ink handler task
 // ===================== KEYBOARD STATE =====================
 // extern char currentKB[4][10];        // Current keyboard layout
 extern volatile bool SDCARD_INSERT;  // SD card inserted event
-extern bool noSD;                    // No SD card present
+
 extern volatile bool SDActive;       // SD card active
 
 // ===================== FILES & TEXT =====================
-extern String editingFile;           // Currently edited file
 //extern const GFXfont *currentFont;   // Current font
 //extern uint8_t maxCharsPerLine;      // Max chars per line (display)
 //extern uint8_t maxLines;             // Max lines per screen

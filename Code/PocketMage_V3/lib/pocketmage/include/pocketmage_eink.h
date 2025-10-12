@@ -40,8 +40,6 @@ public:
 
   // Wire up external buffers/state used to read from globals
   void setTextBuffer(std::vector<String>* lines)                            { lines_ = lines; };               // reference to allLines
-  void setEditingFilePtr(String* editingFile)                   { editingFile_ = editingFile; };               // reference to editingFile string
-  void setDynamicScroll(volatile long* dynamicScroll)       { dynamicScroll_ = dynamicScroll; };     // reference to dynamicScroll
   void setLineSpacing(uint8_t lineSpacing)                      { lineSpacing_ = lineSpacing; };                                 // reference to lineSpacing (default 6)
   void setFullRefreshAfter(uint8_t fullRefreshAfter)  { fullRefreshAfter_ = fullRefreshAfter; };                              // reference to FULL_REFRESH_AFTER (default 5)
   void setCurrentFont(const GFXfont* font){
@@ -75,9 +73,7 @@ private:
   uint8_t               fullRefreshAfter_     = FULL_REFRESH_AFTER;
 
   std::vector<String>*  lines_                = nullptr;
-  String*               editingFile_          = nullptr;
 
-  volatile long*        dynamicScroll_        = nullptr;
 
   // font metrics
   uint8_t               lineSpacing_          = 6;

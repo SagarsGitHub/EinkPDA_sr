@@ -5,7 +5,7 @@
 //  888      888  888          888    "     888      888  //
 //  `88b    d88'  888       o  888       o  888     d88'  //
 //   `Y8bood8P'  o888ooooood8 o888ooooood8 o888bood8P'    //     
-#include <pocketmage.h>
+#include <globals.h>
 #include <U8g2lib.h>
 #include <GxEPD2_BW.h>
 #include <RTClib.h>
@@ -39,10 +39,7 @@ void setupOled() {
 // add any global references here + add set function to class header file
 void wireOled() {
   pm_oled.setAllLines(&allLines);
-  pm_oled.setDynamicScroll(&dynamicScroll);
   pm_oled.setBattery(&battState, batt_allArray, kBattIconCount);
-  // lamda to avoid redundant functions To Do: kb state getter stored in pocketmage_kb
-  pm_oled.setKeyboardStateGetter([]{ return static_cast<int>(CurrentKBState); });
   pm_oled.setMSC(&mscEnabled);
   pm_oled.setSD(&SDActive);
   pm_oled.setScrollBitmap(scrolloled0);

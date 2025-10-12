@@ -6,7 +6,7 @@
 //       888        d8'  `888b        888       //
 //      o888o     o888o  o88888o     o888o      //
 
-#include <pocketmage.h>
+#include <globals.h>
 
 // Font includes
 // Mono
@@ -1078,7 +1078,7 @@ void refreshAllLineIndexes() {
 
 // Load File
 void loadMarkdownFile(const String& path) {
-  if (noSD) {
+  if (SD().getNoSD()) {
     OLED().oledWord("LOAD FAILED - No SD!");
     delay(5000);
     return;
@@ -1226,7 +1226,7 @@ void editAppend(char inchar) {
   // TAB Recieved
   else if (inchar == 9) {
     // If scrolling, edit inline
-    if (lastTouch != -1) {
+    if (TOUCH().getLastTouch() != -1) {
     }
 
   }
@@ -1464,12 +1464,12 @@ void editAppend(char inchar) {
   if (currentMillis - OLEDFPSMillis >= (1000 / 60)) {
     OLEDFPSMillis = currentMillis;
     // Show line on OLED when not actively scrolling
-    if (lastTouch == -1) {
+    if (TOUCH().getLastTouch() == -1) {
       bool currentlyTyping = (millis() - lastTypeMillis < TYPE_INTERFACE_TIMEOUT);
 
       // Flush KB IC if not in use
       if (!currentlyTyping)
-        keypad.flush();
+        KB().flush();
 
       int lineWidth = getLineWidth(*lastLine, editingDocLine.style);
 

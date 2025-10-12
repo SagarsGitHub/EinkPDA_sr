@@ -1,7 +1,7 @@
 // PocketMage V3.0
 // @Ashtf 2025
 
-#include <pocketmage.h>
+#include <globals.h>
 
 static constexpr const char* TAG = "MAIN"; // TODO: Come up with a better tag
 

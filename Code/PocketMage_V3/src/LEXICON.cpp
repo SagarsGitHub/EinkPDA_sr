@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 enum LexState {MENU, DEF};
 LexState CurrentLexState = MENU;
@@ -26,7 +26,7 @@ void loadDefinitions(String word) {
 
   defList.clear();  // Clear previous results
 
-  if (word.length() == 0 || noSD) return;
+  if (word.length() == 0 || SD().getNoSD()) return;
 
   char firstChar = tolower(word[0]);
   if (firstChar < 'a' || firstChar > 'z') return;

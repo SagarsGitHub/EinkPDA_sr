@@ -36,7 +36,6 @@ public:
   using MaxCharsFn = std::function<uint16_t()>;
 
   void setAllLines(std::vector<String>* lines)                        { lines_ = lines;}
-  void setDynamicScroll(volatile long* scroll)               { dynamicScroll_ = scroll;}
   void setReferenceWidth(uint16_t w)                                   { refWidth_ = w;}  // E-ink measurement
   void setMeasureTextWidth(MeasureTextFn fn)                { measure_ = std::move(fn);}  // function for measuring text width in e-ink pixels
   void setBattery(volatile int* st, const uint8_t* const* icons, int iconCount) {         // Battery icon/state
@@ -44,8 +43,7 @@ public:
     battIcons_ = icons;
     battIconCount_ = iconCount;
   }
-  void setKeyboardState(int* kbState)                             { kbState_ = kbState;}      // Keyboard state: 0=NORMAL, 1=SHIFT, 2=FUNC
-  void setKeyboardStateGetter(KbStateFn fn)               { kbStateFn_ = std::move(fn);}
+
   void setClock(RTC_PCF8563* rtc, bool* systemClock, bool* showYear, const char (*days)[12])   
   {rtc_ = rtc; systemClock_ = systemClock; showYear_ = showYear; days_ = days;}               // Clock
   void setMSC(bool* mscEnabled)                             { mscEnabled_ = mscEnabled;}      // Flags
@@ -63,14 +61,11 @@ private:
   U8G2                  &u8g2_;        // class reference to hardware oled object
 
   std::vector<String>*  lines_         = nullptr;
-  volatile long*        dynamicScroll_ = nullptr;
 
   volatile int*         battState_     = nullptr;
   const uint8_t* const* battIcons_     = nullptr;
   int                   battIconCount_ = 0;
 
-  int*                  kbState_       = nullptr;
-  KbStateFn             kbStateFn_;
 
   RTC_PCF8563*          rtc_           = nullptr;
   bool*                 systemClock_   = nullptr;
@@ -87,7 +82,6 @@ private:
   MaxCharsFn            maxCharsFn_;   // measure   
   // helpers
   uint16_t strWidth(const String& s) const;
-  int currentKbState() const;
 };
 
 void wireOled();

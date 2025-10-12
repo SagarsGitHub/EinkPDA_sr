@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 #include <ESP32-targz.h>
 #include <Update.h>
 #include "esp_ota_ops.h"
