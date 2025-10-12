@@ -38,14 +38,24 @@ void setupSD() {
 
   setCpuFrequencyMhz(240);
   // Create folders and files if needed
-  if (!SD_MMC.exists("/sys"))               SD_MMC.mkdir( "/sys"          );
-  if (!SD_MMC.exists("/notes"))             SD_MMC.mkdir( "/notes"        );
-  if (!SD_MMC.exists("/journal"))           SD_MMC.mkdir( "/journal"      );
-  if (!SD_MMC.exists("/dict"))              SD_MMC.mkdir( "/dict"         );
-  if (!SD_MMC.exists("/apps"))              SD_MMC.mkdir( "/apps"         );
-  if (!SD_MMC.exists("/apps/temp"))         SD_MMC.mkdir( "/apps/temp"    );
-  if (!SD_MMC.exists("/screensavers"))      SD_MMC.mkdir( "/screensavers" );
-  if (!SD_MMC.exists("/notes"))             SD_MMC.mkdir( "/notes"        );
+  if (!SD_MMC.exists("/sys"))                 SD_MMC.mkdir( "/sys"                );
+  if (!SD_MMC.exists("/notes"))               SD_MMC.mkdir( "/notes"              );
+  if (!SD_MMC.exists("/journal"))             SD_MMC.mkdir( "/journal"            );
+  if (!SD_MMC.exists("/dict"))                SD_MMC.mkdir( "/dict"               );
+  if (!SD_MMC.exists("/apps"))                SD_MMC.mkdir( "/apps"               );
+  if (!SD_MMC.exists("/apps/temp"))           SD_MMC.mkdir( "/apps/temp"          );
+  if (!SD_MMC.exists("/screensavers"))        SD_MMC.mkdir( "/screensavers"       );
+  if (!SD_MMC.exists("/notes"))               SD_MMC.mkdir( "/notes"              );
+  if (!SD_MMC.exists("/assets"))              SD_MMC.mkdir( "/assets"             );
+  if (!SD_MMC.exists("/assets/backgrounds"))  SD_MMC.mkdir( "/assets/backgrounds" );
+
+  if (!SD_MMC.exists("/assets/backgrounds/HOWTOADDBACKGROUNDS.txt")) {
+    File f = SD_MMC.open("/assets/backgrounds/HOWTOADDBACKGROUNDS.txt", FILE_WRITE);
+    if (f) {
+      f.print("How to add custom backgrounds:\n1. Make a background that is 1 bit (black OR white) and 320x240 pixels.\n2. Export your background as a .bmp file.\n3. Use image2cpp to convert your image to a .bin file. Use the settings: Invert Image Colors (TRUE), Swap Bits in Byte (FALSE). Select the \"Download as Binary File (.bin)\" button.\n4. Place the .bin file in this folder.\n5. Enjoy your new custom wallpapers!");
+      f.close();
+    }
+  }
   
   if (!SD_MMC.exists("/sys/events.txt")) {
     File f = SD_MMC.open("/sys/events.txt", FILE_WRITE);

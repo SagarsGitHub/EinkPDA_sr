@@ -203,10 +203,7 @@ void processKB_USB() {
     // Home recieved
     else if (inchar == 12 || inchar == 8 || inchar == 19 || inchar == 28|| inchar == 12) {
       USBAppShutdown();
-      CurrentAppState = HOME;
-      currentLine     = "";
-      newState        = true;
-      CurrentKBState  = NORMAL;
+      HOME_INIT();
     }
   }
 }

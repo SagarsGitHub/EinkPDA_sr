@@ -650,12 +650,50 @@ namespace pocketmage::power{
     BZ().playJingle(Jingles::Shutdown);
 
     if (alternateScreenSaver == false) {
-        int numScreensavers = sizeof(ScreenSaver_allArray) / sizeof(ScreenSaver_allArray[0]);
-        int randomScreenSaver_ = esp_random() % numScreensavers;
+        SDActive = true;
+        setCpuFrequencyMhz(240);
+        delay(50);
 
-        // display.setPartialWindow(0, 0, 320, 60);
+        // Check if there are custom screensavers
+        File dir = SD_MMC.open("/assets/backgrounds");
+        std::vector<String> binFiles;
+
+        if (dir) {
+            File file;
+            while ((file = dir.openNextFile())) {
+                String name = file.name();
+                if (name.endsWith(".bin")) binFiles.push_back(name);
+                file.close();
+            }
+            dir.close();
+        }
+
         display.setFullWindow();
-        display.drawBitmap(0, 0, ScreenSaver_allArray[randomScreenSaver_], 320, 240, GxEPD_BLACK);
+
+        // Use custom screensavers
+        if (!binFiles.empty()) {
+            String path = "/assets/backgrounds/" + binFiles[esp_random() % binFiles.size()];
+            File f = SD_MMC.open(path);
+            if (f) {
+                static uint8_t buf[320 * 240]; // Declare as static to avoid stack overflow :D
+                f.read(buf, sizeof(buf));
+                f.close();
+
+                display.drawBitmap(0, 0, buf, 320, 240, GxEPD_BLACK);
+            }
+        }
+        // Use standard screensavers
+        else {
+            int numScreensavers = sizeof(ScreenSaver_allArray) / sizeof(ScreenSaver_allArray[0]);
+            int randomScreenSaver_ = esp_random() % numScreensavers;
+
+            display.drawBitmap(0, 0, ScreenSaver_allArray[randomScreenSaver_], 320, 240, GxEPD_BLACK);
+        }
+
+
+        if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
+        SDActive = false;
+
         EINK().multiPassRefresh(2);
     } else {
         // Display alternate screensaver
