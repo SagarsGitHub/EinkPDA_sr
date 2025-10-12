@@ -8,13 +8,19 @@
 #include <pocketmage.h>
 #include "esp_log.h"
 
+#define IDLE_TIME 10000 // time to wait for idle (ms)
+
 static String currentLine = "";
+static bool resetIdleAnim = false; 
+
+long lastInput = 0;
 
 void HOME_INIT() {
   CurrentAppState = HOME;
   currentLine     = "";
   CurrentKBState  = NORMAL;
   CurrentHOMEState = HOME_HOME;
+  lastInput = millis();
   newState = true;
 }
 
@@ -218,7 +224,11 @@ void drawThickLine(int x0, int y0, int x1, int y1, int thickness) {
   }
 }
 
-void mageIdle() {
+void resetIdle() {
+  resetIdleAnim = true;
+}
+
+void mageIdle(bool internalRefresh) {
   enum MageState { IDLE, RUN_LEFT, RUN_RIGHT};
   static MageState CurrentMageState = RUN_RIGHT;
 
@@ -226,23 +236,39 @@ void mageIdle() {
   static bool MageDirection = true; // T:right, F:left
   static int goalPosition = 30;
   static int progress = 0;
+  static long internalMillis = 0;
+  static int runSpeed = 3;
 
   uint32_t chance = 1;
+
+  if (resetIdleAnim) {
+    MagePosition = -30;
+    MageDirection = true;
+    goalPosition = 30;
+    progress = 0;
+    chance = 1;
+    internalMillis = 0;
+    runSpeed = 3;
+
+    resetIdleAnim = false;
+  }
   
   // Frame rate control
   const uint32_t FRAME_INTERVAL = 100; // milliseconds per frame (e.g., 10 FPS = 100 ms)
   static uint32_t lastUpdate = 0;
-  uint32_t now = millis();
-  if (now - lastUpdate < FRAME_INTERVAL) return; // skip until next frame
-  lastUpdate = now;
+  internalMillis++;
 
-  u8g2.clearBuffer();
+  if (millis() - lastUpdate < FRAME_INTERVAL) return; // skip until next frame
+  lastUpdate = millis();
+
+  if (internalRefresh) u8g2.clearBuffer();
+  u8g2.setBitmapMode(1);
 
   switch (CurrentMageState) {
     case IDLE:
       // Idle animation (half frames)
-      if (MageDirection)  u8g2.drawXBMP(MagePosition,3,29,29,idle_right_allArray[(millis()/4) % 7]);
-      else                u8g2.drawXBMP(MagePosition,3,29,29,idle_left_allArray[(millis()/4) % 7]);
+      if (MageDirection)  u8g2.drawXBMP(MagePosition,-1,29,29,idle_right_allArray[(internalMillis/4) % 7]);
+      else                u8g2.drawXBMP(MagePosition,-1,29,29,idle_left_allArray[(internalMillis/4) % 7]);
 
       // 1 in 50 chance to stop idling (0-5 sec)
       chance = (esp_random() % 50);
@@ -250,6 +276,9 @@ void mageIdle() {
       if (chance == 0) {
         // Generate random position for Mage to walk to
         goalPosition = (esp_random() % (u8g2.getDisplayWidth()-29)); // 0 - screen width)
+
+        // Generate random run speed 2-4
+        runSpeed = (esp_random() % 3) + 2;
         
         if      (goalPosition < MagePosition)  CurrentMageState = RUN_LEFT;
         else if (goalPosition > MagePosition)  CurrentMageState = RUN_RIGHT;
@@ -260,14 +289,14 @@ void mageIdle() {
       
       // Display animation frame
       if (progress < 5) {
-        u8g2.drawXBMP(MagePosition,3,29,29,trans_left_allArray[progress]);      // Transition for first 5 frames
+        u8g2.drawXBMP(MagePosition,-1,29,29,trans_left_allArray[progress]);      // Transition for first 5 frames
         progress++;
         MagePosition--;
       }
       else {
-        u8g2.drawXBMP(MagePosition,3,29,29,run_left_allArray[(progress-5)%6]);  // Rest of frames are running
+        u8g2.drawXBMP(MagePosition,-1,29,29,run_left_allArray[(progress-5)%6]);  // Rest of frames are running
         progress++;
-        MagePosition-=3;
+        MagePosition-=runSpeed;
       }
 
       // Goal reached
@@ -282,14 +311,14 @@ void mageIdle() {
       
       // Display animation frame
       if (progress < 5) {
-        u8g2.drawXBMP(MagePosition,3,29,29,trans_right_allArray[progress]);      // Transition for first 5 frames
+        u8g2.drawXBMP(MagePosition,-1,29,29,trans_right_allArray[progress]);      // Transition for first 5 frames
         progress++;
         MagePosition++;
       }
       else {
-        u8g2.drawXBMP(MagePosition,3,29,29,run_right_allArray[(progress-5)%6]);  // Rest of frames are running
+        u8g2.drawXBMP(MagePosition,-1,29,29,run_right_allArray[(progress-5)%6]);  // Rest of frames are running
         progress++;
-        MagePosition+=3;
+        MagePosition+=runSpeed;
       }             
 
       // Goal reached
@@ -300,7 +329,10 @@ void mageIdle() {
       break;
   }
 
-  u8g2.sendBuffer();
+  if (internalRefresh) {
+    OLED().infoBar();
+    u8g2.sendBuffer();
+  }
 }
 
 void processKB_HOME() {
@@ -310,6 +342,9 @@ void processKB_HOME() {
     case HOME_HOME:
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         char inchar = KB().updateKeypress();
+
+        if (inchar != 0) lastInput = millis();
+
         // HANDLE INPUTS
         //No char recieved
         if (inchar == 0);   
@@ -361,9 +396,14 @@ void processKB_HOME() {
         //Make sure oled only updates at OLED_MAX_FPS
         if (currentMillis - OLEDFPSMillis >= (1000/OLED_MAX_FPS)) {
           OLEDFPSMillis = currentMillis;
-          //OLED().oledLine(currentLine, false);
 
-          mageIdle();
+          if (millis() - lastInput > IDLE_TIME) {
+            mageIdle(true);
+          }
+          else {
+            resetIdle();
+            OLED().oledLine(currentLine, false);
+          }
         }
       }
       break;

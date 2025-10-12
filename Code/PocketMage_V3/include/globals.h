@@ -241,6 +241,8 @@ void saveMarkdownFile(const String& path);
 void HOME_INIT();
 void einkHandler_HOME();
 void processKB_HOME();
+void mageIdle(bool internalRefresh = true);
+void resetIdle();
 
 // <TASKS.cpp>
 void TASKS_INIT();
