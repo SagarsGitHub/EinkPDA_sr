@@ -298,11 +298,7 @@ void processKB_JOURNAL() {
         }
         // Home recieved
         else if (inchar == 12) {
-          editingFile = bufferEditingFile;
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }
         else {
           currentLine += inchar;

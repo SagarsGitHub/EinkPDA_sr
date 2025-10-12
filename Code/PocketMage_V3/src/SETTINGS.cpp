@@ -258,10 +258,7 @@ void processKB_settings() {
         }
         // Home recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }
         else {
           currentLine += inchar;

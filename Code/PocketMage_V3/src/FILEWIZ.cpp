@@ -79,7 +79,6 @@ String renderWizMini(String folder, int8_t scrollDelta) {
   if (folder != prevFolder) {
     SDActive = true;
     setCpuFrequencyMhz(240);
-    delay(50);
 
     scroll = 0;
     scrollDelta = 0;
@@ -130,7 +129,7 @@ String renderWizMini(String folder, int8_t scrollDelta) {
   }
 
   // Reload directory if file changed
-  if (refreshFiles) {
+  /*if (refreshFiles) {
     SDActive = true;
     setCpuFrequencyMhz(240);
     delay(50);
@@ -140,7 +139,7 @@ String renderWizMini(String folder, int8_t scrollDelta) {
     if (SAVE_POWER)
     setCpuFrequencyMhz(POWER_SAVE_FREQ);
     SDActive = false;
-  }
+  }*/
 
   // Empty folder
   if (cachedFiles.empty()) {
@@ -596,8 +595,10 @@ void einkHandler_FILEWIZ() {
         display.drawBitmap(0, 0, fileWizardallArray[0], 320, 218, GxEPD_BLACK);
 
         // DRAW FILE LIST
+
+        // TODO: Replace this with displaying the 10 most recent files from SDMMC_META
         keypad.disableInterrupts();
-        SD().listDir(SD_MMC, "/");
+        SD().listDir(SD_MMC, "/notes");
         keypad.enableInterrupts();
 
         for (int i = 0; i < MAX_FILES; i++) {

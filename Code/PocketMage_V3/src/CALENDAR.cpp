@@ -890,10 +890,7 @@ void processKB_CALENDAR() {
         if (inchar == 0);  
         // HOME Recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }  
         //CR Recieved
         else if (inchar == 13) {                          
@@ -962,10 +959,7 @@ void processKB_CALENDAR() {
         if (inchar == 0);  
         // HOME Recieved
         else if (inchar == 12) {
-          CurrentAppState = HOME;
-          currentLine     = "";
-          newState        = true;
-          CurrentKBState  = NORMAL;
+          HOME_INIT();
         }  
         //CR Recieved
         else if (inchar == 13) {                          
