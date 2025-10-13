@@ -52,3 +52,6 @@ String vectorToString();
 void stringToVector(String inputText);
 String removeChar(String str, char character);
 int stringToInt(String str);
+extern volatile bool newLineAdded;           // New line added in TXT
+extern std::vector<String> allLines;                // All lines in TXT
+extern bool noTimeout;               // Disable timeout

@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 #include <ESP32-targz.h>
 #include <Update.h>
 #include "esp_ota_ops.h"
@@ -425,7 +425,7 @@ void APPLOADER_INIT() {
   currentLine = "";
   CurrentAppState = APPLOADER;
   CurrentAppLoaderState = MENU;
-  CurrentKBState  = NORMAL;
+  KB().setKeyboardState(NORMAL);
   newState = true;
 }
 
@@ -460,19 +460,19 @@ void processKB_APPLOADER() {
             selectedSlot = 4;
           }
           CurrentAppLoaderState = SWAP_OR_EDIT;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
 
           currentLine = "";
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -495,8 +495,8 @@ void processKB_APPLOADER() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 

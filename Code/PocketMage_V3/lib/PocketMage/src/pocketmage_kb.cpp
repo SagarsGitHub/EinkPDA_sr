@@ -5,8 +5,8 @@
 // 88     88  88           88     88    .88 Y8.   .8P 88     88   88     88 88    .8P //
 // dP     dP  88888888P    dP     88888888P  `8888P'  88     88   dP     dP 8888888P  //
                     
-#include <pocketmage_kb.h>
-#include <Adafruit_TCA8418.h>
+#include <pocketmage.h>
+
 #pragma region keymaps
 
 // ===================== Keymaps =====================
@@ -34,16 +34,51 @@ char keysArrayFN[4][10] = {
 
 static constexpr const char* tag = "KB";
 
+Adafruit_TCA8418 keypad;
+// To Do:
+// make currentKBState a member of PocketmageKB and change all references in main apps/libraries
+
+// Initialization of kb class
+static PocketmageKB pm_kb(keypad);
+
+static constexpr const char* TAG = "KEYBOARD";
+
+void IRAM_ATTR KB_irq_handler() { KB().setTCA8418Event(); }
+
+// Setup for keyboard class
+void setupKB(int KB_irq_pin) {
+  if (!keypad.begin(TCA8418_DEFAULT_ADDR, &Wire)) {
+    ESP_LOGE(TAG, "Error Initializing the Keyboard");
+    OLED().oledWord("Keyboard INIT Failed");
+    delay(1000);
+    while (1);
+  }
+  keypad.matrix(4, 10);
+  wireKB();
+  attachInterrupt(digitalPinToInterrupt(KB_irq_pin), KB_irq_handler, FALLING);
+  keypad.flush();
+  keypad.enableInterrupts();
+}
+
+// Wire function for keyboard class
+// add any global references here + add set function to class header file
+void wireKB() {
+}
+
+// Access for other apps
+PocketmageKB& KB() { return pm_kb; }
+
+
 // ===================== public functions =====================
 char PocketmageKB::updateKeypress() {
-  if ((TCA8418_event_) && (*TCA8418_event_ == true)) {
+  if (TCA8418_event_ == true) {
     int k = keypad_.getEvent();
     
     //  try to clear the IRQ flag
     //  if there are pending events it is not cleared
     keypad_.writeRegister(TCA8418_REG_INT_STAT, 1);
     int intstat = keypad_.readRegister(TCA8418_REG_INT_STAT);
-    if ((intstat & 0x01) == 0) *TCA8418_event_ = false;
+    if ((intstat & 0x01) == 0) TCA8418_event_ = false;
 
     if (k & 0x80) {   //Key pressed, not released
       k &= 0x7F;
@@ -54,7 +89,7 @@ char PocketmageKB::updateKeypress() {
         if (prevTimeMillis_) *prevTimeMillis_ = millis();
 
         //Return Key
-        switch (currentKbState()) {
+        switch (kbState_) {
           case 0:
             return keysArray[k/10][k%10];
           case 1:
@@ -70,17 +105,4 @@ char PocketmageKB::updateKeypress() {
 
   return 0;
 
-}
-
-// ===================== private functions =====================
-int PocketmageKB::currentKbState() const {
-  if (kbStateFn_) return kbStateFn_();
-  if (kbState_)   return *kbState_;
-  return 0;
-}
-
-// ===================== ISR =====================
-// Interrupt handler stored in IRAM for fast interrupt response
-void IRAM_ATTR PocketmageKB::TCA8418_irq() {
-  if (TCA8418_event_) *TCA8418_event_ = true;
 }

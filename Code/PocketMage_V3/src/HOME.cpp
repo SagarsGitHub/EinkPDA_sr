@@ -5,7 +5,7 @@
 //   888     888  888      888  8  `888'   888   888    "     //
 //   888     888  `88b    d88'  8    Y     888   888       o  //
 //  o888o   o888o  `Y8bood8P'  o8o        o888o o888ooooood8  //
-#include <pocketmage.h>
+#include <globals.h>
 #include "esp_log.h"
 
 #define IDLE_TIME 10000 // time to wait for idle (ms)
@@ -18,7 +18,7 @@ long lastInput = 0;
 void HOME_INIT() {
   CurrentAppState = HOME;
   currentLine     = "";
-  CurrentKBState  = NORMAL;
+  KB().setKeyboardState(NORMAL);
   CurrentHOMEState = HOME_HOME;
   lastInput = millis();
   newState = true;
@@ -35,11 +35,11 @@ void commandSelect(String command) {
     SD().listDir(SD_MMC, "/");
     keypad.enableInterrupts();
 
-    for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
-      String lowerFileName = filesList[i]; 
+    for (uint8_t i = 0; i < MAX_FILES; i++) {
+      String lowerFileName = SD().getFilesListIndex(i);
       lowerFileName.toLowerCase();
       if (command == lowerFileName || (command+".txt") == lowerFileName || ("/"+command+".txt") == lowerFileName) {
-        workingFile = filesList[i];
+        SD().setWorkingFile(SD().getFilesListIndex(i));
         FILEWIZ_INIT();
         return;
       }
@@ -54,11 +54,11 @@ void commandSelect(String command) {
     SD().listDir(SD_MMC, "/");
     keypad.enableInterrupts();
 
-    for (uint8_t i = 0; i < (sizeof(filesList) / sizeof(filesList[0])); i++) {
-      String lowerFileName = filesList[i]; 
+    for (uint8_t i = 0; i < MAX_FILES; i++) {
+      String lowerFileName = SD().getFilesListIndex(i);
       lowerFileName.toLowerCase();
       if (command == lowerFileName || (command+".txt") == lowerFileName || ("/"+command+".txt") == lowerFileName) {
-        editingFile = filesList[i];
+        SD().setEditingFile(SD().getFilesListIndex(i));
         TXT_INIT();
         return;
       }
@@ -83,7 +83,7 @@ void commandSelect(String command) {
       else if (roll == 1) OLED().oledWord("D" + String(sides) + ": " + String(roll) + " :(");
       else                OLED().oledWord("D" + String(sides) + ": " + String(roll));
       delay(3000);
-      CurrentKBState = NORMAL;
+      KB().setKeyboardState(NORMAL);
     }
   }
 
@@ -355,13 +355,13 @@ void processKB_HOME() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -372,7 +372,7 @@ void processKB_HOME() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setKeyboardState(NORMAL);
         }
         //ESC / CLEAR Recieved
         else if (inchar == 20) {                                  
@@ -387,8 +387,8 @@ void processKB_HOME() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 

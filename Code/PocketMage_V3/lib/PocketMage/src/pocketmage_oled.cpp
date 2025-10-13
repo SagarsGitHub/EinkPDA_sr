@@ -6,7 +6,7 @@
 //  `88b    d88'  888       o  888       o  888     d88'  //
 //   `Y8bood8P'  o888ooooood8 o888ooooood8 o888bood8P'    //
 
-#include <pocketmage_oled.h>
+#include <pocketmage.h>
 
 static constexpr const char* tag = "OLED";
 
@@ -104,7 +104,7 @@ void PocketmageOled::oledLine(String line, bool doProgressBar, String bottomMsg)
     u8g2_.drawStr(0, u8g2_.getDisplayHeight(), bottomMsg.c_str());
 
     // Draw FN/Shift indicator
-    int state = currentKbState();
+    int state = KB().getKeyboardState();
     switch (state) {
       case 1: //SHIFT
         u8g2_.drawStr((u8g2_.getDisplayWidth() - u8g2_.getStrWidth("SHIFT")),
@@ -136,7 +136,7 @@ void PocketmageOled::infoBar() {
   // FN/SHIFT indicator centered
   u8g2_.setFont(u8g2_font_5x7_tf);
   
-  int state = currentKbState();
+  int state = KB().getKeyboardState();
 
   switch (state) {
     case 1:
@@ -204,17 +204,17 @@ void PocketmageOled::oledScroll() {
 
 
   // DRAW LINES PREVIEW
-  const long count = lines_->size();
-  const long startIndex = max((long)(count - *dynamicScroll_), 0L);
-  const long endIndex   = max((long)(count - *dynamicScroll_ - 9), 0L);
+  const long count = allLines.size();
+  const long startIndex = max((long)(count - TOUCH().getDynamicScroll()), 0L);
+  const long endIndex   = max((long)(count - TOUCH().getDynamicScroll() - 9), 0L);
   
   // CHECK IF LINE STARTS WITH A TAB
   for (long i = startIndex; i > endIndex && i >= 0; --i) {
     if (i >= count) continue;  // Ensure i is within bounds
 
     // CHECK IF LINE STARTS WITH A TAB
-    const bool tabbed = (*lines_)[i].startsWith("    ");
-    const String& s   = tabbed ? (*lines_)[i].substring(4) : (*lines_)[i];
+    const bool tabbed = (allLines)[i].startsWith("    ");
+    const String& s   = tabbed ? (allLines)[i].substring(4) : (allLines)[i];
     const uint16_t w  = strWidth(s);
 
     // ADJUST DRAW COORDINATES BASED ON TAB
@@ -233,8 +233,8 @@ void PocketmageOled::oledScroll() {
   u8g2_.drawStr(0, 24, lineNumStr.c_str());
 
   // PRINT LINE PREVIEW
-  if (startIndex >= 0 && startIndex < lines_->size()) {
-    const String& line = (*lines_)[startIndex];
+  if (startIndex >= 0 && startIndex < allLines.size()) {
+    const String& line = (allLines)[startIndex];
     if (line.length() > 0) {
       u8g2_.setFont(u8g2_font_ncenB18_tr);
       u8g2_.drawStr(140, 24, line.c_str());
@@ -252,10 +252,4 @@ uint16_t PocketmageOled::strWidth(const String& s) const {
   if (measure_) return measure_(s);
   float scale = refWidth_ / (float)u8g2_.getDisplayWidth();
   return (uint16_t)(u8g2_.getStrWidth(s.c_str()) * scale);
-}
-// REFERENCE CURRENT KEYBOARD STATE
-int PocketmageOled::currentKbState() const {
-  if (kbStateFn_) return kbStateFn_();
-  if (kbState_)   return *kbState_;
-  return 0;
 }

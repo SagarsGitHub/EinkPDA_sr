@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 enum SettingsState { settings0, settings1 };
 SettingsState CurrentSettingsState = settings0;
@@ -10,7 +10,7 @@ void SETTINGS_INIT() {
   currentLine = "";
   CurrentAppState = SETTINGS;
   CurrentSettingsState = settings0;
-  CurrentKBState  = NORMAL;
+  KB().setKeyboardState(NORMAL);
   newState = true;
 }
 
@@ -234,13 +234,13 @@ void processKB_settings() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -263,8 +263,8 @@ void processKB_settings() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 

@@ -1,10 +1,10 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 enum JournalState {J_MENU, J_TXT};
 JournalState CurrentJournalState = J_MENU;
 
 String currentJournal = "";
-String bufferEditingFile = editingFile;
+String bufferEditingFile = SD().getEditingFile();
 static String currentLine = "";
 static volatile bool doFull = false;
 
@@ -13,18 +13,18 @@ void JOURNAL_INIT() {
   CurrentJournalState = J_MENU;
   EINK().forceSlowFullUpdate(true);
   newState = true;
-  CurrentKBState = NORMAL;
-  bufferEditingFile = editingFile;
+  KB().setKeyboardState(NORMAL);
+  bufferEditingFile = SD().getEditingFile();
 }
 
 // File Operations
 void loadJournal() {
-  editingFile = currentJournal;
+  SD().setEditingFile(currentJournal);
   pocketmage::file::loadFile();
 }
 
 void saveJournal() {
-  editingFile = currentJournal;
+  SD().setEditingFile(currentJournal);
   pocketmage::file::saveFile();
 }
 
@@ -167,10 +167,10 @@ void JMENUCommand(String command) {
     currentJournal = fileName;
 
     // Load file
-    editingFile = currentJournal;
+    SD().setEditingFile(currentJournal);
     loadJournal();
 
-    dynamicScroll = 0;
+    TOUCH().setDynamicScroll(0);
     newLineAdded = true;
     CurrentJournalState = J_TXT;
 
@@ -191,10 +191,10 @@ void JMENUCommand(String command) {
     currentJournal = fileName;
 
     // Load file
-    editingFile = currentJournal;
+    SD().setEditingFile(currentJournal);
     loadJournal();
 
-    dynamicScroll = 0;
+    TOUCH().setDynamicScroll(0);
     newLineAdded = true;
     CurrentJournalState = J_TXT;
 
@@ -238,10 +238,10 @@ void JMENUCommand(String command) {
       currentJournal = fileName;
 
       // Load file
-      editingFile = currentJournal;
+      SD().setEditingFile(currentJournal);
       loadJournal();
 
-      dynamicScroll = 0;
+      TOUCH().setDynamicScroll(0);
       newLineAdded = true;
       CurrentJournalState = J_TXT;
 
@@ -274,13 +274,13 @@ void processKB_JOURNAL() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -303,8 +303,8 @@ void processKB_JOURNAL() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -338,13 +338,13 @@ void processKB_JOURNAL() {
       }                                      
       //SHIFT Recieved
       else if (inchar == 17) {                                  
-        if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-        else CurrentKBState = SHIFT;
+        if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+        else KB().setKeyboardState(SHIFT);
       }
       //FN Recieved
       else if (inchar == 18) {                                  
-        if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-        else CurrentKBState = FUNC;
+        if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+        else KB().setKeyboardState(FUNC);
       }
       //Space Recieved
       else if (inchar == 32) {                                  
@@ -382,20 +382,20 @@ void processKB_JOURNAL() {
       //SAVE Recieved
       else if (inchar == 6) { 
         saveJournal();
-        CurrentKBState = NORMAL;
+        KB().setKeyboardState(NORMAL);
         newLineAdded = true;
       }
       //LOAD Recieved
       else if (inchar == 5) {
         loadJournal();
-        CurrentKBState = NORMAL;
+        KB().setKeyboardState(NORMAL);
         newLineAdded = true;
       }
       else {
         currentLine += inchar;
         if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-        else if (CurrentKBState != NORMAL) {
-          CurrentKBState = NORMAL;
+        else if (KB().getKeyboardState() != NORMAL) {
+          KB().setKeyboardState(NORMAL);
         }
       }
 
@@ -404,9 +404,9 @@ void processKB_JOURNAL() {
       if (currentMillis - OLEDFPSMillis >= (1000/60)) {
         OLEDFPSMillis = currentMillis;
         // ONLY SHOW OLEDLINE WHEN NOT IN SCROLL MODE
-        if (lastTouch == -1) {
+        if (TOUCH().getLastTouch() == -1) {
           OLED().oledLine(currentLine);
-          if (prev_dynamicScroll != dynamicScroll) prev_dynamicScroll = dynamicScroll;
+          if (TOUCH().getPrevDynamicScroll() != TOUCH().getDynamicScroll()) TOUCH().setPrevDynamicScroll(TOUCH().getDynamicScroll());
         }
         else OLED().oledScroll();
       }

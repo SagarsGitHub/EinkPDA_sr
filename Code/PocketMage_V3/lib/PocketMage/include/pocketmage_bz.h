@@ -44,18 +44,19 @@ const Jingle Shutdown = {shutdownNotes, sizeof(shutdownNotes) / sizeof(shutdownN
 // ===================== BZ CLASS =====================
 class PocketmageBZ {
  public:
-  explicit PocketmageBZ(Buzzer& bz) : buzzer_(bz) {}
+  PocketmageBZ();
 
   // Main methods
-  void wireBZ(Buzzer* hw);
-  // void playJingle(Jingle_ jingle);
+  bool begin(int channel = 0);
+  void end();
 
-  void playJingle(const Jingle& jingle) const;
+  void playJingle(const Jingle& jingle);
 
  private:
-  Buzzer& buzzer_;
+  Buzzer buzzer_;
+  int channel_ = 0;
+  bool begun_ = false;
 };
 
-void wireBZ();
 void setupBZ();
 PocketmageBZ& BZ();

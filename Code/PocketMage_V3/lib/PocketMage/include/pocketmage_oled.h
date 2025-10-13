@@ -14,13 +14,6 @@
 #include <functional>
 #include <utility>
 #pragma region fonts
-// U8G2 FONTS
-//U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
-//u8g2_font_4x6_mf
-//u8g2_font_5x7_mf
-//u8g2_font_spleen5x8_mf
-//u8g2_font_boutique_bitmap_9x9_tf
-//u8g2_font_courR08_tf.h
 #pragma endregion
 
 // To Do: add forward declaration of u8g2, remove #include<U8g2lib.h>, add forward declaration of pocketmage_clock and replace rtc w/ CLOCK()
@@ -35,8 +28,6 @@ public:
   using KbStateFn = std::function<int()>;
   using MaxCharsFn = std::function<uint16_t()>;
 
-  void setAllLines(std::vector<String>* lines)                        { lines_ = lines;}
-  void setDynamicScroll(volatile long* scroll)               { dynamicScroll_ = scroll;}
   void setReferenceWidth(uint16_t w)                                   { refWidth_ = w;}  // E-ink measurement
   void setMeasureTextWidth(MeasureTextFn fn)                { measure_ = std::move(fn);}  // function for measuring text width in e-ink pixels
   void setBattery(volatile int* st, const uint8_t* const* icons, int iconCount) {         // Battery icon/state
@@ -52,6 +43,7 @@ public:
   void setSD(volatile bool* sdActive)                           { sdActive_ = sdActive;}
   void setScrollBitmap(const uint8_t* bmp128x32)              { scrollBmp_ = bmp128x32;}
   void setMaxCharsPerLineEinkGetter(MaxCharsFn fn)       { maxCharsFn_ = std::move(fn);}
+  void setPowerSave(int in)                                   { u8g2_.setPowerSave(in);}
   
   // Main methods
   void oledWord(String word, bool allowLarge = false, bool showInfo = true);
@@ -61,9 +53,6 @@ public:
 
 private:
   U8G2                  &u8g2_;        // class reference to hardware oled object
-
-  std::vector<String>*  lines_         = nullptr;
-  volatile long*        dynamicScroll_ = nullptr;
 
   volatile int*         battState_     = nullptr;
   const uint8_t* const* battIcons_     = nullptr;
@@ -87,7 +76,6 @@ private:
   MaxCharsFn            maxCharsFn_;   // measure   
   // helpers
   uint16_t strWidth(const String& s) const;
-  int currentKbState() const;
 };
 
 void wireOled();

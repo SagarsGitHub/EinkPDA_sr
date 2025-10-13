@@ -6,7 +6,7 @@
 //   888       o          888   8       `888   888  `88b.   //
 //  o888ooooood8         o888o o8o        `8  o888o  o888o  //
 
-#include <pocketmage_eink.h>
+#include <pocketmage.h>
 
 static constexpr const char* tag = "EINK";
 
@@ -90,18 +90,18 @@ void PocketmageEink::setTXTFont(const GFXfont* font) {
   if (changed) computeFontMetrics_();
 }
 void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
-  if (!lines_ || !currentFont_ || !dynamicScroll_) return;
+  if (!currentFont_) return;
   
    // SET FONT
   setTXTFont(currentFont_);
 
   // ITERATE AND DISPLAY
-  uint8_t size = lines_->size();
+  uint8_t size = allLines.size();
   uint8_t displayLines = maxLines_;
 
   if (displayLines > size) displayLines = size;
 
-  int scrollOffset = *dynamicScroll_;
+  int scrollOffset = TOUCH().getDynamicScroll();
   if (scrollOffset < 0) scrollOffset = 0;
   if (scrollOffset > size - displayLines) scrollOffset = size - displayLines;
   
@@ -109,26 +109,26 @@ void PocketmageEink::einkTextDynamic(bool doFull, bool noRefresh) {
   if (doFull) {
     display_.fillScreen(GxEPD_WHITE);
     for (uint8_t i = size - displayLines - scrollOffset; i < size - scrollOffset; i++) {
-      if ((*lines_)[i].length() == 0) continue;
+      if ((allLines)[i].length() == 0) continue;
       display_.setFullWindow();
       //display_.fillRect(0, (fontHeight_ + lineSpacing_) * (i - (size - displayLines - scrollOffset)), display.width(), (fontHeight_ + lineSpacing_), GxEPD_WHITE)
       display_.setCursor(0, fontHeight_ + ((fontHeight_ + lineSpacing_) * (i - (size - displayLines - scrollOffset))));
-      display_.print((*lines_)[i]);
+      display_.print((allLines)[i]);
     }
   } 
   // PARTIAL REFRESH, ONLY SEND LAST LINE
   else {
-    if ((*lines_)[size - displayLines - scrollOffset].length() > 0) {
+    if ((allLines)[size - displayLines - scrollOffset].length() > 0) {
       int y = (fontHeight_ + lineSpacing_) * (size - displayLines - scrollOffset);
       display_.setPartialWindow(0, y, display_.width(), (fontHeight_ + lineSpacing_));
       display_.fillRect(0, y, display_.width(), (fontHeight_ + lineSpacing_), GxEPD_WHITE);
       display_.setCursor(0, fontHeight_ + y);
-      display_.print((*lines_)[size - displayLines - scrollOffset]);
+      display_.print((allLines)[size - displayLines - scrollOffset]);
     }
   }
   
 
-  drawStatusBar(String("L:") + String(lines_->size()) + " " + *editingFile_);
+  drawStatusBar(String("L:") + String(allLines.size()) + " " + SD().getEditingFile());
 }
 int PocketmageEink::countLines(const String& input, size_t maxLineLength) {
   size_t inputLength = input.length();

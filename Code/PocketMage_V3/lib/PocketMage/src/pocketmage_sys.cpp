@@ -7,15 +7,7 @@
 //                                                                                .88           //
 //                                                                            d8888P            //
 
-#include <pocketmage.h>
-#include <pocketmage_sys.h>
-#include <pocketmage_eink.h>
-#include <pocketmage_oled.h>
-#include <pocketmage_sd.h>
-#include <pocketmage_kb.h>
-#include <pocketmage_bz.h>
-#include <pocketmage_touch.h>
-#include <pocketmage_clock.h>
+#include <globals.h>
 #include <config.h>
 #include <RTClib.h>
 #include <SD_MMC.h>
@@ -27,6 +19,7 @@
 
 static constexpr const char* TAG = "SYSTEM";
 // To Do: migrate to pocketmage::
+
 ///////////////////////////////////////////////////////////////////////////////
 //            Use this function in apps to return to PocketMage OS           //
 bool rebootToPocketMage() {
@@ -51,6 +44,58 @@ bool rebootToPocketMage() {
 }
 ///////////////////////////////////////////////////////////////////////////////
 
+bool noTimeout = false;               // Disable timeout
+
+void PocketMage_INIT(){
+  // Serial, I2C, SPI
+  Serial.begin(115200);
+  Wire.begin(I2C_SDA, I2C_SCL);
+  SPI.begin(SPI_SCK, -1, SPI_MOSI, -1);
+
+  // OLED SETUP
+  setupOled();
+
+  // STARTUP JINGLE
+  setupBZ();
+  
+  // WAKE INTERRUPT SETUP
+  pinMode(KB_IRQ, INPUT);
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_8, 0);
+
+  // KEYBOARD SETUP
+  setupKB(KB_IRQ);
+
+  // EINK HANDLER SETUP
+  setupEink();
+  
+  // SD CARD SETUP
+  setupSD();
+
+  // POWER SETUP
+  pinMode(PWR_BTN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PWR_BTN), pocketmage::power::PWR_BTN_irq, FALLING);
+  pinMode(CHRG_SENS, INPUT);
+  pinMode(BAT_SENS, INPUT);
+  //WiFi.mode(WIFI_OFF);
+  //btStop();
+
+  // SET CPU CLOCK FOR POWER SAVE MODE
+  if (SAVE_POWER) setCpuFrequencyMhz(40 );
+  else            setCpuFrequencyMhz(240);
+  
+  // CAPACATIVE TOUCH SETUP
+  setupTouch();
+
+  // RTC SETUP
+  setupClock();
+
+  // Set "random" seed
+  randomSeed(analogRead(BAT_SENS));
+
+  // Load State
+  pocketmage::power::loadState();
+}
+
 // Helpers
 static int countVisibleChars(String input) {
   int count = 0;
@@ -69,7 +114,7 @@ static int countVisibleChars(String input) {
 namespace pocketmage::file{
     
     void saveFile() {
-    if (noSD) {
+    if (SD().getNoSD()) {
         OLED().oledWord("SAVE FAILED - No SD!");
         delay(5000);
         return;
@@ -81,17 +126,17 @@ namespace pocketmage::file{
         String textToSave = vectorToString();
         ESP_LOGV(TAG, "Text to save: %s", textToSave.c_str());
 
-        if (editingFile == "" || editingFile == "-")
-        editingFile = "/temp.txt";
+        if (SD().getEditingFile() == "" || SD().getEditingFile() == "-")
+        SD().setEditingFile("/temp.txt");
         keypad.disableInterrupts();
-        if (!editingFile.startsWith("/"))
-        editingFile = "/" + editingFile;
+        if (!SD().getEditingFile().startsWith("/"))
+        SD().setEditingFile("/" + SD().getEditingFile());
         //OLED().oledWord("Saving File: "+ editingFile);
-        SD().writeFile(SD_MMC, (editingFile).c_str(), textToSave.c_str());
+        SD().writeFile(SD_MMC, (SD().getEditingFile()).c_str(), textToSave.c_str());
         //OLED().oledWord("Saved: "+ editingFile);
 
         // Write MetaData
-        pocketmage::file::writeMetadata(editingFile);
+        pocketmage::file::writeMetadata(SD().getEditingFile());
 
         // delay(1000);
         keypad.enableInterrupts();
@@ -175,7 +220,7 @@ namespace pocketmage::file{
     setCpuFrequencyMhz(240);
     delay(50);
 
-    if (noSD) {
+    if (SD().getNoSD()) {
         OLED().oledWord("LOAD FAILED - No SD!");
         delay(5000);
         return;
@@ -187,9 +232,9 @@ namespace pocketmage::file{
         keypad.disableInterrupts();
         if (showOLED)
         OLED().oledWord("Loading File");
-        if (!editingFile.startsWith("/"))
-        editingFile = "/" + editingFile;
-        String textToLoad = SD().readFileToString(SD_MMC, (editingFile).c_str());
+        if (!SD().getEditingFile().startsWith("/"))
+        SD().setEditingFile("/" + SD().getEditingFile());
+        String textToLoad = SD().readFileToString(SD_MMC, (SD().getEditingFile()).c_str());
         ESP_LOGV(TAG, "Text to load: %s", textToLoad.c_str());
 
         stringToVector(textToLoad);
@@ -205,7 +250,7 @@ namespace pocketmage::file{
     }
     
     void delFile(String fileName) {
-    if (noSD) {
+    if (SD().getNoSD()) {
         OLED().oledWord("DELETE FAILED - No SD!");
         delay(5000);
         return;
@@ -275,7 +320,7 @@ namespace pocketmage::file{
     }
     
     void renFile(String oldFile, String newFile) {
-    if (noSD) {
+    if (SD().getNoSD()) {
         OLED().oledWord("RENAME FAILED - No SD!");
         delay(5000);
         return;
@@ -360,7 +405,7 @@ namespace pocketmage::file{
     }
     
     void copyFile(String oldFile, String newFile) {
-    if (noSD) {
+    if (SD().getNoSD()) {
         OLED().oledWord("COPY FAILED - No SD!");
         delay(5000);
         return;
@@ -392,7 +437,7 @@ namespace pocketmage::file{
     }
     
     void appendToFile(String path, String inText) {
-    if (noSD) {
+    if (SD().getNoSD()) {
         OLED().oledWord("OP FAILED - No SD!");
         delay(5000);
         return;
@@ -441,11 +486,11 @@ namespace pocketmage::time{
     
     void checkTimeout() {
     int randomScreenSaver = 0;
-    timeoutMillis = millis();
+    CLOCK().setTimeoutMillis(millis());
 
     // Trigger timeout deep sleep
     if (!disableTimeout) {
-        if (timeoutMillis - prevTimeMillis >= TIMEOUT * 1000) {
+        if (CLOCK().getTimeDiff() >= TIMEOUT * 1000) {
         ESP_LOGW(TAG, "Device idle... Deep sleeping");
 
         // Give a chance to keep device awake
@@ -457,7 +502,7 @@ namespace pocketmage::time{
             if (digitalRead(KB_IRQ) == 0) {
             OLED().oledWord("Good Save!");
             delay(500);
-            prevTimeMillis = millis();
+            CLOCK().setPrevTimeMillis(millis());
             keypad.flush();
             return;
             }
@@ -465,15 +510,15 @@ namespace pocketmage::time{
 
         // Save current work:
         //pocketmage::file::saveFile();
-        String savePath = editingFile;
+        String savePath = SD().getEditingFile();
         if (savePath != "" && savePath != "-" && savePath != "/temp.txt") {
             if (!savePath.startsWith("/")) savePath = "/" + savePath;
-            saveMarkdownFile(editingFile);
+            saveMarkdownFile(SD().getEditingFile());
         }
 
         switch (CurrentAppState) {
             case TXT:
-            if (SLEEPMODE == "TEXT" && editingFile != "") {
+            if (SLEEPMODE == "TEXT" && SD().getEditingFile() != "") {
                 /*
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
@@ -511,7 +556,7 @@ namespace pocketmage::time{
         esp_deep_sleep_start();
         }
     } else {
-        prevTimeMillis = millis();
+        CLOCK().setPrevTimeMillis(millis());
     }
 
     // Power Button Event sleep
@@ -521,10 +566,10 @@ namespace pocketmage::time{
         // Save current work:
         OLED().oledWord("Saving Work");
         //pocketmage::file::saveFile();
-        String savePath = editingFile;
+        String savePath = SD().getEditingFile();
         if (savePath != "" && savePath != "-" && savePath != "/temp.txt") {
             if (!savePath.startsWith("/")) savePath = "/" + savePath;
-            saveMarkdownFile(editingFile);
+            saveMarkdownFile(SD().getEditingFile());
         }
 
 
@@ -533,7 +578,7 @@ namespace pocketmage::time{
 
         prefs.begin("PocketMage", false);
         prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
-        prefs.putString("editingFile", editingFile);
+        prefs.putString("editingFile", SD().getEditingFile());
         prefs.end();
 
         CurrentAppState = HOME;
@@ -556,7 +601,7 @@ namespace pocketmage::time{
         } else {
         switch (CurrentAppState) {
             case TXT:
-            if (SLEEPMODE == "TEXT" && editingFile != "") {
+            if (SLEEPMODE == "TEXT" && SD().getEditingFile() != "") {
                 EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
                 display.setFullWindow();
                 EINK().einkTextDynamic(true, true);
@@ -567,7 +612,7 @@ namespace pocketmage::time{
                 display.setCursor(4, display.height() - 6);
                 //display.drawBitmap(display.width() - 30, display.height() - 20, KBStatusallArray[6], 30,
                 //                20, GxEPD_BLACK);
-                EINK().statusBar(editingFile, true);
+                EINK().statusBar(SD().getEditingFile(), true);
 
                 display.fillRect(320 - 86, 240 - 52, 87, 52, GxEPD_WHITE);
                 display.drawBitmap(320 - 86, 240 - 52, sleep1, 87, 52, GxEPD_BLACK);
@@ -587,7 +632,7 @@ namespace pocketmage::time{
     } else if (PWR_BTN_event && CurrentHOMEState == NOWLATER) {
         // Load last state
         /*prefs.begin("PocketMage", true);
-        editingFile = prefs.getString("editingFile", "");
+        SD().setEditingFile(prefs.getString("editingFile", "");
         if (HOME_ON_BOOT) CurrentAppState = HOME;
         else CurrentAppState = static_cast<AppState>(prefs.getInt("CurrentAppState", HOME));
         prefs.end();*/
@@ -708,7 +753,7 @@ namespace pocketmage::power{
     // Save last state
     prefs.begin("PocketMage", false);
     prefs.putInt("CurrentAppState", static_cast<int>(CurrentAppState));
-    prefs.putString("editingFile", editingFile);
+    prefs.putString("editingFile", SD().getEditingFile());
     prefs.end();
 
     // Sleep the ESP32
@@ -771,7 +816,7 @@ namespace pocketmage::power{
     SHOW_YEAR = prefs.getBool("SHOW_YEAR", true);
     SAVE_POWER = prefs.getBool("SAVE_POWER", true);
     ALLOW_NO_MICROSD = prefs.getBool("ALLOW_NO_SD", false);
-    editingFile = prefs.getString("editingFile", "");
+    SD().setEditingFile(prefs.getString("editingFile", ""));
     HOME_ON_BOOT = prefs.getBool("HOME_ON_BOOT", false);
     OLED_BRIGHTNESS = prefs.getInt("OLED_BRIGHTNESS", 255);
     OLED_MAX_FPS = prefs.getInt("OLED_MAX_FPS", 30);
@@ -848,6 +893,9 @@ namespace pocketmage::debug{
 }    // namespace pocketmage::debug
 
 // ===================== GLOBAL TEXT HELPERS =====================
+volatile bool newLineAdded = true;           // New line added in TXT
+std::vector<String> allLines;         // All lines in TXT
+
 String vectorToString() {
 String result;
 EINK().setTXTFont(EINK().getCurrentFont());

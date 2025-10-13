@@ -44,5 +44,18 @@
 #define SD_CMD        11
 #define SD_D0         13
 
+#define BZ_PIN        17
+
+// ===================== SYSTEM SETTINGS =====================
+// Persistent preferences
+extern int TIMEOUT;              // Auto sleep timeout (seconds)
+extern bool DEBUG_VERBOSE;       // Extra debug output
+extern bool SYSTEM_CLOCK;        // Show clock on screen
+extern bool SHOW_YEAR;           // Show year in clock
+extern bool SAVE_POWER;          // Enable power saving mode
+extern bool ALLOW_NO_MICROSD;    // Allow running without SD card
+extern bool HOME_ON_BOOT;        // Start home app on boot
+extern int OLED_BRIGHTNESS;      // OLED brightness (0-255)
+extern int OLED_MAX_FPS;         // OLED max FPS
 
 #endif

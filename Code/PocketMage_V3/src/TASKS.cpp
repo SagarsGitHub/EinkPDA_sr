@@ -5,7 +5,7 @@
 //      888        .88ooo8888.        `"Y88b  888`88b.         `"Y88b //
 //      888       .8'     `888.  oo     .d8P  888  `88b.  oo     .d8P //
 //     o888o     o88o     o8888o 8""88888P'  o888o  o888o 8""88888P'  //  
-#include <pocketmage.h>
+#include <globals.h>
 #include "esp32-hal-log.h"
 #include "esp_log.h"
 
@@ -137,7 +137,7 @@ void processKB_TASKS() {
 
   switch (CurrentTasksState) {
     case TASKS0:
-      CurrentKBState = FUNC;
+      KB().setKeyboardState(FUNC);
       //Make keyboard only updates after cooldown
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         inchar = KB().updateKeypress();
@@ -151,7 +151,7 @@ void processKB_TASKS() {
         // NEW TASK
         else if (inchar == '/' || inchar == 'n' || inchar == 'N') {
           CurrentTasksState = TASKS0_NEWTASK;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newTaskState = 0;
           newState = true;
           break;
@@ -180,7 +180,7 @@ void processKB_TASKS() {
       }
       break;
     case TASKS0_NEWTASK:
-      if (newTaskState == 1) CurrentKBState = FUNC;
+      if (newTaskState == 1) KB().setKeyboardState(FUNC);
 
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
         inchar = KB().updateKeypress();
@@ -189,13 +189,13 @@ void processKB_TASKS() {
         if (inchar == 0);                                        
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -251,8 +251,8 @@ void processKB_TASKS() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -267,7 +267,7 @@ void processKB_TASKS() {
     case TASKS1:
       disableTimeout = false;
 
-      CurrentKBState = FUNC;
+      KB().setKeyboardState(FUNC);
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  

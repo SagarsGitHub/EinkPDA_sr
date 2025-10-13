@@ -5,36 +5,106 @@
 //  d8'   .8P 88    .8P  //
 //   Y88888P  8888888P   //
 
-#include <pocketmage_sd.h>
-#include <pocketmage_oled.h> 
-#include <pocketmage_eink.h> 
+#include <pocketmage.h>
 #include <config.h> // for FULL_REFRESH_AFTER
+#include <SD_MMC.h>
 
 extern bool SAVE_POWER;
 static constexpr const char* tag = "SD";
 
+// Initialization of sd class
+static PocketmageSD pm_sd;
+
+// Setup for SD Class
+// @ dependencies:
+//   - setupOled()
+//   - setupBZ()
+//   - setupEINK()
+void setupSD() {
+  SD_MMC.setPins(SD_CLK, SD_CMD, SD_D0);
+  if (!SD_MMC.begin("/sdcard", true) || SD_MMC.cardType() == CARD_NONE) {
+    ESP_LOGE(tag, "MOUNT FAILED");
+
+    OLED().oledWord("SD Card Not Detected!");
+    delay(2000);
+    if (ALLOW_NO_MICROSD) {
+      OLED().oledWord("All Work Will Be Lost!");
+      delay(5000);
+      SD().setNoSD(true);
+    }
+    else {
+      OLED().oledWord("Insert SD Card and Reboot!");
+      delay(5000);
+      // Put OLED to sleep
+      OLED().setPowerSave(1);
+      // Shut Down Jingle
+      BZ().playJingle(Jingles::Shutdown);
+      // Sleep
+      esp_deep_sleep_start();
+      return;
+    }
+  }
+
+  setCpuFrequencyMhz(240);
+  // Create folders and files if needed
+  if (!SD_MMC.exists("/sys"))                 SD_MMC.mkdir( "/sys"                );
+  if (!SD_MMC.exists("/notes"))               SD_MMC.mkdir( "/notes"              );
+  if (!SD_MMC.exists("/journal"))             SD_MMC.mkdir( "/journal"            );
+  if (!SD_MMC.exists("/dict"))                SD_MMC.mkdir( "/dict"               );
+  if (!SD_MMC.exists("/apps"))                SD_MMC.mkdir( "/apps"               );
+  if (!SD_MMC.exists("/apps/temp"))           SD_MMC.mkdir( "/apps/temp"          );
+  if (!SD_MMC.exists("/screensavers"))        SD_MMC.mkdir( "/screensavers"       );
+  if (!SD_MMC.exists("/notes"))               SD_MMC.mkdir( "/notes"              );
+  if (!SD_MMC.exists("/assets"))              SD_MMC.mkdir( "/assets"             );
+  if (!SD_MMC.exists("/assets/backgrounds"))  SD_MMC.mkdir( "/assets/backgrounds" );
+
+  if (!SD_MMC.exists("/assets/backgrounds/HOWTOADDBACKGROUNDS.txt")) {
+    File f = SD_MMC.open("/assets/backgrounds/HOWTOADDBACKGROUNDS.txt", FILE_WRITE);
+    if (f) {
+      f.print("How to add custom backgrounds:\n1. Make a background that is 1 bit (black OR white) and 320x240 pixels.\n2. Export your background as a .bmp file.\n3. Use image2cpp to convert your image to a .bin file. Use the settings: Invert Image Colors (TRUE), Swap Bits in Byte (FALSE). Select the \"Download as Binary File (.bin)\" button.\n4. Place the .bin file in this folder.\n5. Enjoy your new custom wallpapers!");
+      f.close();
+    }
+  }
+  
+  if (!SD_MMC.exists("/sys/events.txt")) {
+    File f = SD_MMC.open("/sys/events.txt", FILE_WRITE);
+    if (f) f.close();
+  }
+  if (!SD_MMC.exists("/sys/tasks.txt")) {
+    File f = SD_MMC.open("/sys/tasks.txt", FILE_WRITE);
+    if (f) f.close();
+  }
+  if (!SD_MMC.exists("/sys/SDMMC_META.txt")) {
+    File f = SD_MMC.open("/sys/SDMMC_META.txt", FILE_WRITE);
+    if (f) f.close();
+  }
+}
+
+// Access for other apps
+PocketmageSD& SD() { return pm_sd; }
+
 // ===================== main functions =====================
 // Low-Level SDMMC Operations switch to using internal fs::FS*
 void PocketmageSD::listDir(fs::FS &fs, const char *dirname) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return;
   }
   else {
     setCpuFrequencyMhz(240);
     delay(50);
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Listing directory %s\r\n", dirname);
 
     File root = fs.open(dirname);
     if (!root) {
-      if (noTimeout_) *noTimeout_ = false;
+      noTimeout = false;
       ESP_LOGE(tag, "Failed to open directory: %s", root.path());
       return;
     }
     if (!root.isDirectory()) {
-      if (noTimeout_) *noTimeout_ = false;
+      noTimeout = false;
       ESP_LOGE(tag, "Not a directory: %s", root.path());
       
       return;
@@ -71,37 +141,37 @@ void PocketmageSD::listDir(fs::FS &fs, const char *dirname) {
     //   Serial.println(filesList_[i]);       // NOTE: This prints out valid files
     // }
 
-    if (noTimeout_) *noTimeout_ = false;
+    noTimeout = false;
     if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::readFile(fs::FS &fs, const char *path) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return;
   }
   else {
     setCpuFrequencyMhz(240);
     delay(50);
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Reading file %s\r\n", path);
 
     File file = fs.open(path);
     if (!file || file.isDirectory()) {
-      if (noTimeout_) *noTimeout_ = false;
+      noTimeout = false;
       ESP_LOGE(tag, "Failed to open file for reading: %s", file.path());
       return;
     }
 
     file.close();
-    if (noTimeout_) *noTimeout_ = false;
+    noTimeout = false;
     if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return "";
   }
@@ -109,14 +179,14 @@ String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
     setCpuFrequencyMhz(240);
     delay(50);
 
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Reading file: %s\r\n", path);
 
     File file = fs.open(path);
     if (!file || file.isDirectory()) {
-      if (noTimeout_) *noTimeout_ = false;
+      noTimeout = false;
       ESP_LOGE(tag, "Failed to open file for reading: %s", path);
-      if (oled_) oled_->oledWord("Load Failed");
+      OLED().oledWord("Load Failed");
       delay(500);
       return "";  // Return an empty string on failure
     }
@@ -127,27 +197,27 @@ String PocketmageSD::readFileToString(fs::FS &fs, const char *path) {
     String content = file.readString();
 
     file.close();
-    if (eink_) eink_->setFullRefreshAfter(FULL_REFRESH_AFTER); //Force a full refresh
-    if (noTimeout_) *noTimeout_ = false;
+    EINK().setFullRefreshAfter(FULL_REFRESH_AFTER); //Force a full refresh
+    noTimeout = false;
     return content;  // Return the complete String
   }
 }
 void PocketmageSD::writeFile(fs::FS &fs, const char *path, const char *message) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return;
   }
   else {
     setCpuFrequencyMhz(240);
     delay(50);
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Writing file: %s\r\n", path);
     delay(200);
 
     File file = fs.open(path, FILE_WRITE);
     if (!file) {
-      if (noTimeout_) *noTimeout_ = false;
+      noTimeout = false;
       ESP_LOGE(tag, "Failed to open %s for writing", path);
       return;
     }
@@ -158,25 +228,25 @@ void PocketmageSD::writeFile(fs::FS &fs, const char *path, const char *message) 
       ESP_LOGE(tag, "Write failed for %s", path);
     }
     file.close();
-    if (noTimeout_) *noTimeout_ = false;
+    noTimeout = false;
     if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return;
   }
   else {
     setCpuFrequencyMhz(240);
     delay(50);
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Appending to file: %s\r\n", path);
 
     File file = fs.open(path, FILE_APPEND);
     if (!file) {
-      if (noTimeout_) *noTimeout_ = false;
+      noTimeout = false;
       ESP_LOGE(tag, "Failed to open for appending: %s", path);
       return;
     }
@@ -187,20 +257,20 @@ void PocketmageSD::appendFile(fs::FS &fs, const char *path, const char *message)
       ESP_LOGE(tag, "Append failed: %s", path);
     }
     file.close();
-    if (noTimeout_) *noTimeout_ = false;
+    noTimeout = false;
     if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return;
   }
   else {
     setCpuFrequencyMhz(240);
     delay(50);
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Renaming file %s to %s\r\n", path1, path2);
 
     if (fs.rename(path1, path2)) {
@@ -209,20 +279,20 @@ void PocketmageSD::renameFile(fs::FS &fs, const char *path1, const char *path2) 
     else {
       ESP_LOGE(tag, "Rename failed: %s to %s", path1, path2);
     }
-    if (noTimeout_) *noTimeout_ = false;
+    noTimeout = false;
     if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }
 void PocketmageSD::deleteFile(fs::FS &fs, const char *path) {
-  if (noSD_ && *noSD_) {
-    if (oled_) oled_->oledWord("OP FAILED - No SD!");
+  if (noSD_) {
+    OLED().oledWord("OP FAILED - No SD!");
     delay(5000);
     return;
   }
   else {
     setCpuFrequencyMhz(240);
     delay(50);
-    if (noTimeout_) *noTimeout_ = true;
+    noTimeout = true;
     ESP_LOGI(tag, "Deleting file: %s\r\n", path);
     if (fs.remove(path)) {
       ESP_LOGV(tag, "File deleted: %s", path);
@@ -230,7 +300,7 @@ void PocketmageSD::deleteFile(fs::FS &fs, const char *path) {
     else {
       ESP_LOGE(tag, "Delete failed for %s", path);
     }
-    if (noTimeout_) *noTimeout_ = false;
+    noTimeout = false;
     if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   }
 }

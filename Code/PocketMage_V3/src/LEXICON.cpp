@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 enum LexState {MENU, DEF};
 LexState CurrentLexState = MENU;
@@ -13,7 +13,7 @@ void LEXICON_INIT() {
   currentLine = "";
   CurrentAppState = LEXICON;
   CurrentLexState = MENU;
-  CurrentKBState  = NORMAL;
+  KB().setKeyboardState(NORMAL);
   newState = true;
   definitionIndex = 0;
 }
@@ -26,7 +26,7 @@ void loadDefinitions(String word) {
 
   defList.clear();  // Clear previous results
 
-  if (word.length() == 0 || noSD) return;
+  if (word.length() == 0 || SD().getNoSD()) return;
 
   char firstChar = tolower(word[0]);
   if (firstChar < 'a' || firstChar > 'z') return;
@@ -75,7 +75,7 @@ void loadDefinitions(String word) {
   }
   else {
     CurrentLexState = DEF;
-    CurrentKBState  = NORMAL;
+    KB().setKeyboardState(NORMAL);
     definitionIndex = 0;
     newState = true;
   }
@@ -101,13 +101,13 @@ void processKB_LEXICON() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -130,8 +130,8 @@ void processKB_LEXICON() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -157,13 +157,13 @@ void processKB_LEXICON() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -200,8 +200,8 @@ void processKB_LEXICON() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 

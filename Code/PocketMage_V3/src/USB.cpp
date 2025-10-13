@@ -1,4 +1,4 @@
-#include <pocketmage.h>
+#include <globals.h>
 
 #include <USB.h>
 #include <USBMSC.h>
@@ -46,7 +46,7 @@ void USBAppShutdown() {
     if (ALLOW_NO_MICROSD) {
       OLED().oledWord("All Work Will Be Lost!");
       delay(5000);
-      noSD = true;
+      SD().setNoSD(true);
     } else {
       OLED().oledWord("Insert SD Card and Reboot!");
       delay(5000);
@@ -183,7 +183,7 @@ void USB_INIT() {
 
   // INIT App
   CurrentAppState = USB_APP;
-  CurrentKBState  = NORMAL;
+  KB().setKeyboardState(NORMAL);
   newState = true;
 }
 

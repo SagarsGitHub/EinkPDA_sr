@@ -1,5 +1,4 @@
-#pragma once
-#include <globals.h>
+//#include <config.h>
 
 // Pocketmage library headers
 #include <pocketmage_eink.h>

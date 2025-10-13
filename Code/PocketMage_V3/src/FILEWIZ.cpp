@@ -5,7 +5,7 @@
 //   888    "     888   888          888    "        `888.8'  `888.8'      888     .888P       //
 //   888          888   888       o  888       o      `888'    `888'       888    d888'    .P  //
 //  o888o        o888o o888ooooood8 o888ooooood8       `8'      `8'       o888o .8888888888P   //
-#include <pocketmage.h>
+#include <globals.h>
 
 
 enum FileWizState { WIZ0_, WIZ1_, WIZ1_YN, WIZ2_R, WIZ2_C, WIZ3_ };
@@ -24,7 +24,7 @@ std::vector<String> excludedPaths = {
 
 void FILEWIZ_INIT() {
   CurrentAppState = FILEWIZ;
-  CurrentKBState  = NORMAL;
+  KB().setKeyboardState(NORMAL);
   EINK().forceSlowFullUpdate(true);
   newState = true;
 }
@@ -185,7 +185,7 @@ String renderWizMini(String folder, int8_t scrollDelta) {
 
   // Display KB state
   u8g2.setFont(u8g2_font_5x7_tf);
-  switch (CurrentKBState) {
+  switch (KB().getKeyboardState()) {
     case 1:
       u8g2.setDrawColor(0);
       u8g2.drawBox(u8g2.getDisplayWidth() - u8g2.getStrWidth("SHIFT"), u8g2.getDisplayHeight(), u8g2.getStrWidth("SHIFT"), -8);
@@ -230,17 +230,17 @@ String fileWizardMini(bool allowRecentSelect, String rootDir) {
     if (inchar == 0);
     // SHIFT Recieved
     else if (inchar == 17) {
-      if (CurrentKBState == SHIFT)
-        CurrentKBState = NORMAL;
+      if (KB().getKeyboardState() == SHIFT)
+        KB().setKeyboardState(NORMAL);
       else
-        CurrentKBState = SHIFT;
+        KB().setKeyboardState(SHIFT);
     }
     // FN Recieved
     else if (inchar == 18) {
-      if (CurrentKBState == FUNC)
-        CurrentKBState = NORMAL;
+      if (KB().getKeyboardState() == FUNC)
+        KB().setKeyboardState(NORMAL);
       else
-        CurrentKBState = FUNC;
+        KB().setKeyboardState(FUNC);
     }
     // Left received
     else if (inchar == 19) {
@@ -290,9 +290,9 @@ String fileWizardMini(bool allowRecentSelect, String rootDir) {
     else if (allowRecentSelect && (inchar >= '0' && inchar <= '9')) {
       int fileIndex = (inchar == '0') ? 10 : (inchar - '0');
       // SET WORKING FILE
-      String selectedFile = filesList[fileIndex - 1];
+      String selectedFile = SD().getFilesListIndex(fileIndex - 1);
       if (selectedFile != "-" && selectedFile != "") {
-        workingFile = selectedFile;
+        SD().setWorkingFile(selectedFile);
         // GO TO WIZ1_
         CurrentFileWizState = WIZ1_;
         newState = true;
@@ -334,7 +334,7 @@ void processKB_FILEWIZ() {
       else if (outPath != "") {
         // Open file
         if (outPath != "-" && outPath != "") {
-          workingFile = outPath;
+          SD().setWorkingFile(outPath);
           // GO TO WIZ1_
           CurrentFileWizState = WIZ1_;
           newState = true;
@@ -346,7 +346,7 @@ void processKB_FILEWIZ() {
     case WIZ1_:
       disableTimeout = false;
 
-      CurrentKBState = FUNC;
+      KB().setKeyboardState(FUNC);
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -392,7 +392,7 @@ void processKB_FILEWIZ() {
     case WIZ1_YN:
       disableTimeout = false;
 
-      CurrentKBState = NORMAL;
+      KB().setKeyboardState(NORMAL);
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -408,7 +408,7 @@ void processKB_FILEWIZ() {
         // Y RECIEVED
         else if (inchar == 'y' || inchar == 'Y') {
           // DELETE FILE
-          pocketmage::file::delFile(workingFile);
+          pocketmage::file::delFile(SD().getWorkingFile());
           
           // RETURN TO FILE WIZ HOME
           refreshFiles = true;
@@ -436,7 +436,7 @@ void processKB_FILEWIZ() {
     case WIZ2_R:
       disableTimeout = false;
 
-      //CurrentKBState = NORMAL;
+      //KB().setKeyboardState(NORMAL);
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -445,13 +445,13 @@ void processKB_FILEWIZ() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {}
@@ -467,7 +467,7 @@ void processKB_FILEWIZ() {
         }
         else if (inchar == 12) {
           CurrentFileWizState = WIZ1_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           currentWord = "";
           currentLine = "";
           newState = true;
@@ -477,12 +477,12 @@ void processKB_FILEWIZ() {
         else if (inchar == 13) {      
           // RENAME FILE                    
           String newName = "/" + currentWord + ".txt";
-          pocketmage::file::renFile(workingFile, newName);
+          pocketmage::file::renFile(SD().getWorkingFile(), newName);
 
           // RETURN TO WIZ0
           refreshFiles = true;
           CurrentFileWizState = WIZ0_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newState = true;
           currentWord = "";
           currentLine = "";
@@ -492,8 +492,8 @@ void processKB_FILEWIZ() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL){
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL){
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -508,7 +508,7 @@ void processKB_FILEWIZ() {
     case WIZ2_C:
       disableTimeout = false;
 
-      //CurrentKBState = NORMAL;
+      //KB().setKeyboardState(NORMAL);
       currentMillis = millis();
       //Make sure oled only updates at 60fps
       if (currentMillis - KBBounceMillis >= KB_COOLDOWN) {  
@@ -517,13 +517,13 @@ void processKB_FILEWIZ() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {}
@@ -539,7 +539,7 @@ void processKB_FILEWIZ() {
         }
         else if (inchar == 12) {
           CurrentFileWizState = WIZ1_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           currentWord = "";
           currentLine = "";
           newState = true;
@@ -549,12 +549,12 @@ void processKB_FILEWIZ() {
         else if (inchar == 13) {      
           // Copy FILE                    
           String newName = "/" + currentWord + ".txt";
-          pocketmage::file::copyFile(workingFile, newName);
+          pocketmage::file::copyFile(SD().getWorkingFile(), newName);
 
           // RETURN TO WIZ0
           refreshFiles = true;
           CurrentFileWizState = WIZ0_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newState = true;
           currentWord = "";
           currentLine = "";
@@ -564,8 +564,8 @@ void processKB_FILEWIZ() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL){
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL){
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -603,7 +603,7 @@ void einkHandler_FILEWIZ() {
 
         for (int i = 0; i < MAX_FILES; i++) {
           display.setCursor(30, 54+(17*i));
-          display.print(filesList[i]);
+          display.print(SD().getFilesListIndex(i));
         }
 
         EINK().refresh();
@@ -617,7 +617,7 @@ void einkHandler_FILEWIZ() {
         display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
-        EINK().drawStatusBar("- " + workingFile);
+        EINK().drawStatusBar("- " + SD().getWorkingFile());
         display.drawBitmap(0, 0, fileWizardallArray[1], 320, 218, GxEPD_BLACK);
 
         EINK().refresh();
@@ -631,7 +631,7 @@ void einkHandler_FILEWIZ() {
         display.fillScreen(GxEPD_WHITE);
 
         // DRAW APP
-        EINK().drawStatusBar("DEL:" + workingFile + "?(Y/N)");
+        EINK().drawStatusBar("DEL:" + SD().getWorkingFile() + "?(Y/N)");
         display.drawBitmap(0, 0, fileWizardallArray[1], 320, 218, GxEPD_BLACK);
 
         EINK().refresh();

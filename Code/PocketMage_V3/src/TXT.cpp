@@ -5,7 +5,7 @@
 //       888         .8PY888.         888       //
 //       888        d8'  `888b        888       //
 //      o888o     o888o  o88888o     o888o      //
-#include <pocketmage.h>
+#include <globals.h>
 
 enum TXTState { TXT_, WIZ0, WIZ1, WIZ2, WIZ3, FONT };
 TXTState CurrentTXTState = TXT_;
@@ -17,11 +17,11 @@ static String currentLine = "";
 static volatile bool doFull = false;
 
 void TXT_INIT_OLD() {
-  if (editingFile != "") pocketmage::file::loadFile();
+  if (SD().getEditingFile() != "") pocketmage::file::loadFile();
   CurrentAppState = TXT;
   CurrentTXTState = TXT_;
-  CurrentKBState  = NORMAL;
-  dynamicScroll = 0;
+  KB().setKeyboardState(NORMAL);
+  TOUCH().setDynamicScroll(0);
   newLineAdded = true;
 }
 
@@ -51,7 +51,7 @@ void processKB_TXT_OLD() {
           CurrentAppState = HOME;
           currentLine     = "";
           newState        = true;
-          CurrentKBState  = NORMAL;
+          KB().setKeyboardState(NORMAL);
         }
         //TAB Recieved
         else if (inchar == 9) {                                  
@@ -59,13 +59,13 @@ void processKB_TXT_OLD() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -103,16 +103,16 @@ void processKB_TXT_OLD() {
         //SAVE Recieved
         else if (inchar == 6) {
           //File exists, save normally
-          if (editingFile != "" && editingFile != "-") {
+          if (SD().getEditingFile() != "" && SD().getEditingFile() != "-") {
             pocketmage::file::saveFile();
-            CurrentKBState = NORMAL;
+            KB().setKeyboardState(NORMAL);
             newLineAdded = true;
           }
           //File does not exist, make a new one
           else {
             CurrentTXTState = WIZ3;
             currentLine = "";
-            CurrentKBState = NORMAL;
+            KB().setKeyboardState(NORMAL);
             doFull = true;
             newState = true;
           }
@@ -120,26 +120,26 @@ void processKB_TXT_OLD() {
         //LOAD Recieved
         else if (inchar == 5) {
           pocketmage::file::loadFile();
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newLineAdded = true;
         }
         //FILE Recieved
         else if (inchar == 7) {
           CurrentTXTState = WIZ0;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newState = true;
         }
         // Font Switcher 
         else if (inchar == 14) {                                  
           CurrentTXTState = FONT;
-          CurrentKBState = FUNC;
+          KB().setKeyboardState(FUNC);
           newState = true;
         }
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -148,9 +148,9 @@ void processKB_TXT_OLD() {
         if (currentMillis - OLEDFPSMillis >= (1000/60)) {
           OLEDFPSMillis = currentMillis;
           // ONLY SHOW OLEDLINE WHEN NOT IN SCROLL MODE
-          if (lastTouch == -1) {
+          if (TOUCH().getLastTouch() == -1) {
             OLED().oledLine(currentLine);
-            if (prev_dynamicScroll != dynamicScroll) prev_dynamicScroll = dynamicScroll;
+            if (TOUCH().getPrevDynamicScroll() != TOUCH().getDynamicScroll()) TOUCH().setPrevDynamicScroll(TOUCH().getDynamicScroll());
           }
           else OLED().oledScroll();
         }
@@ -194,7 +194,7 @@ void processKB_TXT_OLD() {
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -203,9 +203,9 @@ void processKB_TXT_OLD() {
         else if (inchar >= '0' && inchar <= '9'){
           int fileIndex = (inchar == '0') ? 10 : (inchar - '0');
           //Edit a new file
-          if (filesList[fileIndex - 1] != editingFile) {
+          if (SD().getFilesListIndex(fileIndex - 1) != SD().getEditingFile()) { 
             //Selected file does not exist, create a new one
-            if (filesList[fileIndex - 1] == "-") {
+            if (SD().getFilesListIndex(fileIndex - 1) == "-") {
               CurrentTXTState = WIZ3;
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
@@ -213,8 +213,8 @@ void processKB_TXT_OLD() {
             }
             //Selected file exists, prompt to save current file
             else {      
-              prevEditingFile = editingFile;
-              editingFile = filesList[fileIndex - 1];      
+              prevEditingFile = SD().getEditingFile();
+              SD().setEditingFile(SD().getFilesListIndex(fileIndex - 1));      
               CurrentTXTState = WIZ1;
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
@@ -223,7 +223,7 @@ void processKB_TXT_OLD() {
           }
           //Selected file is current file, return to editor
           else {
-            CurrentKBState = NORMAL;
+            KB().setKeyboardState(NORMAL);
             CurrentTXTState = TXT_;
             newLineAdded = true;
             currentWord = "";
@@ -246,7 +246,7 @@ void processKB_TXT_OLD() {
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = WIZ0;
-          CurrentKBState = FUNC;
+          KB().setKeyboardState(FUNC);
           EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
           newState = true;
           display.fillScreen(GxEPD_WHITE);
@@ -259,7 +259,7 @@ void processKB_TXT_OLD() {
             if (prevEditingFile == "" || prevEditingFile == "-") {
               CurrentTXTState = WIZ2;
               currentWord = "";
-              CurrentKBState = NORMAL;
+              KB().setKeyboardState(NORMAL);
               EINK().setFullRefreshAfter(FULL_REFRESH_AFTER + 1);
               newState = true;
               display.fillScreen(GxEPD_WHITE);
@@ -274,7 +274,7 @@ void processKB_TXT_OLD() {
               pocketmage::file::loadFile();
               //Return to TXT
               CurrentTXTState = TXT_;
-              CurrentKBState = NORMAL;
+              KB().setKeyboardState(NORMAL);
               newLineAdded = true;
               currentWord = "";
               currentLine = "";
@@ -287,7 +287,7 @@ void processKB_TXT_OLD() {
             pocketmage::file::loadFile();
             //Return to TXT
             CurrentTXTState = TXT_;
-            CurrentKBState = NORMAL;
+            KB().setKeyboardState(NORMAL);
             newLineAdded = true;
             currentWord = "";
             currentLine = "";
@@ -308,14 +308,14 @@ void processKB_TXT_OLD() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
           newState = true;
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
           newState = true;
         }
         //Space Recieved
@@ -345,7 +345,7 @@ void processKB_TXT_OLD() {
 
           //Return to TXT_
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -355,8 +355,8 @@ void processKB_TXT_OLD() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL){
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL){
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -372,13 +372,13 @@ void processKB_TXT_OLD() {
         if (inchar == 0);                                         
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {}
@@ -394,7 +394,7 @@ void processKB_TXT_OLD() {
         }
         //ENTER Recieved
         else if (inchar == 13) {                          
-          editingFile = "/" + currentWord + ".txt";
+          prevEditingFile = "/" + currentWord + ".txt";
 
           //Save the file
           pocketmage::file::saveFile();
@@ -402,7 +402,7 @@ void processKB_TXT_OLD() {
           
           //Return to TXT_
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -412,8 +412,8 @@ void processKB_TXT_OLD() {
           //Only allow char to be added if it's an allowed char
           if (isalnum(inchar) || inchar == '_' || inchar == '-' || inchar == '.') currentWord += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL){
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL){
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -430,7 +430,7 @@ void processKB_TXT_OLD() {
         //BKSP Recieved
         else if (inchar == 127 || inchar == 8) {                  
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -472,7 +472,7 @@ void processKB_TXT_OLD() {
           stringToVector(fullTextStr);
 
           CurrentTXTState = TXT_;
-          CurrentKBState = NORMAL;
+          KB().setKeyboardState(NORMAL);
           newLineAdded = true;
           currentWord = "";
           currentLine = "";
@@ -527,11 +527,11 @@ void einkHandler_TXT_OLD() {
 
         for (int i = 0; i < MAX_FILES; i++) {
           display.setCursor(88, 54+(17*i));
-          display.print(filesList[i]);
+          display.print(SD().getFilesListIndex(i));
         }
 
         EINK().refresh();
-        CurrentKBState = FUNC;
+        KB().setKeyboardState(FUNC);
         break;
       case WIZ1:
         display.setFont(&FreeMonoBold9pt7b);
@@ -546,7 +546,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[1],200,218, GxEPD_BLACK);
 
         EINK().refresh();
-        CurrentKBState = FUNC;
+        KB().setKeyboardState(FUNC);
         break;
       case WIZ2:
         display.setFont(&FreeMonoBold9pt7b);
@@ -561,7 +561,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[2],200,218, GxEPD_BLACK);
 
         EINK().refresh();
-        CurrentKBState = NORMAL;
+        KB().setKeyboardState(NORMAL);
         break;
       case WIZ3:
         display.setFullWindow();
@@ -578,7 +578,7 @@ void einkHandler_TXT_OLD() {
         display.drawBitmap(60,0,fileWizLiteallArray[3],200,218, GxEPD_BLACK);
 
         EINK().refresh();
-        CurrentKBState = NORMAL;
+        KB().setKeyboardState(NORMAL);
         break;
       case FONT:
         display.setFullWindow();
@@ -622,7 +622,7 @@ void einkHandler_TXT_OLD() {
         }
 
         EINK().refresh();
-        CurrentKBState = FUNC;
+        KB().setKeyboardState(FUNC);
         break;
     
     }

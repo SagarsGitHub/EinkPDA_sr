@@ -6,7 +6,7 @@
 //       888        d8'  `888b        888       //
 //      o888o     o888o  o88888o     o888o      //
 
-#include <pocketmage.h>
+#include <globals.h>
 
 // Font includes
 // Mono
@@ -728,7 +728,7 @@ void toolBar(wordObject& wordObj) {
   // FN/SHIFT indicator centered
   u8g2.setFont(u8g2_font_5x7_tf);
 
-  switch (CurrentKBState) {
+  switch (KB().getKeyboardState()) {
     case 1:
       u8g2.drawStr((u8g2.getDisplayWidth() - u8g2.getStrWidth("SHIFT")) / 2,
                    u8g2.getDisplayHeight(), "SHIFT");
@@ -1110,7 +1110,7 @@ void refreshAllLineIndexes() {
 
 // Load File
 void loadMarkdownFile(const String& path) {
-  if (noSD) {
+  if (SD().getNoSD()) {
     OLED().oledWord("LOAD FAILED - No SD!");
     delay(5000);
     return;
@@ -1211,7 +1211,7 @@ void loadMarkdownFile(const String& path) {
 }
 
 void saveMarkdownFile(const String& path) {
-  if (noSD) {
+  if (SD().getNoSD()) {
     OLED().oledWord("SAVE FAILED - No SD!");
     delay(3000);
     return;
@@ -1263,7 +1263,7 @@ void saveMarkdownFile(const String& path) {
 
   // Save metadata
   pocketmage::file::writeMetadata(savePath);
-  editingFile = savePath;
+  SD().setEditingFile(savePath);
 
   OLED().oledWord("Saved: " + savePath);
   delay(1000);
@@ -1339,23 +1339,23 @@ void editAppend(char inchar) {
   // TAB Recieved
   else if (inchar == 9) {
     // If scrolling, edit inline
-    if (lastTouch != -1) {
+    if (TOUCH().getLastTouch() != -1) {
     }
 
   }
   // SHIFT Recieved
   else if (inchar == 17) {
-    if (CurrentKBState == SHIFT)
-      CurrentKBState = NORMAL;
+    if (KB().getKeyboardState() == SHIFT)
+      KB().setKeyboardState(NORMAL);
     else
-      CurrentKBState = SHIFT;
+      KB().setKeyboardState(SHIFT);
   }
   // FN Recieved
   else if (inchar == 18) {
-    if (CurrentKBState == FUNC)
-      CurrentKBState = NORMAL;
+    if (KB().getKeyboardState() == FUNC)
+      KB().setKeyboardState(NORMAL);
     else
-      CurrentKBState = FUNC;
+      KB().setKeyboardState(FUNC);
   }
   // Space Recieved
   else if (inchar == 32) {
@@ -1547,25 +1547,25 @@ void editAppend(char inchar) {
   }
   // SAVE Recieved
   else if (inchar == 6) {
-    String savePath = editingFile;
+    String savePath = SD().getEditingFile();
     if (savePath == "" || savePath == "-" || savePath == "/temp.txt") {
-      CurrentKBState = NORMAL;
+      KB().setKeyboardState(NORMAL);
       CurrentTXTState_NEW = SAVE_AS;
       return;
     }
     if (!savePath.startsWith("/")) savePath = "/" + savePath;
     
-    saveMarkdownFile(editingFile);
+    saveMarkdownFile(SD().getEditingFile());
   }
   // FILE Recieved
   else if (inchar == 7) {
     CurrentTXTState_NEW = LOAD_FILE;
-    CurrentKBState = NORMAL;
+    KB().setKeyboardState(NORMAL);
   }
   // Font Switcher
   else if (inchar == 14) {
     CurrentTXTState_NEW = FONT;
-    CurrentKBState = FUNC;
+    KB().setKeyboardState(FUNC);
     updateScreen = true;
   } else {
     // Add char to current word
@@ -1573,8 +1573,8 @@ void editAppend(char inchar) {
 
     if (inchar >= 48 && inchar <= 57) {
     }  // Only leave FN on if typing numbers
-    else if (CurrentKBState != NORMAL) {
-      CurrentKBState = NORMAL;
+    else if (KB().getKeyboardState() != NORMAL) {
+      KB().setKeyboardState(NORMAL);
     }
   }
 
@@ -1588,7 +1588,7 @@ void editAppend(char inchar) {
   if (currentMillis - OLEDFPSMillis >= (1000 / 60)) {
     OLEDFPSMillis = currentMillis;
     // Show line on OLED when not actively scrolling
-    if (lastTouch == -1) {
+    if (TOUCH().getLastTouch() == -1) {
       bool currentlyTyping = (millis() - lastTypeMillis < TYPE_INTERFACE_TIMEOUT);
 
       // Flush KB IC if not in use
@@ -1731,8 +1731,8 @@ void initFonts() {
 void TXT_INIT() {
   initFonts();
 
-  if (editingFile != "") {
-    loadMarkdownFile(editingFile);
+  if (SD().getEditingFile() != "") {
+    loadMarkdownFile(SD().getEditingFile());
   }
 
   setFontStyle(serif);
@@ -1805,13 +1805,13 @@ void processKB_TXT_NEW() {
         }                                      
         //SHIFT Recieved
         else if (inchar == 17) {                                  
-          if (CurrentKBState == SHIFT) CurrentKBState = NORMAL;
-          else CurrentKBState = SHIFT;
+          if (KB().getKeyboardState() == SHIFT) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(SHIFT);
         }
         //FN Recieved
         else if (inchar == 18) {                                  
-          if (CurrentKBState == FUNC) CurrentKBState = NORMAL;
-          else CurrentKBState = FUNC;
+          if (KB().getKeyboardState() == FUNC) KB().setKeyboardState(NORMAL);
+          else KB().setKeyboardState(FUNC);
         }
         //Space Recieved
         else if (inchar == 32) {                                  
@@ -1834,8 +1834,8 @@ void processKB_TXT_NEW() {
         else {
           currentLine += inchar;
           if (inchar >= 48 && inchar <= 57) {}  //Only leave FN on if typing numbers
-          else if (CurrentKBState != NORMAL) {
-            CurrentKBState = NORMAL;
+          else if (KB().getKeyboardState() != NORMAL) {
+            KB().setKeyboardState(NORMAL);
           }
         }
 
@@ -1860,7 +1860,7 @@ void processKB_TXT_NEW() {
         if (outPath.endsWith(".txt") || outPath.endsWith(".md")) {
           if (!outPath.startsWith("/")) outPath = "/" + outPath;
           loadMarkdownFile(outPath);
-          editingFile = outPath;
+          SD().setEditingFile(outPath);
           CurrentTXTState_NEW = TXT_;
           updateScreen = true;
         } else {

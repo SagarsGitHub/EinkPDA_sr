@@ -21,10 +21,15 @@ public:
 
   DateTime nowDT()                                         { return rtc_.now(); }
   RTC_PCF8563& getRTC()                                          { return rtc_; }
-
+  long getTimeDiff()                { return timeoutMillis_ - prevTimeMillis_; }
+  volatile long getTimeoutMillis() const                    { return timeoutMillis_; }
+  void setTimeoutMillis(long t)                            { timeoutMillis_ = t;  }
+  void setPrevTimeMillis(long t)                        { prevTimeMillis_ = t; } 
 private:
   RTC_PCF8563 &rtc_;  
   bool begun_ = false;
+  volatile long timeoutMillis_ = 0;   // Timeout tracking
+  volatile long prevTimeMillis_ = 0;  // Previous time for timeout
 };
 
 void wireClock();
