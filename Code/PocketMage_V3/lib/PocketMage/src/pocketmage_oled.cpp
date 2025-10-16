@@ -186,6 +186,14 @@ void PocketmageOled::infoBar() {
     infoWidth += (u8g2_.getStrWidth("USB") + 6);
   }
 
+  // Sink Indicator
+  if (sinkEnabled_ && *sinkEnabled_) {
+    u8g2_.setFont(u8g2_font_5x7_tf);
+    u8g2_.drawStr(infoWidth, u8g2_.getDisplayHeight(), "SNK");
+
+    infoWidth += (u8g2_.getStrWidth("SNK") + 6);
+  }
+
   // SD Indicator 
   if (sdActive_ && *sdActive_) {
     u8g2_.setFont(u8g2_font_5x7_tf);

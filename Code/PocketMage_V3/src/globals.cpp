@@ -17,6 +17,7 @@ const char daysOfTheWeek[7][12] = { "Sunday", "Monday", "Tuesday", "Wednesday", 
 // USB mass storage controller
 USBMSC msc;
 bool mscEnabled = false;          // Is USB MSC active?
+bool sinkEnabled = false;
 sdmmc_card_t* card = nullptr;     // SD card pointer
 
 // ===================== SYSTEM STATE =====================

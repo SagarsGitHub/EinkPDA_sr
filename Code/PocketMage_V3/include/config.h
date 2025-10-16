@@ -20,6 +20,8 @@
 #define I2C_SCL       35
 #define I2C_SDA       36
 #define MPR121_ADDR   0x5A
+#define MP2722_ADDR   0x3F
+#define USB_MUX_PIN   7
 
 #define KB_IRQ        8
 //#define PWR_BTN       38  // V3.0
@@ -57,5 +59,9 @@ extern bool ALLOW_NO_MICROSD;    // Allow running without SD card
 extern bool HOME_ON_BOOT;        // Start home app on boot
 extern int OLED_BRIGHTNESS;      // OLED brightness (0-255)
 extern int OLED_MAX_FPS;         // OLED max FPS
+
+// System tags
+extern bool mscEnabled;      // Is USB MSC active?
+extern bool sinkEnabled;     // Is USB in sink mode?
 
 #endif

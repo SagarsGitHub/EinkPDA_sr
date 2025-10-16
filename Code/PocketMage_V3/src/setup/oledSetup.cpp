@@ -41,6 +41,7 @@ void wireOled() {
   pm_oled.setBattery(&battState, batt_allArray, kBattIconCount);
   // lamda to avoid redundant functions To Do: kb state getter stored in pocketmage_kb
   pm_oled.setMSC(&mscEnabled);
+  pm_oled.setSNK(&sinkEnabled);
   pm_oled.setSD(&SDActive);
   pm_oled.setScrollBitmap(scrolloled0);
   pm_oled.setReferenceWidth(display.width());

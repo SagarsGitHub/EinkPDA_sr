@@ -9,3 +9,4 @@
 #include <pocketmage_touch.h>
 #include <pocketmage_clock.h>
 #include <pocketmage_sys.h>
+#include <MP2722.h>

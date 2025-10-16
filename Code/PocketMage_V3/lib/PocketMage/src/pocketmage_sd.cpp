@@ -53,7 +53,6 @@ void setupSD() {
   if (!SD_MMC.exists("/dict"))                SD_MMC.mkdir( "/dict"               );
   if (!SD_MMC.exists("/apps"))                SD_MMC.mkdir( "/apps"               );
   if (!SD_MMC.exists("/apps/temp"))           SD_MMC.mkdir( "/apps/temp"          );
-  if (!SD_MMC.exists("/screensavers"))        SD_MMC.mkdir( "/screensavers"       );
   if (!SD_MMC.exists("/notes"))               SD_MMC.mkdir( "/notes"              );
   if (!SD_MMC.exists("/assets"))              SD_MMC.mkdir( "/assets"             );
   if (!SD_MMC.exists("/assets/backgrounds"))  SD_MMC.mkdir( "/assets/backgrounds" );

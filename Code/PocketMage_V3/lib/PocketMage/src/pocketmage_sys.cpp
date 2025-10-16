@@ -76,6 +76,9 @@ void PocketMage_INIT(){
   attachInterrupt(digitalPinToInterrupt(PWR_BTN), pocketmage::power::PWR_BTN_irq, FALLING);
   pinMode(CHRG_SENS, INPUT);
   pinMode(BAT_SENS, INPUT);
+  if (!PowerSystem.init(I2C_SDA, I2C_SCL)) {
+    ESP_LOGV(TAG, "MP2722 Failed to Init");
+  }
   //WiFi.mode(WIFI_OFF);
   //btStop();
 
@@ -717,14 +720,20 @@ namespace pocketmage::power{
 
         // Use custom screensavers
         if (!binFiles.empty()) {
-            String path = "/assets/backgrounds/" + binFiles[esp_random() % binFiles.size()];
+            int fileIndex = esp_random() % binFiles.size();
+            String path = "/assets/backgrounds/" + binFiles[fileIndex];
             File f = SD_MMC.open(path);
             if (f) {
                 static uint8_t buf[320 * 240]; // Declare as static to avoid stack overflow :D
                 f.read(buf, sizeof(buf));
                 f.close();
 
+                // Show file
                 display.drawBitmap(0, 0, buf, 320, 240, GxEPD_BLACK);
+                display.setFont(&FreeMonoBold9pt7b);
+                display.setTextColor(GxEPD_BLACK);
+                display.setCursor(5, display.height()-5);
+                display.print(binFiles[fileIndex].c_str());
             }
         }
         // Use standard screensavers
@@ -765,6 +774,7 @@ namespace pocketmage::power{
     }
     
     void updateBattState() {
+
     // Read and scale voltage (add calibration offset if needed)
     float rawVoltage = (analogRead(BAT_SENS) * (3.3 / 4095.0) * 2) + 0.2;
 
@@ -780,9 +790,31 @@ namespace pocketmage::power{
     int newState = battState;
 
     // Charging state overrides everything
-    if (digitalRead(CHRG_SENS) == 1) {
+    MP2722::MP2722_ChargeStatus chg;
+    if (/*digitalRead(CHRG_SENS) == 1*/PowerSystem.getChargeStatus(chg) && (chg.code == 0b001 || chg.code == 0b010 || chg.code == 0b011 || chg.code == 0b100 || chg.code == 0b101)) {
         newState = 5;
     } else {
+        // Check for low battery
+        bool low;
+        if (!PowerSystem.isBatteryLow(low)) {
+            if (low) {
+                OLED().oledWord("Battery Critial!");
+                delay(1000);
+
+                // Save current work
+                OLED().oledWord("Saving Work");
+                //pocketmage::file::saveFile();
+                String savePath = SD().getEditingFile();
+                if (savePath != "" && savePath != "-" && savePath != "/temp.txt") {
+                    if (!savePath.startsWith("/")) savePath = "/" + savePath;
+                    saveMarkdownFile(SD().getEditingFile());
+                }
+
+                // Put device to sleep
+                deepSleep(false);
+            }
+        }
+
         // Normal battery voltage thresholds with hysteresis
         if (filteredVoltage > 4.1 || (prevBattState == 4 && filteredVoltage > 4.1 - threshold)) {
         newState = 4;

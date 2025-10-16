@@ -11,7 +11,6 @@
 #include <utility>
 #include <Adafruit_TCA8418.h>
 
-
 extern Adafruit_TCA8418 keypad;
 
 // ===================== KB CLASS =====================
@@ -26,6 +25,7 @@ public:
   int getKeyboardState() const                               { return kbState_; }
   // Main methods
   char updateKeypress();
+  void checkUSBKB();
   void disableInterrupts()                           { keypad_.disableInterrupts(); }
   void enableInterrupts()                             { keypad_.enableInterrupts(); }
   void flush()                                                   { keypad_.flush(); }

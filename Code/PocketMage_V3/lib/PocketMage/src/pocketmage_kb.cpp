@@ -106,3 +106,39 @@ char PocketmageKB::updateKeypress() {
   return 0;
 
 }
+
+void PocketmageKB::checkUSBKB() {
+  // Check if USB Keyboard has been connected
+  bool needBoost;
+  PowerSystem.getOTGNeed(needBoost);
+  if (needBoost) {
+    // Enable boost if not already on
+    bool boostOn;
+    if (PowerSystem.getBoostState(boostOn) && !boostOn) {
+        PowerSystem.setBoost(true);
+    }
+
+    // Connect D+/D− to ESP so USB host can enumerate keyboard
+    PowerSystem.setUSBControlESP();
+
+    // Initialize USB HID host here
+    
+    // Set tags
+    mscEnabled = true; 
+    sinkEnabled = true;
+
+  }
+  else {
+    // Disable boost if not already off
+    bool boostOn;
+    if (PowerSystem.getBoostState(boostOn) && boostOn) {
+        PowerSystem.setBoost(false);
+    }
+
+    PowerSystem.setUSBControlBMS();
+
+    // Set tags
+    mscEnabled = false; 
+    sinkEnabled = false;
+  }
+}

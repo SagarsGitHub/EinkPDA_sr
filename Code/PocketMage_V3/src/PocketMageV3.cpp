@@ -56,6 +56,9 @@ void applicationEinkHandler() {
 
 // ADD PROCESS/KEYBOARD APP SCRIPTS HERE
 void processKB() {
+  // Check for USB KB
+  KB().checkUSBKB();
+
   switch (CurrentAppState) {
     case HOME:
       processKB_HOME();
@@ -108,10 +111,13 @@ void setup() {
   PocketMage_INIT();
 }
 
+// Keyboard / OLED Loop
 void loop() {
   if (!noTimeout)  pocketmage::time::checkTimeout();
   if (DEBUG_VERBOSE) pocketmage::debug::printDebug();
 
+  PowerSystem.printDiagnostics(); // power diag
+  
   pocketmage::power::updateBattState();
   processKB();
 
@@ -120,7 +126,7 @@ void loop() {
   yield();
 }
 
-// migrated from einkFunc.cpp
+// E-Ink Loop
 void einkHandler(void* parameter) {
   vTaskDelay(pdMS_TO_TICKS(250)); 
   for (;;) {

@@ -61,6 +61,9 @@ void USBAppShutdown() {
   if (!SD_MMC.exists("/journal")) SD_MMC.mkdir("/journal");
   if (SAVE_POWER) setCpuFrequencyMhz(POWER_SAVE_FREQ);
   disableTimeout = false;
+
+  // Switch USB contol to BMS
+  PowerSystem.setUSBControlBMS();
 }
 
 static int32_t onWrite(uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize) {
@@ -110,6 +113,9 @@ static void usbEventCallback(void* arg, esp_event_base_t event_base, int32_t eve
 }
 
 void USB_INIT() {
+  // Switch USB contol to ESP
+  PowerSystem.setUSBControlESP();
+
   // OPEN USB FILE TRANSFER
   OLED().oledWord("Initializing USB");
   setCpuFrequencyMhz(240);

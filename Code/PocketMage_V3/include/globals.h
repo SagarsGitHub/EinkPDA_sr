@@ -34,7 +34,6 @@ extern const char daysOfTheWeek[7][12]; // Day names
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
 extern USBMSC msc;           // USB MSC object
-extern bool mscEnabled;      // Is USB MSC active?
 extern sdmmc_card_t* card;   // SD card pointer
 
 // ===================== SYSTEM STATE =====================
