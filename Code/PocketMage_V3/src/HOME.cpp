@@ -8,7 +8,7 @@
 #include <globals.h>
 #include "esp_log.h"
 
-#define IDLE_TIME 10000 // time to wait for idle (ms)
+#define IDLE_TIME 20000 // time to wait for idle (ms)
 
 static String currentLine = "";
 static bool resetIdleAnim = false; 
@@ -249,6 +249,7 @@ void mageIdle(bool internalRefresh) {
     chance = 1;
     internalMillis = 0;
     runSpeed = 3;
+    CurrentMageState = RUN_RIGHT;
 
     resetIdleAnim = false;
   }
