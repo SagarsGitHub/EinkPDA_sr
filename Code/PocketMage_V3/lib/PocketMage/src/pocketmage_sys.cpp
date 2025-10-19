@@ -46,6 +46,10 @@ bool rebootToPocketMage() {
 
 bool noTimeout = false;               // Disable timeout
 
+bool mscEnabled         = false;
+bool sinkEnabled        = false;
+volatile bool SDActive  = false;
+
 void PocketMage_INIT(){
   // Serial, I2C, SPI
   Serial.begin(115200);

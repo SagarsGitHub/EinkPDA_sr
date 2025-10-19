@@ -10,6 +10,24 @@
 
 static constexpr const char* tag = "OLED";
 
+// Initialization of oled display class
+static PocketmageOled pm_oled(u8g2);
+
+// Setup for Oled Class
+void setupOled() {
+  u8g2.begin();
+  u8g2.setBusClock(10000000);
+  u8g2.setPowerSave(0);
+  u8g2.clearBuffer();
+  u8g2.sendBuffer();
+
+  // SHOW "PocketMage" while DEVICE BOOTS
+  OLED().oledWord("   PocketMage   ", true, false);
+}
+
+// oled object reference for other apps
+PocketmageOled& OLED() { return pm_oled; }
+
 // ===================== public functions =====================
 void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
   u8g2_.clearBuffer();
@@ -66,7 +84,7 @@ void PocketmageOled::oledWord(String word, bool allowLarge, bool showInfo) {
 }
 
 void PocketmageOled::oledLine(String line, bool doProgressBar, String bottomMsg) {
-    uint8_t mcl = maxCharsFn_ ? (uint8_t)maxCharsFn_() : /*fallback*/ 29;
+    uint8_t mcl = EINK().maxCharsPerLine();
     uint8_t maxLength = mcl;
     u8g2_.clearBuffer();
 
@@ -76,7 +94,7 @@ void PocketmageOled::oledLine(String line, bool doProgressBar, String bottomMsg)
 
     const uint16_t charWidth = strWidth(line);
 
-    const uint8_t progress = map(charWidth, 0, (int)refWidth_-5, 0, u8g2_.getDisplayWidth());
+    const uint8_t progress = map(charWidth, 0, display.width()-5, 0, u8g2_.getDisplayWidth());
 
     u8g2_.drawVLine(u8g2_.getDisplayWidth(), 0, 2);
     u8g2_.drawVLine(0, 0, 2);
@@ -85,7 +103,7 @@ void PocketmageOled::oledLine(String line, bool doProgressBar, String bottomMsg)
     u8g2_.drawHLine(0, 1, progress);
 
     // LINE END WARNING INDICATOR
-    if (charWidth > ((refWidth_ - 5) * 0.8)) {
+    if (charWidth > ((display.width() - 5) * 0.8)) {
       if ((millis() / 400) % 2 == 0) {  // ON for 200ms, OFF for 200ms
         u8g2_.drawVLine(u8g2_.getDisplayWidth()-1, 8, 32-16);
         u8g2_.drawLine(u8g2_.getDisplayWidth()-1,15,u8g2_.getDisplayWidth()-4,12);
@@ -153,33 +171,32 @@ void PocketmageOled::infoBar() {
   int infoWidth = 16;
 
   // Battery Indicator
-  if (battIcons_ && battState_ && battIconCount_ > 0) {
-    int maxIconIndex = battIconCount_ - 1;
-    int state = *battState_;
-    state = (int)constrain(state, 0, maxIconIndex);
-    u8g2_.drawXBMP(0, u8g2_.getDisplayHeight()-6, 10, 6, battIcons_[state]);
-  }
+  int maxIconIndex = sizeof(batt_allArray) / sizeof(batt_allArray[0]) - 1;
+  int state_ = battState;
+  state_ = (int)constrain(state_, 0, maxIconIndex);
+  u8g2_.drawXBMP(0, u8g2_.getDisplayHeight()-6, 10, 6, batt_allArray[state_]);
+  
 
   // CLOCK
-  if (systemClock_ && *systemClock_ && rtc_) {
+  if (SYSTEM_CLOCK) {
     u8g2_.setFont(u8g2_font_5x7_tf);
-    DateTime now = rtc_->now();
+    DateTime now = CLOCK().nowDT();
     
     // shortened time format
     String timeString = String(now.hour()) + ":" + (now.minute() < 10 ? "0" : "") + String(now.minute());
     u8g2_.drawStr(infoWidth, u8g2_.getDisplayHeight(), timeString.c_str());
 
-    String day3Char = days_ ? String(days_[now.dayOfTheWeek()]) : String("Day");
+    String day3Char = String(daysOfTheWeek[now.dayOfTheWeek()]);
     day3Char = day3Char.substring(0, 3);
-    if (showYear_ && *showYear_) day3Char += (" " + String(now.month()) + "/" + String(now.day()) + "/" + String(now.year()).substring(2,4));
-    else                          day3Char += (" " + String(now.month()) + "/" + String(now.day()));
+    if (SHOW_YEAR) day3Char += (" " + String(now.month()) + "/" + String(now.day()) + "/" + String(now.year()).substring(2,4));
+    else           day3Char += (" " + String(now.month()) + "/" + String(now.day()));
     u8g2_.drawStr(u8g2_.getDisplayWidth() - u8g2_.getStrWidth(day3Char.c_str()), u8g2_.getDisplayHeight(), day3Char.c_str());    
 
     infoWidth += (u8g2_.getStrWidth(timeString.c_str()) + 6);
   }
 
   // MSC Indicator
-  if (mscEnabled_ && *mscEnabled_) {
+  if (mscEnabled) {
     u8g2_.setFont(u8g2_font_5x7_tf);
     u8g2_.drawStr(infoWidth, u8g2_.getDisplayHeight(), "USB");
 
@@ -187,7 +204,7 @@ void PocketmageOled::infoBar() {
   }
 
   // Sink Indicator
-  if (sinkEnabled_ && *sinkEnabled_) {
+  if (sinkEnabled) {
     u8g2_.setFont(u8g2_font_5x7_tf);
     u8g2_.drawStr(infoWidth, u8g2_.getDisplayHeight(), "SNK");
 
@@ -195,7 +212,7 @@ void PocketmageOled::infoBar() {
   }
 
   // SD Indicator 
-  if (sdActive_ && *sdActive_) {
+  if (SDActive) {
     u8g2_.setFont(u8g2_font_5x7_tf);
     u8g2_.drawStr(infoWidth, u8g2_.getDisplayHeight(), "SD");
 
@@ -208,7 +225,7 @@ void PocketmageOled::oledScroll() {
   u8g2_.clearBuffer();
 
   // DRAW BACKGROUND
-  if (scrollBmp_) u8g2_.drawXBMP(0, 0, 128, 32, scrollBmp_);
+  if (scrolloled0) u8g2_.drawXBMP(0, 0, 128, 32, scrolloled0);
 
 
   // DRAW LINES PREVIEW
@@ -256,8 +273,5 @@ void PocketmageOled::oledScroll() {
 // ===================== private functions =====================
 // COMPUTE STRING WIDTH IN EINK PIXELS
 uint16_t PocketmageOled::strWidth(const String& s) const {
-  // Fallback: map u8g2 width to the reference width
-  if (measure_) return measure_(s);
-  float scale = refWidth_ / (float)u8g2_.getDisplayWidth();
-  return (uint16_t)(u8g2_.getStrWidth(s.c_str()) * scale);
+  return EINK().getEinkTextWidth(s);
 }

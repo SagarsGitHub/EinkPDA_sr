@@ -10,6 +10,19 @@
 
 static constexpr const char* tag = "EINK";
 
+GxEPD2_BW<GxEPD2_310_GDEQ031T10, GxEPD2_310_GDEQ031T10::HEIGHT> display(GxEPD2_310_GDEQ031T10(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
+
+TaskHandle_t einkHandlerTaskHandle = NULL; // E-Ink handler task
+
+// Fast full update flag for e-ink
+volatile bool GxEPD2_310_GDEQ031T10::useFastFullUpdate = true;
+
+// Initialization of eink display class
+static PocketmageEink pm_eink(display);
+
+// Access for other apps 
+PocketmageEink& EINK() { return pm_eink; }
+
 // ===================== main functions =====================
 void PocketmageEink::refresh() {
   // USE A SLOW FULL UPDATE EVERY N FAST UPDATES OR WHEN SPECIFIED
@@ -150,6 +163,31 @@ int PocketmageEink::countLines(const String& input, size_t maxLineLength) {
   return lineCounter;
 }
 void PocketmageEink::forceSlowFullUpdate(bool force)            { forceSlowFullUpdate_ = force; }
+
+// Setup for Eink Class
+void setupEink() {
+  display.init(115200);
+  display.setRotation(3);
+  display.setTextColor(GxEPD_BLACK);
+  display.setFullWindow();
+  EINK().setTXTFont(&FreeMonoBold9pt7b); // default font, computeFontMetrics_()
+
+  xTaskCreatePinnedToCore(
+    einkHandler,             // Function name
+    "einkHandlerTask",       // Task name
+    10000,                   // Stack size
+    NULL,                    // Parameters 
+    1,                       // Priority 
+    &einkHandlerTaskHandle,  // Task handle
+    0                        // Core ID 
+  );
+}
+
+uint16_t PocketmageEink::getEinkTextWidth(const String& s) {
+  int16_t x1, y1; uint16_t w, h;
+  display.getTextBounds(s, 0, 0, &x1, &y1, &w, &h);
+  return w;
+}
 
 // ===================== getter functions =====================
 const GFXfont* PocketmageEink::getCurrentFont() { return currentFont_; }

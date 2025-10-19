@@ -13,6 +13,10 @@
 
 class String;
 
+extern bool mscEnabled;
+extern bool sinkEnabled;
+extern volatile bool SDActive;
+
 extern bool rebootToPocketMage();
 // To Do: remove nested namespaces and default to pocketmage::method()
 // maybe: refactor pocketmage to be consistent with hardware classes in library (Pocketmage().method())

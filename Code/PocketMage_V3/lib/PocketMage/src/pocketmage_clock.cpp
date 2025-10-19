@@ -11,6 +11,8 @@ static constexpr const char* tag = "CLOCK";
 
 RTC_PCF8563 rtc;
 
+const char daysOfTheWeek[7][12] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
 // Initialization of clock class
 static PocketmageCLOCK pm_clock(rtc);
 

@@ -2,22 +2,12 @@
 #include "sdmmc_cmd.h"
 
 // ===================== DISPLAY =====================
-// Main e-ink display object
-GxEPD2_BW<GxEPD2_310_GDEQ031T10, GxEPD2_310_GDEQ031T10::HEIGHT> display(GxEPD2_310_GDEQ031T10(EPD_CS, EPD_DC, EPD_RST, EPD_BUSY));
-// Fast full update flag for e-ink
-volatile bool GxEPD2_310_GDEQ031T10::useFastFullUpdate = true;
 // 256x32 SPI OLED display object
 U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2(U8G2_R2, OLED_CS, OLED_DC, OLED_RST);
-
-// ===================== RTC =====================
-// Day names
-const char daysOfTheWeek[7][12] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
 USBMSC msc;
-bool mscEnabled = false;          // Is USB MSC active?
-bool sinkEnabled = false;
 sdmmc_card_t* card = nullptr;     // SD card pointer
 
 // ===================== SYSTEM STATE =====================
@@ -38,7 +28,7 @@ volatile int battState = 0;           // Battery state
 unsigned int flashMillis = 0;         // Flash timing
 int prevTime = 0;                     // Previous time (minutes)
 uint8_t prevSec = 0;                  // Previous seconds
-TaskHandle_t einkHandlerTaskHandle = NULL; // E-Ink handler task
+
 uint8_t partialCounter = 0;           // Counter for partial refreshes
 volatile bool forceSlowFullUpdate = false; // Force slow full update
 
@@ -59,7 +49,6 @@ String OTA4_APP;
 
 // ===================== FILES & TEXT =====================
 volatile bool SDCARD_INSERT = false;  // SD card inserted event
-volatile bool SDActive = false;       // SD card active
 
 // ===================== APP STATES =====================
 const String appStateNames[] = { "txt", "filewiz", "usb", "bt", "settings", "tasks", "calendar", "journal", "lexicon", "script" , "loader" }; // App state names

@@ -9,7 +9,6 @@
 #include <Arduino.h>
 #include <RTClib.h>
 
-
 class PocketmageCLOCK {
 public:
   explicit PocketmageCLOCK(RTC_PCF8563 &rtc) : rtc_(rtc) {}

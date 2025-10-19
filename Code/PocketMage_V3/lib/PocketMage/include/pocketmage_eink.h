@@ -33,6 +33,11 @@
 using PanelT   = GxEPD2_310_GDEQ031T10;
 using DisplayT = GxEPD2_BW<PanelT, PanelT::HEIGHT>;
 
+// E-ink display
+extern DisplayT display;
+
+extern void einkHandler(void *parameter);
+
 // ===================== EINK CLASS =====================
 class PocketmageEink {
 public:
@@ -56,6 +61,7 @@ public:
   void setTXTFont(const GFXfont* font);
   void einkTextDynamic(bool doFull, bool noRefresh=false);
   int  countLines(const String& input, size_t maxLineLength = 29);
+  uint16_t getEinkTextWidth(const String& s);
 
   // getters To Do: migrate definitions here from pocketmage_eink.cpp
   uint8_t maxCharsPerLine() const;
@@ -79,4 +85,5 @@ private:
 };
 
 void setupEink();
+
 PocketmageEink& EINK();
