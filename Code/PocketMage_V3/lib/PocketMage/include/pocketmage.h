@@ -1,5 +1,3 @@
-//#include <config.h>
-
 // Pocketmage library headers
 #include <pocketmage_eink.h>
 #include <pocketmage_oled.h>
@@ -9,6 +7,6 @@
 #include <pocketmage_touch.h>
 #include <pocketmage_clock.h>
 #include <pocketmage_sys.h>
-#include <config.h>
 #include <MP2722.h>
 #include <assets.h>
+#include <config.h>

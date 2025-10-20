@@ -16,6 +16,7 @@ class String;
 extern bool mscEnabled;
 extern bool sinkEnabled;
 extern volatile bool SDActive;
+extern volatile int battState;       // Battery state
 
 extern bool rebootToPocketMage();
 // To Do: remove nested namespaces and default to pocketmage::method()

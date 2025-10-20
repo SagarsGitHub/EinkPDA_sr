@@ -7,8 +7,6 @@
 
 #pragma once
 #include <Arduino.h>
-#include <functional>
-#include <utility>
 #include <Adafruit_TCA8418.h>
 
 extern Adafruit_TCA8418 keypad;

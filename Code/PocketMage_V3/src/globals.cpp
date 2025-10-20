@@ -1,10 +1,6 @@
 #include "globals.h"
 #include "sdmmc_cmd.h"
 
-// ===================== DISPLAY =====================
-// 256x32 SPI OLED display object
-U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2(U8G2_R2, OLED_CS, OLED_DC, OLED_RST);
-
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
 USBMSC msc;
@@ -18,17 +14,12 @@ int OLEDFPSMillis = 0;            // Last OLED FPS update time
 int KBBounceMillis = 0;           // Last keyboard debounce time
 volatile bool TCA8418_event = false;  // Keypad interrupt event
 volatile bool PWR_BTN_event = false;  // Power button event
-volatile bool SHFT = false;           // Shift key state
-volatile bool FN = false;             // Function key state
 volatile bool newState = false;       // App state changed
 volatile bool OLEDPowerSave = false;  // OLED power save mode
 volatile bool disableTimeout = false; // Disable timeout globally
-volatile int battState = 0;           // Battery state
-// volatile int prevBattState = 0;       // Previous battery state
 unsigned int flashMillis = 0;         // Flash timing
 int prevTime = 0;                     // Previous time (minutes)
 uint8_t prevSec = 0;                  // Previous seconds
-
 uint8_t partialCounter = 0;           // Counter for partial refreshes
 volatile bool forceSlowFullUpdate = false; // Force slow full update
 

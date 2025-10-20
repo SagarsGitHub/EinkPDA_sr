@@ -13,6 +13,9 @@ static constexpr const char* tag = "OLED";
 // Initialization of oled display class
 static PocketmageOled pm_oled(u8g2);
 
+// 256x32 SPI OLED display object
+U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2(U8G2_R2, OLED_CS, OLED_DC, OLED_RST);
+
 // Setup for Oled Class
 void setupOled() {
   u8g2.begin();

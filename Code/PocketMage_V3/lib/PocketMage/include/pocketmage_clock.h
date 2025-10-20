@@ -9,6 +9,9 @@
 #include <Arduino.h>
 #include <RTClib.h>
 
+// Real-time clock
+extern const char daysOfTheWeek[7][12]; // Day names
+
 class PocketmageCLOCK {
 public:
   explicit PocketmageCLOCK(RTC_PCF8563 &rtc) : rtc_(rtc) {}
