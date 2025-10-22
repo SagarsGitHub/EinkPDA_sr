@@ -2,32 +2,13 @@
 #define GLOBALS_H
 
 // LIBRARIES
-#include <Arduino.h>
-#include <GxEPD2_BW.h>
-#include <U8g2lib.h>
-#include <Adafruit_TCA8418.h>
-#include <vector>
-#include <Buzzer.h>
 #include <USB.h>
 #include <USBMSC.h>
 #include <SD_MMC.h>
 #include <Preferences.h>
-#include <Adafruit_MPR121.h>
-#include <esp_cpu.h>
-#include <RTClib.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <assets.h>
-#include <config.h>
 #include <pocketmage.h>
-
-// ===================== DISPLAY =====================
-// OLED 
-extern U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2;
-
-// ===================== RTC =====================
-// Real-time clock
-extern const char daysOfTheWeek[7][12]; // Day names
 
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
@@ -35,15 +16,11 @@ extern USBMSC msc;           // USB MSC object
 extern sdmmc_card_t* card;   // SD card pointer
 
 // ===================== SYSTEM STATE =====================
-// E-Ink refresh control
-// extern volatile int einkRefresh;     // Partial/full refresh counter
 extern Preferences prefs;        // NVS preferences
 extern int OLEDFPSMillis;            // Last OLED FPS update time
 extern int KBBounceMillis;           // Last keyboard debounce time
 extern volatile bool TCA8418_event;  // Keypad interrupt event
 extern volatile bool PWR_BTN_event;  // Power button event
-extern volatile bool SHFT;           // Shift key state
-extern volatile bool FN;             // Function key state
 extern volatile bool newState;       // App state changed
 extern volatile bool OLEDPowerSave;  // OLED power save mode
 extern volatile bool disableTimeout; // Disable timeout globally
@@ -63,13 +40,9 @@ extern String OTA4_APP;
 
 // ===================== KEYBOARD STATE =====================
 extern volatile bool SDCARD_INSERT;  // SD card inserted event
-
-// ===================== APP STATES =====================
 enum KBState { NORMAL, SHIFT, FUNC };    // Keyboard state
 
-// extern uint8_t partialCounter;           // E-Ink partial refresh counter
-// extern volatile bool forceSlowFullUpdate;// Force slow full update
-
+// ===================== APP STATES =====================
 enum AppState { HOME, TXT, FILEWIZ, USB_APP, BT, SETTINGS, TASKS, CALENDAR, JOURNAL, LEXICON, APPLOADER };
 extern const String appStateNames[];     // App state names
 extern const unsigned char *appIcons[11]; // App icons

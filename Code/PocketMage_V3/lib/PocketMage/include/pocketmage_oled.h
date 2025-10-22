@@ -9,14 +9,12 @@
 #pragma once
 #include <Arduino.h>
 #include <U8g2lib.h>
-#include <RTClib.h>
 #include <vector>
-#include <functional>
-#include <utility>
 #pragma region fonts
 #pragma endregion
 
-// To Do: add forward declaration of u8g2, remove #include<U8g2lib.h>, add forward declaration of pocketmage_clock and replace rtc w/ CLOCK()
+// OLED 
+extern U8G2_SSD1326_ER_256X32_F_4W_HW_SPI u8g2;
 
 // ===================== OLED CLASS =====================
 class PocketmageOled {
