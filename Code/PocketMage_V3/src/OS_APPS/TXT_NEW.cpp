@@ -1208,6 +1208,7 @@ void loadMarkdownFile(const String& path) {
 
   OLED().oledWord("FILE LOADED");
   delay(500);
+  fileLoaded = true;
 }
 
 void saveMarkdownFile(const String& path) {

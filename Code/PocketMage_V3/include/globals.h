@@ -48,6 +48,8 @@ extern volatile bool newState;       // App state changed
 extern volatile bool OLEDPowerSave;  // OLED power save mode
 extern volatile bool disableTimeout; // Disable timeout globally
 extern volatile int battState;       // Battery state
+extern bool fileLoaded;
+
 // extern volatile int prevBattState;   // Previous battery state
 extern unsigned int flashMillis;     // Flash timing
 extern int prevTime;                 // Previous time (minutes)

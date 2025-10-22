@@ -24,6 +24,8 @@ volatile bool newState = false;       // App state changed
 volatile bool OLEDPowerSave = false;  // OLED power save mode
 volatile bool disableTimeout = false; // Disable timeout globally
 volatile int battState = 0;           // Battery state
+bool fileLoaded = false;
+
 // volatile int prevBattState = 0;       // Previous battery state
 unsigned int flashMillis = 0;         // Flash timing
 int prevTime = 0;                     // Previous time (minutes)
