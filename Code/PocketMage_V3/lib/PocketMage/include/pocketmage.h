@@ -8,5 +8,5 @@
 #include <pocketmage_clock.h>
 #include <pocketmage_sys.h>
 #include <MP2722.h>
-#include <assets.h>
 #include <config.h>
+#include <libAssets.h>

@@ -3,8 +3,9 @@ This is a basic overview of pocketmage library. Any suggestions/edits to further
 
 ### To Do:
 
-1. progressively move globals out of globals.h replace them with variables owned by library. 
-4. refactor pocketmage:: to use only pocketmage::method().
+1. Progressively move globals out of globals.h replace them with variables owned by library. 
+2. Refactor pocketmage:: to use only pocketmage::method().
+3. Improved compatibility with emulator
 
 ## Essentials:
 
@@ -30,3 +31,4 @@ This is a basic overview of pocketmage library. Any suggestions/edits to further
 - oled OLED()
 - sd SD()
 - capacitive touch TOUCH()
+- MP2722 
