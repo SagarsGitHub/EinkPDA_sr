@@ -9,6 +9,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <pocketmage.h>
+#include <assets.h>
 
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
