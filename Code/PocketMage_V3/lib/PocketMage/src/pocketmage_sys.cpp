@@ -20,7 +20,7 @@
 static constexpr const char* TAG = "SYSTEM";
 // To Do: migrate to pocketmage::
 
-//volatile int battState = 0;           // Battery state
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //            Use this function in apps to return to PocketMage OS           //
@@ -51,6 +51,7 @@ bool noTimeout = false;               // Disable timeout
 bool mscEnabled         = false;
 bool sinkEnabled        = false;
 volatile bool SDActive  = false;
+volatile int battState = 0;           // Bary state
 
 void PocketMage_INIT(){
   // Serial, I2C, SPI
