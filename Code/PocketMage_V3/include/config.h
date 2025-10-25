@@ -60,8 +60,4 @@ extern bool HOME_ON_BOOT;        // Start home app on boot
 extern int OLED_BRIGHTNESS;      // OLED brightness (0-255)
 extern int OLED_MAX_FPS;         // OLED max FPS
 
-// System tags
-extern bool mscEnabled;      // Is USB MSC active?
-extern bool sinkEnabled;     // Is USB in sink mode?
-
 #endif

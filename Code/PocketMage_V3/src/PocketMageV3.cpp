@@ -17,86 +17,28 @@ static constexpr const char* TAG = "MAIN"; // TODO: Come up with a better tag
 // ADD E-INK HANDLER APP SCRIPTS HERE
 void applicationEinkHandler() {
   switch (CurrentAppState) {
-    case HOME:
-      einkHandler_HOME();
-      break;
-    case TXT:
-      einkHandler_TXT_NEW();
-      break;
-    case FILEWIZ:
-      einkHandler_FILEWIZ();
-      break;
-    case TASKS:
-      einkHandler_TASKS();
-      break;
-    case SETTINGS:
-      einkHandler_settings();
-      break;
-    case USB_APP:
-      einkHandler_USB();
-      break;
-    case CALENDAR:
-      einkHandler_CALENDAR();
-      break;
-    case LEXICON:
-      einkHandler_LEXICON();
-      break;
-    case JOURNAL:
-      einkHandler_JOURNAL();
-      break;
-    case APPLOADER:
-      einkHandler_APPLOADER();
-      break;
     // ADD APP CASES HERE
     default:
-      einkHandler_HOME();
       break;
   }
 }
 
 // ADD PROCESS/KEYBOARD APP SCRIPTS HERE
 void processKB() {
-  // Check for USB KB
-  KB().checkUSBKB();
-
   switch (CurrentAppState) {
-    case HOME:
-      processKB_HOME();
-      break;
-    case TXT:
-      processKB_TXT_NEW();
-      break;
-    case FILEWIZ:
-      processKB_FILEWIZ();
-      break;
-    case TASKS:
-      processKB_TASKS();
-      break;
-    case SETTINGS:
-      processKB_settings();
-      break;
-    case USB_APP:
-      processKB_USB();
-      break;
-    case CALENDAR:
-      processKB_CALENDAR();
-      break;
-    case LEXICON:
-      processKB_LEXICON();
-      break;
-    case JOURNAL:
-      processKB_JOURNAL();
-      break;
-    case APPLOADER:
-      processKB_APPLOADER();
-      break;
     // ADD APP CASES HERE
     default:
-      processKB_HOME();
       break;
   }
 }
 
+void bootApp() {
+  switch (CurrentAppState) {
+    // ADD APP CASES HERE
+    default:
+      break;
+  }
+}
 //  ooo        ooooo       .o.       ooooo ooooo      ooo  //
 //  `88.       .888'      .888.      `888' `888b.     `8'  //
 //   888b     d'888      .8"888.      888   8 `88b.    8   //

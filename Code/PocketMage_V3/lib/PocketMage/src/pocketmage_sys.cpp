@@ -20,6 +20,7 @@
 static constexpr const char* TAG = "SYSTEM";
 // To Do: migrate to pocketmage::
 
+Preferences prefs;  // Global NVS preferences handle
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,13 +47,54 @@ bool rebootToPocketMage() {
 }
 ///////////////////////////////////////////////////////////////////////////////
 
-bool noTimeout = false;               // Disable timeout
+AppState CurrentAppState;             // Current app state
 
+String OTA1_APP;
+String OTA2_APP;
+String OTA3_APP;
+String OTA4_APP;
+
+volatile bool newState = false;       // App state changed
+
+// ===================== USB & STORAGE =====================
+// USB mass storage controller
+USBMSC msc;
+sdmmc_card_t* card = nullptr;     // SD card pointer
 bool mscEnabled         = false;
 bool sinkEnabled        = false;
+
 volatile bool SDActive  = false;
+
+int KBBounceMillis = 0;           // Last keyboard debounce time
+
+volatile bool PWR_BTN_event = false;  // Power button event
+
+volatile bool OLEDPowerSave = false;  // OLED power save mode
+int OLEDFPSMillis = 0;
+bool noTimeout = false;               // Disable timeout
+volatile bool disableTimeout = false; // Disable timeout globally
+bool fileLoaded = false;
+
+
 volatile int battState = 0;           // Bary state
 
+int TIMEOUT;              // Auto sleep timeout (seconds)
+bool DEBUG_VERBOSE;       // Extra debug output
+bool SYSTEM_CLOCK;        // Show clock on screen
+bool SHOW_YEAR;           // Show year in clock
+bool SAVE_POWER;          // Enable power saving mode
+bool ALLOW_NO_MICROSD;    // Allow running without SD card
+bool HOME_ON_BOOT;        // Start home app on boot
+int OLED_BRIGHTNESS;      // OLED brightness (0-255)
+int OLED_MAX_FPS;         // OLED max FPS
+
+// ===================== TASKS APP =====================
+std::vector<std::vector<String>> tasks;      // Task list
+
+// ===================== HOME APP =====================
+HOMEState CurrentHOMEState = HOME_HOME;      // Current home state
+
+uint8_t prevSec = 0;                  // Previous seconds
 void PocketMage_INIT(){
   // Serial, I2C, SPI
   Serial.begin(115200);
@@ -523,7 +565,7 @@ namespace pocketmage::time{
         String savePath = SD().getEditingFile();
         if (savePath != "" && savePath != "-" && savePath != "/temp.txt" && fileLoaded) {
             if (!savePath.startsWith("/")) savePath = "/" + savePath;
-            saveMarkdownFile(SD().getEditingFile());
+            //SD().saveMarkdownFile(SD().getEditingFile());
         }
 
         switch (CurrentAppState) {
@@ -579,7 +621,7 @@ namespace pocketmage::time{
         String savePath = SD().getEditingFile();
         if (savePath != "" && savePath != "-" && savePath != "/temp.txt" && fileLoaded) {
             if (!savePath.startsWith("/")) savePath = "/" + savePath;
-            saveMarkdownFile(SD().getEditingFile());
+            //SD().saveMarkdownFile(SD().getEditingFile());
         }
 
 
@@ -593,8 +635,8 @@ namespace pocketmage::time{
 
         CurrentAppState = HOME;
         CurrentHOMEState = NOWLATER;
-        updateTaskArray();
-        sortTasksByDueDate(tasks);
+        // updateTaskArray();
+        // sortTasksByDueDate(tasks);
 
         u8g2.setPowerSave(1);
         OLEDPowerSave = true;
@@ -814,7 +856,7 @@ namespace pocketmage::power{
                 String savePath = SD().getEditingFile();
                 if (savePath != "" && savePath != "-" && savePath != "/temp.txt" && fileLoaded) {
                     if (!savePath.startsWith("/")) savePath = "/" + savePath;
-                    saveMarkdownFile(SD().getEditingFile());
+                    //SD().saveMarkdownFile(SD().getEditingFile());
                 }
 
                 // Put device to sleep
@@ -877,34 +919,8 @@ namespace pocketmage::power{
 
         keypad.flush();
 
-        // Initialize boot app if needed
-        switch (CurrentAppState) {
-        case HOME:
-            HOME_INIT();
-            break;
-        case TXT:
-            TXT_INIT(); // TODO: Does not work? Crash on startup
-            //HOME_INIT(); 
-            break;
-        case SETTINGS:
-            SETTINGS_INIT();
-            break;
-        case TASKS:
-            TASKS_INIT();
-            break;
-        case USB_APP:
-            HOME_INIT();
-            break;
-        case CALENDAR:
-            CALENDAR_INIT();
-            break;
-        case LEXICON:
-            LEXICON_INIT();
-            break;
-        case JOURNAL:
-            JOURNAL_INIT();
-            break;
-        }
+        bootApp();
+        
     }
 
     prefs.end();
