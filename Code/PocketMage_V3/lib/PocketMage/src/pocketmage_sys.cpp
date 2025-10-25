@@ -565,7 +565,7 @@ namespace pocketmage::time{
         String savePath = SD().getEditingFile();
         if (savePath != "" && savePath != "-" && savePath != "/temp.txt" && fileLoaded) {
             if (!savePath.startsWith("/")) savePath = "/" + savePath;
-            //SD().saveMarkdownFile(SD().getEditingFile());
+            // SD().saveMarkdownFile(SD().getEditingFile());
         }
 
         switch (CurrentAppState) {
@@ -617,11 +617,11 @@ namespace pocketmage::time{
 
         // Save current work:
         OLED().oledWord("Saving Work");
-        //pocketmage::file::saveFile();
+        // pocketmage::file::saveFile();
         String savePath = SD().getEditingFile();
         if (savePath != "" && savePath != "-" && savePath != "/temp.txt" && fileLoaded) {
             if (!savePath.startsWith("/")) savePath = "/" + savePath;
-            //SD().saveMarkdownFile(SD().getEditingFile());
+            // SD().saveMarkdownFile(SD().getEditingFile());
         }
 
 
