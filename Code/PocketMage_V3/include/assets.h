@@ -78,9 +78,6 @@ extern const unsigned char taskIconTasks0 [] PROGMEM;
 extern const unsigned char fontfont0 [] PROGMEM;
 
 //
-extern const unsigned char scrolloled0 [] PROGMEM;
-
-//
 extern const unsigned char _ScreenSaver0 [] PROGMEM;
 extern const unsigned char _ScreenSaver1 [] PROGMEM;
 extern const unsigned char _ScreenSaver2 [] PROGMEM;
@@ -101,14 +98,6 @@ extern const unsigned char _ScreenSaver16 [] PROGMEM;
 extern const unsigned char _ScreenSaver17 [] PROGMEM;
 extern const unsigned char* ScreenSaver_allArray[18];
 
-//
-extern const unsigned char _batt0 [] PROGMEM;
-extern const unsigned char _batt1 [] PROGMEM;
-extern const unsigned char _batt2 [] PROGMEM;
-extern const unsigned char _batt3 [] PROGMEM;
-extern const unsigned char _batt4 [] PROGMEM;
-extern const unsigned char _batt5 [] PROGMEM;
-extern const unsigned char* batt_allArray[6];
 
 //
 extern const unsigned char _settings [] PROGMEM;

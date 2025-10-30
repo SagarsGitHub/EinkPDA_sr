@@ -17,7 +17,6 @@ volatile bool PWR_BTN_event = false;  // Power button event
 volatile bool newState = false;       // App state changed
 volatile bool OLEDPowerSave = false;  // OLED power save mode
 volatile bool disableTimeout = false; // Disable timeout globally
-volatile int battState = 0;           // Battery state
 bool fileLoaded = false;
 
 // volatile int prevBattState = 0;       // Previous battery state
