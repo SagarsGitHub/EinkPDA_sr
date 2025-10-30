@@ -47,7 +47,6 @@ bool rebootToPocketMage() {
 ///////////////////////////////////////////////////////////////////////////////
 
 bool noTimeout = false;               // Disable timeout
-
 bool mscEnabled         = false;
 bool sinkEnabled        = false;
 volatile bool SDActive  = false;
@@ -494,6 +493,7 @@ namespace pocketmage::time{
     ESP_LOGI(TAG, "Time updated!");
     }
     
+    // move to OS_utils
     void checkTimeout() {
     int randomScreenSaver = 0;
     CLOCK().setTimeoutMillis(millis());
@@ -845,6 +845,7 @@ namespace pocketmage::power{
     prevVoltage = filteredVoltage;
     }
     
+    // move to OS_utils
     void loadState(bool changeState) {
     // LOAD PREFERENCES
     prefs.begin("PocketMage", true);  // Read-Only

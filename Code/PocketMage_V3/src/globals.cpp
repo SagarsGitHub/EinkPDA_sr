@@ -3,28 +3,29 @@
 
 // ===================== USB & STORAGE =====================
 // USB mass storage controller
+// move to usb
 USBMSC msc;
 sdmmc_card_t* card = nullptr;     // SD card pointer
 
 // ===================== SYSTEM STATE =====================
 // E-Ink refresh control
 // volatile int einkRefresh = FULL_REFRESH_AFTER; // Partial/full refresh counter
-Preferences prefs;        // NVS preferences
+Preferences prefs;        // NVS preferences // note add power button logic in app + prefs to immediate sleep 
 int OLEDFPSMillis = 0;            // Last OLED FPS update time
 int KBBounceMillis = 0;           // Last keyboard debounce time
 volatile bool TCA8418_event = false;  // Keypad interrupt event
 volatile bool PWR_BTN_event = false;  // Power button event
 volatile bool newState = false;       // App state changed
-volatile bool OLEDPowerSave = false;  // OLED power save mode
-volatile bool disableTimeout = false; // Disable timeout globally
-bool fileLoaded = false;
+volatile bool OLEDPowerSave = false;  // OLED power save mode // turn into OLED_POWER_SAVE OLED().powerSave();
+volatile bool disableTimeout = false; // Disable timeout globally // move timeout functionality out of library
+bool fileLoaded = false; // part of moving save functionality out of library
 
 // volatile int prevBattState = 0;       // Previous battery state
 unsigned int flashMillis = 0;         // Flash timing
-int prevTime = 0;                     // Previous time (minutes)
-uint8_t prevSec = 0;                  // Previous seconds
+int prevTime = 0;                     // Previous time (minutes) // move to home (static)
+uint8_t prevSec = 0;                  // Previous seconds // move to pocketmage_sys
 uint8_t partialCounter = 0;           // Counter for partial refreshes
-volatile bool forceSlowFullUpdate = false; // Force slow full update
+// volatile bool forceSlowFullUpdate = false; // Force slow full update
 
 int TIMEOUT;              // Auto sleep timeout (seconds)
 bool DEBUG_VERBOSE;       // Extra debug output
@@ -42,6 +43,7 @@ String OTA3_APP;
 String OTA4_APP;
 
 // ===================== FILES & TEXT =====================
+// remove 
 volatile bool SDCARD_INSERT = false;  // SD card inserted event
 
 // ===================== APP STATES =====================
@@ -53,4 +55,5 @@ AppState CurrentAppState;             // Current app state
 std::vector<std::vector<String>> tasks;      // Task list
 
 // ===================== HOME APP =====================
+// remove from library
 HOMEState CurrentHOMEState = HOME_HOME;      // Current home state
