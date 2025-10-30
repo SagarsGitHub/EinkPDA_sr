@@ -1110,6 +1110,25 @@ void refreshAllLineIndexes() {
 
 // Load File
 void loadMarkdownFile(const String& path) {
+  // Invalid file
+  if (path == "" || path == " " || path == "-") {
+    OLED().oledWord("No file saved! Creating blank file.");
+    delay(2000);
+
+    // Create an empty new docLines object
+    docLines.push_back({'T', "", {}});
+    editingLine_index = 0;
+
+    // Populate and update as usual so UI doesn’t crash
+    populateLines(docLines);
+    refreshAllLineIndexes();
+
+    if (SAVE_POWER)
+      setCpuFrequencyMhz(80);
+    SDActive = false;
+    return;
+  }
+
   if (SD().getNoSD()) {
     OLED().oledWord("LOAD FAILED - No SD!");
     delay(5000);
@@ -1732,9 +1751,7 @@ void initFonts() {
 void TXT_INIT() {
   initFonts();
 
-  if (SD().getEditingFile() != "") {
-    loadMarkdownFile(SD().getEditingFile());
-  }
+  loadMarkdownFile(SD().getEditingFile());
 
   setFontStyle(serif);
 

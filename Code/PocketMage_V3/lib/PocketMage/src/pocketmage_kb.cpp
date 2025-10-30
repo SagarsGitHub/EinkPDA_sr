@@ -131,21 +131,21 @@ const uint8_t keycode2ascii[57][2] = {
     {'8', '*'}, /* HID_KEY_8               */
     {'9', '('}, /* HID_KEY_9               */
     {'0', ')'}, /* HID_KEY_0               */
-    {13 , 13 }, /* HID_KEY_ENTER */
-    {12 , 12 },      /* HID_KEY_ESC             */
-    {'\b', 0},   /* HID_KEY_DEL             */
-    {0, 0},      /* HID_KEY_TAB             */
-    {' ', ' '},  /* HID_KEY_SPACE           */
-    {'-', '_'},  /* HID_KEY_MINUS           */
-    {'=', '+'},  /* HID_KEY_EQUAL           */
-    {'[', '{'},  /* HID_KEY_OPEN_BRACKET    */
-    {']', '}'},  /* HID_KEY_CLOSE_BRACKET   */
-    {'\\', '|'}, /* HID_KEY_BACK_SLASH      */
-    {'\\', '|'},
+    {13 , 13 }, /* HID_KEY_ENTER           */
+    {12 , 12 }, /* HID_KEY_ESC             */
+    {8  , 8  }, /* HID_KEY_DEL             */
+    {28 , 28 }, /* HID_KEY_TAB             */
+    {' ', ' '}, /* HID_KEY_SPACE           */
+    {'-', 28 }, /* HID_KEY_MINUS          _     */
+    {'=', 30 }, /* HID_KEY_EQUAL          +     */
+    {'[', '{'}, /* HID_KEY_OPEN_BRACKET    */
+    {']', '}'}, /* HID_KEY_CLOSE_BRACKET   */
+    {'\\','|'}, /* HID_KEY_BACK_SLASH      */
+    {'\\','|'},
     /* HID_KEY_SHARP           */ // HOTFIX: for NonUS Keyboards repeat
                                   // HID_KEY_BACK_SLASH
     {';', ':'},                   /* HID_KEY_COLON           */
-    {'\'', '"'},                  /* HID_KEY_QUOTE           */
+    {'\'','"'},                  /* HID_KEY_QUOTE           */
     {'`', '~'},                   /* HID_KEY_TILDE           */
     {',', '<'},                   /* HID_KEY_LESS            */
     {'.', '>'},                   /* HID_KEY_GREATER         */
